@@ -9,8 +9,6 @@ export default function EspnLeagueLink() {
   const [linked, setLinked] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [leagueId, setLeagueId] = useState("");
-  const [espnS2, setEspnS2] = useState("");
-  const [swid, setSwid] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -31,15 +29,11 @@ export default function EspnLeagueLink() {
     try {
       const response = await base44.functions.invoke("linkEspnLeague", {
         league_id: leagueId,
-        espn_s2: espnS2,
-        swid: swid,
       });
       const result = response.data;
       setSuccess(result);
       setShowForm(false);
       setLeagueId("");
-      setEspnS2("");
-      setSwid("");
       const refreshed = await base44.entities.EspnLeague.list("-updated_date", 10);
       setLinked(refreshed);
     } catch (err) {
@@ -97,9 +91,7 @@ export default function EspnLeagueLink() {
       {showForm && (
         <form onSubmit={handleSubmit} className="space-y-4 border-t border-slate-100 px-4 py-4">
           <p className="text-xs text-slate-500">
-            Log in to fantasy.espn.com, copy the <span className="font-mono">espn_s2</span> and{" "}
-            <span className="font-mono">SWID</span> cookie values from your browser, and paste them below. They're
-            stored securely and used only to read your league.
+            Your ESPN cookies are stored securely in the app's backend — just enter your league ID to link it.
           </p>
           <div className="space-y-2">
             <Label htmlFor="leagueId">League ID</Label>
@@ -108,28 +100,6 @@ export default function EspnLeagueLink() {
               value={leagueId}
               onChange={(e) => setLeagueId(e.target.value)}
               placeholder="e.g. 123456"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="espnS2">espn_s2 cookie</Label>
-            <Input
-              id="espnS2"
-              value={espnS2}
-              onChange={(e) => setEspnS2(e.target.value)}
-              placeholder="Paste the espn_s2 value"
-              className="font-mono text-xs"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="swid">SWID cookie</Label>
-            <Input
-              id="swid"
-              value={swid}
-              onChange={(e) => setSwid(e.target.value)}
-              placeholder="Paste the SWID value"
-              className="font-mono text-xs"
               required
             />
           </div>

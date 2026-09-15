@@ -13,19 +13,9 @@
     "season": {
       "type": "integer",
       "description": "NFL season year"
-    },
-    "espn_s2": {
-      "type": "string",
-      "description": "ESPN espn_s2 session cookie"
-    },
-    "swid": {
-      "type": "string",
-      "description": "ESPN SWID session cookie"
     }
   },
   "required": [
-    "league_id",
-    "espn_s2",
-    "swid"
+    "league_id"
   ]
 }
