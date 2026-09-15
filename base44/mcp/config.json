@@ -1,0 +1,28 @@
+{
+  "auth": "oauth",
+  "tools": {
+    "functions": [
+      {
+        "name": "analyze_fantasy_screenshot",
+        "title": "Analyze fantasy screenshot",
+        "description": "Analyzes a screenshot from a fantasy football app (starting lineup, waiver wire, or trade offer), identifies the players visible, and returns start/sit, waiver, and trade recommendations. Call when the user shares a screenshot image URL and wants fantasy advice.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "file_url": {
+              "type": "string",
+              "description": "Public https URL of the screenshot image to analyze"
+            }
+          },
+          "required": ["file_url"]
+        },
+        "handler": "analyzeScreenshot",
+        "annotations": {
+          "read_only_hint": true,
+          "destructive_hint": false,
+          "idempotent_hint": true
+        }
+      }
+    ]
+  }
+}
