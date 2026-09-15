@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Loader2, ScanSearch } from "lucide-react";
+import { ChevronRight, Loader2, ScanSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ScreenshotUpload from "@/components/fantasy/ScreenshotUpload";
 import AnalysisResult from "@/components/fantasy/AnalysisResult";
@@ -55,6 +56,11 @@ export default function Home() {
             Snap a screenshot of your fantasy app — get instant start/sit, waiver, and trade advice.
           </p>
         </header>
+
+        <Link to="/analyst" className="mb-6 flex items-center justify-between rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3 hover:bg-emerald-100">
+          <span className="text-sm font-medium text-emerald-900">Need long-term numbers? Chat with the Trade Analyst</span>
+          <ChevronRight className="h-5 w-5 text-emerald-700" />
+        </Link>
 
         <div className="space-y-6">
           <ScreenshotUpload preview={preview} onFileSelected={handleFileSelected} onReset={handleReset} />
