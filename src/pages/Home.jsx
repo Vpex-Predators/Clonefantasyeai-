@@ -5,6 +5,7 @@ import { ChevronRight, Loader2, ScanSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ScreenshotUpload from "@/components/fantasy/ScreenshotUpload";
 import AnalysisResult from "@/components/fantasy/AnalysisResult";
+import EspnLeagueLink from "@/components/fantasy/EspnLeagueLink";
 
 export default function Home() {
   const [file, setFile] = useState(null);
@@ -63,6 +64,8 @@ export default function Home() {
         </Link>
 
         <div className="space-y-6">
+          <EspnLeagueLink />
+
           <ScreenshotUpload preview={preview} onFileSelected={handleFileSelected} onReset={handleReset} />
 
           {file && !analysis && (
