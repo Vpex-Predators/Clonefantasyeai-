@@ -1,0 +1,95 @@
+{
+  "name": "PlayerAnalysis",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "App user this analysis belongs to"
+    },
+    "player_id": {
+      "type": "string",
+      "description": "ESPN player id"
+    },
+    "player_name": {
+      "type": "string",
+      "description": "Player display name"
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "Start",
+        "Sit",
+        "Trade",
+        "Hold"
+      ],
+      "description": "Actionable verdict for the player"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "description": "Playbook confidence flag based on weighted edge"
+    },
+    "weighted_edge": {
+      "type": "number",
+      "description": "Weighted edge in fantasy points (projections 30%, matchup 25%, injury 20%, recent form 15%, schedule 10%)"
+    },
+    "news_headline": {
+      "type": "string",
+      "description": "Latest news headline for the player"
+    },
+    "analysis": {
+      "type": "string",
+      "description": "Short analysis citing numbers"
+    },
+    "factors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Key weighted factors behind the verdict"
+    },
+    "analyzed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp of the analysis"
+    }
+  },
+  "required": [
+    "user_id",
+    "player_id",
+    "player_name"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

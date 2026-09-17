@@ -1,0 +1,65 @@
+{
+  "name": "TeamLock",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "App user this locked team pick belongs to"
+    },
+    "league_id": {
+      "type": "string",
+      "description": "ESPN fantasy league ID"
+    },
+    "team_id": {
+      "type": "string",
+      "description": "ESPN team id the user locked in"
+    },
+    "team_name": {
+      "type": "string",
+      "description": "ESPN team display name"
+    },
+    "espn_email": {
+      "type": "string",
+      "description": "ESPN account email used to confirm the pick"
+    },
+    "birthday": {
+      "type": "string",
+      "format": "date",
+      "description": "Birthday used to confirm the pick"
+    }
+  },
+  "required": [
+    "user_id",
+    "league_id",
+    "team_id"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

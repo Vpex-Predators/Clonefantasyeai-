@@ -1,0 +1,191 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
+import {
+  DEFAULT_LEAGUE_ID, defaultSeason, espnFetch, fetchLeague,
+  parseTeamSummary, parseRosterPlayer, statValue, round1
+} from '../../shared/espnLeague.js';
+
+function trimPlayer(p) {
+  return {
+    id: p.id,
+    name: p.name,
+    position: p.position,
+    slot: p.slot,
+    injuryStatus: p.injuryStatus,
+    weeklyProj: p.weeklyProj,
+    seasonProj: p.seasonProj,
+    seasonAvg: p.seasonAvg,
+    trend: p.trend,
+    analysis: p.analysis || null
+  };
+}
+
+export default async function(req) {
+  try {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const season = defaultSeason();
+    const league = await fetchLeague(season, DEFAULT_LEAGUE_ID, ['mTeam', 'mRoster']);
+    const leagueName = (league.settings && league.settings.name) || 'ESPN League';
+    const currentPeriod = (league.status && (league.status.currentMatchupPeriod || league.status.latestScoringPeriod)) || 1;
+    const regSeasonPeriods = (league.settings && league.settings.scheduleSettings && league.settings.scheduleSettings.regSeasonMatchupPeriodCount) || 14;
+    const rawTeams = league.teams || [];
+    const teams = rawTeams.map(parseTeamSummary);
+    const schedule = league.schedule || [];
+    const gamesPlayed = Math.max(1, currentPeriod - 1);
+
+    const locks = await base44.asServiceRole.entities.TeamLock.filter({ user_id: user.id, league_id: DEFAULT_LEAGUE_ID });
+    const lock = locks[0] || null;
+
+    // Not locked yet — return the team list so the user can pick theirs.
+    if (!lock) {
+      return Response.json({
+        locked: false,
+        league: { id: DEFAULT_LEAGUE_ID, name: leagueName, season, week: currentPeriod },
+        teams: teams.map(t => ({ id: t.id, name: t.name, wins: t.wins, losses: t.losses }))
+      });
+    }
+
+    const mySummary = teams.find(t => t.id === String(lock.team_id));
+    if (!mySummary) return Response.json({ error: 'Your locked team is no longer in this league. Ask the admin to fix your pick.' }, { status: 400 });
+    const myRaw = rawTeams.find(t => String(t.id) === String(lock.team_id));
+    const roster = ((myRaw.roster && myRaw.roster.entries) || []).map(e => parseRosterPlayer(e, currentPeriod));
+
+    // Season scoring trend from the schedule
+    const scoringTrend = [];
+    for (const m of schedule) {
+      const home = m.home || {};
+      const away = m.away || {};
+      if (String(home.teamId) === mySummary.id) scoringTrend.push({ week: m.matchupPeriodId, points: round1(home.totalPoints) });
+      else if (String(away.teamId) === mySummary.id) scoringTrend.push({ week: m.matchupPeriodId, points: round1(away.totalPoints) });
+    }
+    scoringTrend.sort((a, b) => a.week - b.week);
+
+    // This week's opponent
+    const currentMatchup = schedule.find(m =>
+      m.matchupPeriodId === currentPeriod &&
+      (String((m.home || {}).teamId) === mySummary.id || String((m.away || {}).teamId) === mySummary.id)
+    );
+    let opponent = null;
+    let opponentStarters = [];
+    if (currentMatchup) {
+      const oppId = String(currentMatchup.home.teamId) === mySummary.id ? String(currentMatchup.away.teamId) : String(currentMatchup.home.teamId);
+      const oppRaw = rawTeams.find(t => String(t.id) === oppId);
+      const oppSummary = teams.find(t => t.id === oppId);
+      if (oppRaw && oppSummary) {
+        opponent = {
+          id: oppSummary.id,
+          name: oppSummary.name,
+          wins: oppSummary.wins,
+          losses: oppSummary.losses,
+          pointsFor: oppSummary.pointsFor,
+          avgPoints: round1(oppSummary.pointsFor / gamesPlayed)
+        };
+        opponentStarters = ((oppRaw.roster && oppRaw.roster.entries) || [])
+          .map(e => parseRosterPlayer(e, currentPeriod))
+          .filter(p => p.isStarter)
+          .map(p => ({ id: p.id, name: p.name, position: p.position, weeklyProj: p.weeklyProj, injuryStatus: p.injuryStatus }));
+      }
+    }
+
+    // Free agents (best effort — the dashboard still loads without them)
+    let freeAgents = [];
+    try {
+      const faData = await espnFetch(`https://lm-api-reads.fantasy.espn.com/apis/v2/games/ffl/seasons/${season}/segments/0/leagues/${DEFAULT_LEAGUE_ID}?view=kona_player_info`);
+      const pool = faData.players || (faData.leagues && faData.leagues[0] && faData.leagues[0].players) || [];
+      freeAgents = pool.map(entry => {
+        const player = (entry.playerPoolEntry && entry.playerPoolEntry.player) || {};
+        return {
+          id: String(player.id ?? ''),
+          name: player.fullName || 'Unknown',
+          position: player.defaultPosition || '',
+          injuryStatus: player.injuryStatus || 'ACTIVE',
+          seasonProj: round1(statValue(player, 1, 0) || statValue(player, 0, 0)),
+          weeklyProj: round1(statValue(player, 1, currentPeriod))
+        };
+      }).filter(p => p.id)
+        .sort((a, b) => (b.weeklyProj - a.weeklyProj) || (b.seasonProj - a.seasonProj))
+        .slice(0, 15);
+    } catch (e) { /* waiver wire data unavailable — skip */ }
+
+    // Playoff runway: last four weeks of the regular season
+    const leagueAvgPoints = teams.length ? round1(teams.reduce((s, t) => s + t.pointsFor, 0) / teams.length / gamesPlayed) : 0;
+    const playoff = [];
+    for (let w = Math.max(1, regSeasonPeriods - 3); w <= regSeasonPeriods; w++) {
+      const m = schedule.find(x => x.matchupPeriodId === w &&
+        (String((x.home || {}).teamId) === mySummary.id || String((x.away || {}).teamId) === mySummary.id));
+      if (!m) continue;
+      const oppId = String(m.home.teamId) === mySummary.id ? String(m.away.teamId) : String(m.home.teamId);
+      const opp = teams.find(t => t.id === oppId);
+      if (opp) {
+        playoff.push({
+          week: w,
+          opponent: { id: opp.id, name: opp.name, wins: opp.wins, losses: opp.losses, avgPoints: round1(opp.pointsFor / gamesPlayed) }
+        });
+      }
+    }
+
+    // Live-data diff: which items changed since the user's last refresh
+    const signatures = {};
+    for (const p of roster) signatures['p:' + p.id] = [p.injuryStatus, p.weeklyProj, p.slot].join('|');
+    if (opponent) signatures['opp:' + opponent.id] = [opponent.id, opponent.wins, opponent.losses, opponent.avgPoints].join('|');
+
+    const states = await base44.asServiceRole.entities.RefreshState.filter({ user_id: user.id, league_id: DEFAULT_LEAGUE_ID });
+    const state = states[0] || null;
+    const now = new Date().toISOString();
+    let pending = [];
+    if (state && state.signatures) {
+      const oldPending = Array.isArray(state.pending) ? state.pending : [];
+      const changed = Object.keys(signatures).filter(k => state.signatures[k] !== signatures[k]);
+      pending = Array.from(new Set(oldPending.filter(k => k in signatures).concat(changed)));
+    }
+    const stateRecord = { user_id: user.id, league_id: DEFAULT_LEAGUE_ID, last_refresh: now, signatures, pending };
+    if (state) await base44.asServiceRole.entities.RefreshState.update(state.id, stateRecord);
+    else await base44.asServiceRole.entities.RefreshState.create(stateRecord);
+
+    // Attach each user's cached AI verdicts to their roster players
+    const analyses = await base44.asServiceRole.entities.PlayerAnalysis.filter({ user_id: user.id });
+    const byPlayer = {};
+    for (const a of analyses) byPlayer[String(a.player_id)] = a;
+    for (const p of roster) {
+      const a = byPlayer[p.id];
+      p.analysis = a ? {
+        verdict: a.verdict,
+        confidence: a.confidence,
+        weighted_edge: a.weighted_edge,
+        news_headline: a.news_headline,
+        analysis: a.analysis,
+        factors: Array.isArray(a.factors) ? a.factors : [],
+        analyzed_at: a.analyzed_at
+      } : null;
+    }
+
+    return Response.json({
+      locked: true,
+      league: { id: DEFAULT_LEAGUE_ID, name: leagueName, season, week: currentPeriod, leagueAvgPoints },
+      lock: { team_id: String(lock.team_id), team_name: lock.team_name, espn_email: lock.espn_email, birthday: lock.birthday },
+      teams: teams.map(t => ({ id: t.id, name: t.name })),
+      myTeam: {
+        id: mySummary.id,
+        name: mySummary.name,
+        wins: mySummary.wins,
+        losses: mySummary.losses,
+        ties: mySummary.ties,
+        pointsFor: mySummary.pointsFor,
+        pointsAgainst: mySummary.pointsAgainst,
+        scoringTrend,
+        starters: roster.filter(p => p.isStarter).map(trimPlayer),
+        bench: roster.filter(p => !p.isStarter).map(trimPlayer)
+      },
+      opponent,
+      opponentStarters,
+      freeAgents,
+      playoff,
+      lastRefresh: now,
+      pending
+    });
+  } catch (error) {
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+}

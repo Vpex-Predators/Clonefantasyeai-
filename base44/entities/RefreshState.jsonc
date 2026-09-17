@@ -1,0 +1,63 @@
+{
+  "name": "RefreshState",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "App user this refresh state belongs to"
+    },
+    "league_id": {
+      "type": "string",
+      "description": "ESPN fantasy league ID"
+    },
+    "last_refresh": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp of the last live data refresh"
+    },
+    "signatures": {
+      "type": "object",
+      "description": "Snapshot signatures per item key, used to detect what changed"
+    },
+    "pending": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Item keys with unseen updates (highlighted until viewed)"
+    }
+  },
+  "required": [
+    "user_id",
+    "league_id"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
