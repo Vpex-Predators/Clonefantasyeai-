@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
-import { DEFAULT_LEAGUE_ID, defaultSeason, fetchLeague } from '../../shared/espnLeague.js';
+import { DEFAULT_LEAGUE_ID, fetchLeagueCurrent } from '../../shared/espnLeague.js';
 
 export default async function(req) {
   try {
@@ -27,8 +27,7 @@ export default async function(req) {
       return Response.json({ error: 'Your team is already locked — one pick per account. Ask the admin if it needs fixing.' }, { status: 409 });
     }
 
-    const season = defaultSeason();
-    const league = await fetchLeague(season, DEFAULT_LEAGUE_ID, ['mTeam']);
+    const { league } = await fetchLeagueCurrent(['mTeam']);
     const rawTeam = (league.teams || []).find(t => String(t.id) === teamId);
     if (!rawTeam) return Response.json({ error: 'That team is not in this league.' }, { status: 400 });
     const teamName = [rawTeam.location, rawTeam.nickname].filter(Boolean).join(' ') || `Team ${teamId}`;

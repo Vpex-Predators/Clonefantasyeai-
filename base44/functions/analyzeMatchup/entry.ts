@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import {
-  DEFAULT_LEAGUE_ID, defaultSeason, fetchLeague,
+  DEFAULT_LEAGUE_ID, fetchLeagueCurrent,
   parseTeamSummary, parseRosterPlayer, PLAYBOOK_MODEL, round1
 } from '../../shared/espnLeague.js';
 
@@ -15,8 +15,7 @@ export default async function(req) {
     const lock = locks[0];
 
     // Always recompute from ESPN — never trust lineup data sent by the client.
-    const season = defaultSeason();
-    const league = await fetchLeague(season, DEFAULT_LEAGUE_ID, ['mTeam', 'mRoster']);
+    const { league } = await fetchLeagueCurrent(['mTeam', 'mRoster']);
     const currentPeriod = (league.status && (league.status.currentMatchupPeriod || league.status.latestScoringPeriod)) || 1;
     const rawTeams = league.teams || [];
     const schedule = league.schedule || [];

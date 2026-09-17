@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import {
-  DEFAULT_LEAGUE_ID, defaultSeason, espnFetch, fetchLeague,
+  DEFAULT_LEAGUE_ID, espnFetch, fetchLeagueCurrent,
   parseTeamSummary, parseRosterPlayer, statValue, round1
 } from '../../shared/espnLeague.js';
 
@@ -25,8 +25,7 @@ export default async function(req) {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const season = defaultSeason();
-    const league = await fetchLeague(season, DEFAULT_LEAGUE_ID, ['mTeam', 'mRoster']);
+    const { league, season } = await fetchLeagueCurrent(['mTeam', 'mRoster']);
     const leagueName = (league.settings && league.settings.name) || 'ESPN League';
     const currentPeriod = (league.status && (league.status.currentMatchupPeriod || league.status.latestScoringPeriod)) || 1;
     const regSeasonPeriods = (league.settings && league.settings.scheduleSettings && league.settings.scheduleSettings.regSeasonMatchupPeriodCount) || 14;

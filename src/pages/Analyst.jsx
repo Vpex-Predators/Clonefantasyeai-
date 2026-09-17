@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Calculator, Loader2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MessageBubble from "@/components/analyst/MessageBubble";
+import AppNavBar from "@/components/AppNavBar";
 
 const SUGGESTIONS = [
   "Should I trade Saquon Barkley for Bijan Robinson and a WR2?",
@@ -89,7 +90,7 @@ export default function Analyst() {
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-6">
+      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 pb-24 pt-6">
         <div className="flex flex-1 flex-col gap-4">
           {messages.length === 0 && !waitingForReply && (
             <div className="space-y-4">
@@ -121,7 +122,7 @@ export default function Analyst() {
 
         <form
           onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-          className="sticky bottom-0 mt-6 flex gap-2 bg-slate-50 py-3"
+          className="sticky bottom-20 mt-6 flex gap-2 bg-slate-50 py-3"
         >
           <input
             value={input}
@@ -134,6 +135,7 @@ export default function Analyst() {
           </Button>
         </form>
       </main>
+      <AppNavBar />
     </div>
   );
 }

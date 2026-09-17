@@ -29,7 +29,9 @@ export async function espnFetch(url) {
     } else if (res.status === 404) {
       msg = 'League not found on ESPN. Double-check the league ID and season year.';
     }
-    throw new Error(msg);
+    const error = new Error(msg);
+    error.status = res.status;
+    throw error;
   }
   return res.json();
 }
@@ -40,6 +42,23 @@ export async function fetchLeague(season, leagueId, views) {
   const league = (data.leagues && data.leagues[0]) || (data.settings ? data : null);
   if (!league) throw new Error('ESPN responded, but no league data was returned.');
   return league;
+}
+
+// The league lives under the season ESPN currently serves it for — if the
+// rollover hasn't happened yet, the previous season still holds the data.
+export async function fetchLeagueCurrent(views) {
+  const seasons = [defaultSeason(), defaultSeason() - 1];
+  let lastError = null;
+  for (const season of seasons) {
+    try {
+      const league = await fetchLeague(season, DEFAULT_LEAGUE_ID, views);
+      return { league, season };
+    } catch (e) {
+      if (e && e.status === 404) { lastError = e; continue; }
+      throw e;
+    }
+  }
+  throw lastError || new Error('League not found on ESPN.');
 }
 
 export const SLOT_LABELS = { 0: 'QB', 2: 'RB', 3: 'RB/WR', 4: 'WR', 5: 'WR/TE', 6: 'TE', 7: 'OP', 16: 'DST', 17: 'K', 20: 'BE', 21: 'IR', 23: 'FLEX' };

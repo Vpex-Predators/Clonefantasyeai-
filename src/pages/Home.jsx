@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import ScreenshotUpload from "@/components/fantasy/ScreenshotUpload";
 import AnalysisResult from "@/components/fantasy/AnalysisResult";
 import EspnLeagueLink from "@/components/fantasy/EspnLeagueLink";
+import AppNavBar from "@/components/AppNavBar";
 
 export default function Home() {
   const [file, setFile] = useState(null);
@@ -50,7 +51,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
-      <div className="mx-auto max-w-2xl px-4 py-10 sm:py-14">
+      <div className="mx-auto max-w-2xl px-4 pb-28 pt-10 sm:pt-14">
         <header className="mb-8">
           <h1 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">Fantasy Companion</h1>
           <p className="mt-2 text-slate-500">
@@ -103,6 +104,7 @@ export default function Home() {
           )}
         </div>
       </div>
+      <AppNavBar />
     </div>
   );
 }
