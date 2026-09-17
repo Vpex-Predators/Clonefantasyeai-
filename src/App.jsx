@@ -10,6 +10,7 @@ import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import Analyst from './pages/Analyst';
 import Dashboard from './pages/Dashboard';
+import WarRoom from './pages/WarRoom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -51,6 +52,7 @@ const AuthenticatedApp = () => {
       <Route path="/" element={<Home />} />
       <Route path="/analyst" element={<Analyst />} />
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/warroom" element={<WarRoom />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

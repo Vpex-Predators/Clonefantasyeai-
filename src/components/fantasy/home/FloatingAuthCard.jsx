@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Radar, Loader2, LogOut } from "lucide-react";
 import GoogleIcon from "@/components/GoogleIcon";
+import HudPanel from "@/components/hud/HudPanel";
 import { safeReturnTo } from "@/lib/authReturnTo";
 
 export default function FloatingAuthCard() {
@@ -14,18 +15,21 @@ export default function FloatingAuthCard() {
   const [loading, setLoading] = useState(false);
   const returnTo = safeReturnTo();
 
-  // Signed in — collapse into a compact profile chip.
+  // Signed in — collapse into a compact command profile chip.
   if (isAuthenticated && user) {
     return (
-      <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-xl">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-400/15 text-sm font-bold text-emerald-300">
+      <div className="flex items-center gap-3 border border-white/10 bg-white/[0.04] px-4 py-3">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center border border-emerald-400/40 bg-emerald-400/10 text-xs font-bold text-emerald-300">
           {(user.full_name || user.email || "?").charAt(0).toUpperCase()}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-white">{user.full_name || "Commander"}</p>
-          <p className="truncate text-[11px] text-white/45">{user.email}</p>
+          <p className="truncate text-xs font-bold uppercase tracking-wider text-white">{user.full_name || "Commander"}</p>
+          <p className="truncate font-mono text-[10px] text-white/45">{user.email}</p>
         </div>
-        <button onClick={() => logout()} className="flex shrink-0 items-center gap-1 text-[11px] font-semibold text-white/50 hover:text-white">
+        <button
+          onClick={() => logout()}
+          className="flex shrink-0 items-center gap-1 text-[10px] font-bold uppercase tracking-[0.15em] text-white/50 hover:text-white"
+        >
           <LogOut className="h-3.5 w-3.5" /> Sign out
         </button>
       </div>
@@ -46,61 +50,64 @@ export default function FloatingAuthCard() {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/70 p-5 shadow-2xl shadow-black/50 backdrop-blur-xl">
-      <div className="pointer-events-none absolute -top-16 right-0 h-40 w-40 rounded-full bg-emerald-400/15 blur-3xl" />
-      <div className="relative flex items-center gap-2.5">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-400 text-slate-950">
-          <Radar className="h-5 w-5" />
+    <HudPanel>
+      <div className="flex items-center gap-2.5">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-emerald-400 text-slate-950">
+          <Radar className="h-4 w-4" />
         </div>
-        <div>
-          <h1 className="font-heading text-lg font-bold leading-tight text-white">
+        <div className="min-w-0">
+          <h1 className="font-heading text-sm font-bold uppercase tracking-[0.15em] text-white">
             FantasyEdge <span className="text-emerald-400">AI</span>
           </h1>
-          <p className="text-[11px] text-white/50">Sign in to unlock your tactical briefing</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/45">
+            Sign in to unlock your tactical briefing
+          </p>
         </div>
       </div>
 
       <button
         onClick={() => base44.auth.loginWithProvider("google", returnTo)}
-        className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 text-sm font-semibold text-white hover:bg-white/10"
+        className="mt-4 flex h-10 w-full items-center justify-center gap-2 border border-white/15 bg-white/5 text-xs font-bold uppercase tracking-wider text-white hover:bg-white/10"
       >
         <GoogleIcon className="h-4 w-4" /> Continue with Google
       </button>
 
-      <div className="relative my-4">
-        <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10" /></div>
-        <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
-          <span className="bg-slate-900 px-3 text-white/40">or</span>
+      <div className="relative my-3">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-dashed border-white/15" />
+        </div>
+        <div className="relative flex justify-center">
+          <span className="bg-slate-950 px-3 font-mono text-[9px] uppercase tracking-[0.2em] text-white/40">or</span>
         </div>
       </div>
 
       {error && (
-        <div className="mb-3 rounded-lg border border-rose-400/30 bg-rose-400/10 p-2.5 text-xs text-rose-300">{error}</div>
+        <div className="mb-2 border border-rose-400/30 bg-rose-400/10 p-2 font-mono text-[10px] text-rose-300">{error}</div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-2.5">
+      <form onSubmit={handleSubmit} className="space-y-2">
         <input
           type="email" required autoComplete="email" placeholder="Email" value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="h-11 w-full rounded-xl border border-white/10 bg-white/5 px-3.5 text-sm text-white placeholder-white/35 outline-none focus:border-emerald-400/60"
+          className="h-10 w-full border border-white/10 bg-white/[0.04] px-3 font-mono text-sm text-white outline-none placeholder:text-white/30 focus:border-emerald-400/60"
         />
         <input
           type="password" required autoComplete="current-password" placeholder="Password" value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="h-11 w-full rounded-xl border border-white/10 bg-white/5 px-3.5 text-sm text-white placeholder-white/35 outline-none focus:border-emerald-400/60"
+          className="h-10 w-full border border-white/10 bg-white/[0.04] px-3 font-mono text-sm text-white outline-none placeholder:text-white/30 focus:border-emerald-400/60"
         />
         <button
           type="submit" disabled={loading}
-          className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-emerald-400 text-sm font-bold text-slate-950 hover:bg-emerald-300 disabled:opacity-50"
+          className="flex h-10 w-full items-center justify-center gap-2 bg-emerald-400 text-xs font-bold uppercase tracking-[0.18em] text-slate-950 hover:bg-emerald-300 disabled:opacity-50"
         >
           {loading && <Loader2 className="h-4 w-4 animate-spin" />} Enter command center
         </button>
       </form>
 
-      <div className="mt-3 flex justify-between text-[11px] text-white/45">
+      <div className="mt-3 flex justify-between font-mono text-[10px] uppercase tracking-[0.12em] text-white/45">
         <Link to="/register" className="hover:text-emerald-300">Create account</Link>
         <Link to="/forgot-password" className="hover:text-emerald-300">Forgot password?</Link>
       </div>
-    </div>
+    </HudPanel>
   );
 }
