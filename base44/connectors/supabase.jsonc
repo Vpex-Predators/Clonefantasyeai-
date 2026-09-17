@@ -1,0 +1,14 @@
+{
+  "type": "supabase",
+  "scopes": [
+    "organizations:read",
+    "database:read",
+    "rest:read",
+    "auth:read",
+    "storage:read",
+    "edge_functions:read",
+    "environment:read",
+    "domains:read",
+    "secrets:read"
+  ]
+}
