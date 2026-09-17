@@ -25,7 +25,7 @@ export default async function(req) {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { league, season } = await fetchLeagueCurrent(['mTeam', 'mRoster']);
+    const { league, season } = await fetchLeagueCurrent(['mNav', 'mTeam', 'mRoster', 'mScoreboard']);
     const leagueName = (league.settings && league.settings.name) || 'ESPN League';
     const currentPeriod = (league.status && (league.status.currentMatchupPeriod || league.status.latestScoringPeriod)) || 1;
     const regSeasonPeriods = (league.settings && league.settings.scheduleSettings && league.settings.scheduleSettings.regSeasonMatchupPeriodCount) || 14;
@@ -61,6 +61,33 @@ export default async function(req) {
     }
     scoringTrend.sort((a, b) => a.week - b.week);
 
+    // Per-team weekly points (completed weeks only) — powers the opponent overlay
+    const weeklyScores = {};
+    for (const m of schedule) {
+      if (m.matchupPeriodId >= currentPeriod) continue;
+      for (const side of [m.home || {}, m.away || {}]) {
+        if (side.teamId == null) continue;
+        const id = String(side.teamId);
+        if (!weeklyScores[id]) weeklyScores[id] = [];
+        weeklyScores[id].push({ week: m.matchupPeriodId, points: round1(side.totalPoints) });
+      }
+    }
+
+    // My week-by-week head-to-head results (completed weeks only)
+    const headToHead = [];
+    for (const m of schedule) {
+      if (m.matchupPeriodId >= currentPeriod) continue;
+      const home = m.home || {};
+      const away = m.away || {};
+      let mine = null, opp = null, oppId = null;
+      if (String(home.teamId) === mySummary.id) { mine = round1(home.totalPoints); opp = round1(away.totalPoints); oppId = String(away.teamId); }
+      else if (String(away.teamId) === mySummary.id) { mine = round1(away.totalPoints); opp = round1(home.totalPoints); oppId = String(home.teamId); }
+      if (mine === null) continue;
+      const oppTeam = teams.find(t => t.id === oppId);
+      headToHead.push({ week: m.matchupPeriodId, mine, opp, oppId, oppName: oppTeam ? oppTeam.name : 'Unknown', win: mine > opp });
+    }
+    headToHead.sort((a, b) => a.week - b.week);
+
     // This week's opponent
     const currentMatchup = schedule.find(m =>
       m.matchupPeriodId === currentPeriod &&
@@ -91,7 +118,7 @@ export default async function(req) {
     // Free agents (best effort — the dashboard still loads without them)
     let freeAgents = [];
     try {
-      const faData = await espnFetch(`https://lm-api-reads.fantasy.espn.com/apis/v2/games/ffl/seasons/${season}/segments/0/leagues/${DEFAULT_LEAGUE_ID}?view=kona_player_info`);
+      const faData = await espnFetch(`https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${DEFAULT_LEAGUE_ID}?view=kona_player_info`);
       const pool = faData.players || (faData.leagues && faData.leagues[0] && faData.leagues[0].players) || [];
       freeAgents = pool.map(entry => {
         const player = (entry.playerPoolEntry && entry.playerPoolEntry.player) || {};
@@ -177,6 +204,8 @@ export default async function(req) {
         starters: roster.filter(p => p.isStarter).map(trimPlayer),
         bench: roster.filter(p => !p.isStarter).map(trimPlayer)
       },
+      headToHead,
+      weeklyScores,
       opponent,
       opponentStarters,
       freeAgents,

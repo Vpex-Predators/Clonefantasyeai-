@@ -37,9 +37,9 @@ export async function espnFetch(url) {
 }
 
 export async function fetchLeague(season, leagueId, views) {
-  const url = `https://lm-api-reads.fantasy.espn.com/apis/v2/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}?view=${views.join('&view=')}`;
+  const url = `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}?view=${views.join('&view=')}`;
   const data = await espnFetch(url);
-  const league = (data.leagues && data.leagues[0]) || (data.settings ? data : null);
+  const league = (data.leagues && data.leagues[0]) || ((data.teams || data.settings || data.id) ? data : null);
   if (!league) throw new Error('ESPN responded, but no league data was returned.');
   return league;
 }
@@ -86,7 +86,7 @@ export function parseTeamSummary(t) {
   const overall = (t.record && t.record.overall) || {};
   return {
     id: String(t.id),
-    name: [t.location, t.nickname].filter(Boolean).join(' ') || `Team ${t.id}`,
+    name: [t.location, t.nickname].filter(Boolean).join(' ') || t.name || `Team ${t.id}`,
     wins: overall.wins ?? 0,
     losses: overall.losses ?? 0,
     ties: overall.ties ?? 0,

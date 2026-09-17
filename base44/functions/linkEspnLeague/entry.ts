@@ -33,7 +33,7 @@ export default async function(req) {
 
     // site.api.espn.com rejects requests from the app's servers, so we use
     // ESPN's league-manager API, which accepts them.
-    const url = `https://lm-api-reads.fantasy.espn.com/apis/v2/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}?view=mTeam`;
+    const url = `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}?view=mTeam`;
     const espnRes = await fetch(url, {
       headers: {
         Cookie: `espn_s2=${espnS2}; SWID=${swid}`,

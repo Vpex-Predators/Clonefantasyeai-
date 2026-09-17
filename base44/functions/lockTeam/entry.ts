@@ -30,7 +30,7 @@ export default async function(req) {
     const { league } = await fetchLeagueCurrent(['mTeam']);
     const rawTeam = (league.teams || []).find(t => String(t.id) === teamId);
     if (!rawTeam) return Response.json({ error: 'That team is not in this league.' }, { status: 400 });
-    const teamName = [rawTeam.location, rawTeam.nickname].filter(Boolean).join(' ') || `Team ${teamId}`;
+    const teamName = [rawTeam.location, rawTeam.nickname].filter(Boolean).join(' ') || rawTeam.name || `Team ${teamId}`;
 
     await base44.asServiceRole.entities.TeamLock.create({
       user_id: user.id,

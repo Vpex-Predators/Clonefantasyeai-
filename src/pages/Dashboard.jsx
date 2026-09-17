@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react";
 import AppNavBar from "@/components/AppNavBar";
 import RefreshBar from "@/components/fantasy/dashboard/RefreshBar";
 import TeamLockOverlay from "@/components/fantasy/dashboard/TeamLockOverlay";
-import ScoringTrend from "@/components/fantasy/dashboard/ScoringTrend";
+import SeasonScoreChart from "@/components/fantasy/dashboard/SeasonScoreChart";
 import MatchupEngine from "@/components/fantasy/dashboard/MatchupEngine";
 import RosterCompare from "@/components/fantasy/dashboard/RosterCompare";
 import WaiverRadar from "@/components/fantasy/dashboard/WaiverRadar";
@@ -200,7 +200,12 @@ export default function Dashboard() {
           />
         </header>
 
-        <ScoringTrend trend={data.myTeam.scoringTrend} />
+        <SeasonScoreChart
+          myTeam={data.myTeam}
+          teams={data.teams}
+          headToHead={data.headToHead}
+          weeklyScores={data.weeklyScores}
+        />
 
         <MatchupEngine
           myTeam={data.myTeam}

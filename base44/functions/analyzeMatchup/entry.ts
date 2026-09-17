@@ -15,7 +15,7 @@ export default async function(req) {
     const lock = locks[0];
 
     // Always recompute from ESPN — never trust lineup data sent by the client.
-    const { league } = await fetchLeagueCurrent(['mTeam', 'mRoster']);
+    const { league } = await fetchLeagueCurrent(['mTeam', 'mRoster', 'mScoreboard']);
     const currentPeriod = (league.status && (league.status.currentMatchupPeriod || league.status.latestScoringPeriod)) || 1;
     const rawTeams = league.teams || [];
     const schedule = league.schedule || [];
