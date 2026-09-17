@@ -1,108 +1,130 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { ChevronRight, Loader2, ScanSearch } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import ScreenshotUpload from "@/components/fantasy/ScreenshotUpload";
-import AnalysisResult from "@/components/fantasy/AnalysisResult";
-import EspnLeagueLink from "@/components/fantasy/EspnLeagueLink";
+import { useAuth } from "@/lib/AuthContext";
+import { Loader2, LayoutDashboard, Calculator, Lock, Radar } from "lucide-react";
 import AppNavBar from "@/components/AppNavBar";
+import FloatingAuthCard from "@/components/fantasy/home/FloatingAuthCard";
+import MissionStats from "@/components/fantasy/home/MissionStats";
+import LeaguePulse from "@/components/fantasy/home/LeaguePulse";
+import AiAnalystPanel from "@/components/fantasy/home/AiAnalystPanel";
+
+function LockedSkeleton() {
+  return (
+    <div className="space-y-3" aria-hidden="true">
+      {[...Array(4)].map((_, i) => (
+        <div key={i} className="rounded-2xl border border-white/10 bg-white/5 p-4 opacity-40 blur-[3px]">
+          <div className="mb-2 h-2.5 w-32 rounded bg-white/25" />
+          <div className="space-y-1.5">
+            {[...Array(3)].map((_, j) => (
+              <div key={j} className="h-6 rounded-lg bg-white/15" />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function Home() {
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const { isAuthenticated, isLoadingAuth } = useAuth();
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [analysis, setAnalysis] = useState(null);
   const [error, setError] = useState(null);
 
-  const handleFileSelected = (selected) => {
-    if (preview) URL.revokeObjectURL(preview);
-    setFile(selected);
-    setPreview(URL.createObjectURL(selected));
-    setAnalysis(null);
-    setError(null);
-  };
-
-  const handleReset = () => {
-    if (preview) URL.revokeObjectURL(preview);
-    setFile(null);
-    setPreview(null);
-    setAnalysis(null);
-    setError(null);
-  };
-
-  const handleAnalyze = async () => {
-    if (!file) return;
-    setLoading(true);
-    setError(null);
-    setAnalysis(null);
-    try {
-      const { file_url } = await base44.integrations.Core.UploadPublicFile({ file });
-      const response = await base44.functions.invoke("analyzeScreenshot", { file_url });
-      setAnalysis(response.data);
-    } catch (err) {
-      setError(
-        (err.response?.data?.error) || err.message || "Something went wrong analyzing your screenshot."
-      );
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setData(null);
+      return;
     }
-  };
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await base44.functions.invoke("getDashboardData", {});
+        if (!cancelled) {
+          setData(res.data);
+          setError(null);
+        }
+      } catch (err) {
+        if (!cancelled) setError(err.response?.data?.error || err.message || "Could not load your briefing.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
+
+  const loadingBriefing = isLoadingAuth || (isAuthenticated && loading && !data);
 
   return (
-    <div className="min-h-screen bg-white text-slate-900">
-      <div className="mx-auto max-w-2xl px-4 pb-28 pt-10 sm:pt-14">
-        <header className="mb-8">
-          <h1 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">Fantasy Companion</h1>
-          <p className="mt-2 text-slate-500">
-            Snap a screenshot of your fantasy app — get instant start/sit, waiver, and trade advice.
-          </p>
-        </header>
+    <div className="relative min-h-screen overflow-hidden bg-slate-950 pb-28 text-white">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-emerald-500/15 via-emerald-500/5 to-transparent" />
+      <div className="relative mx-auto max-w-2xl space-y-5 px-4 pt-6">
+        <FloatingAuthCard />
 
-        <Link to="/analyst" className="mb-6 flex items-center justify-between rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3 hover:bg-emerald-100">
-          <span className="text-sm font-medium text-emerald-900">Need long-term numbers? Chat with the Trade Analyst</span>
-          <ChevronRight className="h-5 w-5 text-emerald-700" />
-        </Link>
-
-        <div className="space-y-6">
-          <EspnLeagueLink />
-
-          <ScreenshotUpload preview={preview} onFileSelected={handleFileSelected} onReset={handleReset} />
-
-          {file && !analysis && (
-            <Button
-              onClick={handleAnalyze}
-              disabled={loading}
-              className="w-full bg-slate-900 py-6 text-base font-semibold hover:bg-slate-800"
+        {loadingBriefing ? (
+          <div className="flex justify-center py-10">
+            <Loader2 className="h-7 w-7 animate-spin text-emerald-400" />
+          </div>
+        ) : !isAuthenticated ? (
+          <>
+            <p className="flex items-center justify-center gap-2 text-center text-xs text-white/45">
+              <Radar className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
+              Live playoff odds, matchup edge, and league pulse load here the moment you sign in.
+            </p>
+            <LockedSkeleton />
+          </>
+        ) : error ? (
+          <div className="rounded-xl border border-rose-400/30 bg-rose-400/10 p-3 text-sm text-rose-300">{error}</div>
+        ) : data && !data.locked ? (
+          <div className="rounded-2xl border border-emerald-400/25 bg-emerald-400/10 p-5 text-center">
+            <Lock className="mx-auto h-6 w-6 text-emerald-300" />
+            <p className="mt-2 text-sm font-semibold text-white">Lock in your team to activate the briefing</p>
+            <p className="mt-1 text-xs text-white/50">One-time verification anchors your account to your roster.</p>
+            <Link
+              to="/dashboard"
+              className="mt-3 inline-block rounded-full bg-emerald-400 px-5 py-2 text-xs font-bold text-slate-950 hover:bg-emerald-300"
             >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Reading your screen…
-                </>
-              ) : (
-                <>
-                  <ScanSearch className="mr-2 h-5 w-5" /> Analyze screenshot
-                </>
-              )}
-            </Button>
-          )}
+              Go to dashboard
+            </Link>
+          </div>
+        ) : data && data.locked ? (
+          <>
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-emerald-400/80">
+                {data.league.name} · Week {data.league.week}
+              </p>
+              <h2 className="mt-1 font-heading text-2xl font-bold tracking-tight">Mission briefing</h2>
+            </div>
 
-          {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>
-          )}
+            <MissionStats data={data} />
+            <LeaguePulse data={data} />
 
-          {analysis && <AnalysisResult analysis={analysis} />}
+            <div className="grid grid-cols-2 gap-2.5">
+              <Link
+                to="/dashboard"
+                className="rounded-2xl border border-white/10 bg-white/5 p-3.5 hover:border-emerald-400/40"
+              >
+                <LayoutDashboard className="h-4 w-4 text-emerald-300" />
+                <p className="mt-1.5 text-xs font-bold text-white">Command deck</p>
+                <p className="text-[10px] text-white/45">Full live dashboard</p>
+              </Link>
+              <Link
+                to="/analyst"
+                className="rounded-2xl border border-white/10 bg-white/5 p-3.5 hover:border-emerald-400/40"
+              >
+                <Calculator className="h-4 w-4 text-emerald-300" />
+                <p className="mt-1.5 text-xs font-bold text-white">Trade analyst</p>
+                <p className="text-[10px] text-white/45">Trade & waiver chat</p>
+              </Link>
+            </div>
 
-          {analysis && (
-            <Button
-              variant="outline"
-              onClick={handleReset}
-              className="w-full border-slate-300 text-slate-700 hover:bg-slate-100"
-            >
-              Analyze another screenshot
-            </Button>
-          )}
-        </div>
+            <AiAnalystPanel data={data} />
+          </>
+        ) : null}
       </div>
       <AppNavBar />
     </div>

@@ -1,8 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
-import { Camera, LayoutDashboard, Calculator } from "lucide-react";
+import { Crosshair, LayoutDashboard, Calculator } from "lucide-react";
 
 const ITEMS = [
-  { to: "/", label: "Analyze", icon: Camera },
+  { to: "/", label: "Command", icon: Crosshair },
   { to: "/dashboard", label: "My Team", icon: LayoutDashboard },
   { to: "/analyst", label: "Analyst", icon: Calculator },
 ];
