@@ -31,9 +31,16 @@ export default async function(req) {
       );
     }
 
-    const url = `https://site.api.espn.com/apis/fantasy/v2/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}?view=mTeam`;
+    // site.api.espn.com rejects requests from the app's servers, so we use
+    // ESPN's league-manager API, which accepts them.
+    const url = `https://lm-api-reads.fantasy.espn.com/apis/v2/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}?view=mTeam`;
     const espnRes = await fetch(url, {
-      headers: { Cookie: `espn_s2=${espnS2}; SWID=${swid}` }
+      headers: {
+        Cookie: `espn_s2=${espnS2}; SWID=${swid}`,
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
+        'Accept': 'application/json, text/plain, */*',
+        'Referer': 'https://fantasy.espn.com/'
+      }
     });
 
     if (!espnRes.ok) {
@@ -47,15 +54,19 @@ export default async function(req) {
     }
 
     const data = await espnRes.json();
-    const league = (data.leagues && data.leagues[0]) || {};
-    const leagueName = (league.settings && league.settings.name) || (data.settings && data.settings.name) || 'ESPN League';
+    const league = (data.leagues && data.leagues[0]) || (data.settings ? data : null);
+    if (!league) {
+      return Response.json({ error: 'ESPN responded, but no league data was returned. Verify the league ID and season year.' }, { status: 400 });
+    }
+
+    const leagueName = (league.settings && league.settings.name) || 'ESPN League';
     const rawTeams = data.teams || league.teams || [];
     const teams = rawTeams.map((t) => ({
       id: t.id,
       name: [t.location, t.nickname].filter(Boolean).join(' ') || t.name || `Team ${t.id}`
     }));
 
-    if (!leagueName || teams.length === 0) {
+    if (teams.length === 0) {
       return Response.json({ error: 'ESPN responded, but the league data was empty. Verify the league ID and that the stored cookies are still valid.' }, { status: 400 });
     }
 
