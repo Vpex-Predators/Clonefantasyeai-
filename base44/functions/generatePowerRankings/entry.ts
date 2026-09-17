@@ -5,8 +5,8 @@ import {
 } from '../../shared/espnLeague.js';
 import { computePlayoffOdds } from '../../shared/playoffOdds.js';
 
-const ALLOWED_MODELS = ['automatic', 'gemini_3_8_flash', 'gpt_5_6_luna', 'gpt_5_6_terra', 'gpt_5_6_sol', 'gpt_6_astra', 'claude-sonnet-5', 'claude_opus_5', 'claude_fable_5_1', 'glm_5_2'];
-const WEB_MODELS = new Set(['automatic', 'gemini_3_8_flash']);
+const ALLOWED_MODELS = ['automatic', 'gemini_3_flash', 'gemini_3_1_pro', 'gpt_5_mini', 'gpt_5_4', 'gpt_5_6_sol', 'gpt_5_6_luna', 'claude-sonnet-5', 'claude_opus_5', 'claude_opus_4_8'];
+const WEB_MODELS = new Set(['automatic', 'gemini_3_flash', 'gemini_3_1_pro']);
 
 function streakOf(results) {
   const sorted = results.slice().sort((a, b) => a.week - b.week);
