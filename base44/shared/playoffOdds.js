@@ -1,6 +1,7 @@
 // Shared playoff-odds engine: a per-matchup win-probability model plus a
 // 1,000-run Monte Carlo simulation of the remaining regular-season schedule.
-// Used by getDashboardData and analyzeBriefing.
+// Powers getDashboardData, analyzeBriefing, the War Room threat board and the
+// trade impact simulator.
 
 function normalCdf(x) {
   // Abramowitz & Stegun 7.1.26 error-function approximation.
@@ -39,13 +40,11 @@ function playBracket(field, profiles) {
   return round[0];
 }
 
-export function computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPeriods, playoffTeamCount = 6, myTeamId, gamesPlayed }) {
-  if (!teams || !teams.length) return null;
-
+// Per-team scoring profiles built from completed-week results.
+export function buildProfiles({ teams, schedule, currentPeriod, gamesPlayed }) {
   const teamById = {};
   for (const t of teams) teamById[t.id] = { ...t, games: [] };
 
-  // Completed-week scores feed each team's scoring profile.
   const allScores = [];
   for (const m of schedule || []) {
     if (m.matchupPeriodId >= currentPeriod) continue;
@@ -71,10 +70,33 @@ export function computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPe
     const std = pts.length >= 3 ? Math.max(5, Math.sqrt(pts.reduce((s, p) => s + (p - mean) ** 2, 0) / pts.length)) : leagueStd;
     profiles[t.id] = { mean, std };
   }
+  return { profiles, leagueMean, leagueStd };
+}
+
+// Chance team a outscores team b in a single meeting, from their profiles.
+export function pairwiseWinProb(profiles, a, b) {
+  return normalCdf((profiles[a].mean - profiles[b].mean) / Math.sqrt(profiles[a].std ** 2 + profiles[b].std ** 2));
+}
+
+export function computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPeriods, playoffTeamCount = 6, myTeamId, gamesPlayed, meanAdjust, forceMyWins = 0 }) {
+  if (!teams || !teams.length) return null;
+
+  const teamById = {};
+  for (const t of teams) teamById[t.id] = t;
+
+  const { profiles } = buildProfiles({ teams, schedule, currentPeriod, gamesPlayed });
+  // Trade simulator hook: shift a team's scoring mean by a lineup-level delta.
+  if (meanAdjust) {
+    for (const id of Object.keys(meanAdjust)) {
+      if (profiles[id]) profiles[id].mean = Math.max(20, profiles[id].mean + meanAdjust[id]);
+    }
+  }
 
   const wp = (a, b) => normalCdf((profiles[a].mean - profiles[b].mean) / Math.sqrt(profiles[a].std ** 2 + profiles[b].std ** 2));
 
-  const remaining = (schedule || []).filter(m => m.matchupPeriodId >= currentPeriod && m.matchupPeriodId <= regSeasonPeriods);
+  const remaining = (schedule || [])
+    .filter(m => m.matchupPeriodId >= currentPeriod && m.matchupPeriodId <= regSeasonPeriods)
+    .sort((a, b) => a.matchupPeriodId - b.matchupPeriodId);
 
   // Win-probability model view of my remaining schedule.
   const mineRemaining = [];
@@ -95,6 +117,17 @@ export function computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPe
       });
     }
     mineRemaining.sort((a, b) => a.week - b.week);
+  }
+
+  // Keep-ahead / trade analysis hook: my next N remaining games forced as wins.
+  let forcedPeriods = new Set();
+  if (myTeamId && forceMyWins > 0) {
+    const my = String(myTeamId);
+    forcedPeriods = new Set(remaining.filter(m => {
+      const a = String((m.home || {}).teamId ?? '');
+      const b = String((m.away || {}).teamId ?? '');
+      return a === my || b === my;
+    }).slice(0, forceMyWins));
   }
 
   // --- 1,000-run Monte Carlo over the remaining schedule ---
@@ -118,7 +151,11 @@ export function computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPe
       const sa = gauss(profiles[a].mean, profiles[a].std);
       const sb = gauss(profiles[b].mean, profiles[b].std);
       pts[a] += sa; pts[b] += sb;
-      if (sa > sb) wins[a] += 1; else if (sb > sa) wins[b] += 1;
+      if (forcedPeriods.has(m)) {
+        const my = String(myTeamId);
+        if (a === my) wins[a] += 1; else wins[b] += 1;
+      } else if (sa > sb) wins[a] += 1;
+      else if (sb > sa) wins[b] += 1;
     }
     const order = teams.map(t => t.id).sort((x, y) => (wins[y] - wins[x]) || (pts[y] - pts[x]));
     order.forEach((id, i) => {
@@ -158,4 +195,74 @@ export function computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPe
   })).sort((a, b) => (b.wins + b.ties * 0.5) - (a.wins + a.ties * 0.5) || b.playoffPct - a.playoffPct);
 
   return { sims, playoffTeamCount: count, race, mine };
+}
+
+// War Room threat board: ranks every opponent by how dangerous they are to my
+// season, and computes what it takes on the win column to stay ahead of the top threat.
+export function computeThreatBoard({ teams, schedule, currentPeriod, regSeasonPeriods, playoffTeamCount = 6, myTeamId, gamesPlayed }) {
+  const base = computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPeriods, playoffTeamCount, myTeamId, gamesPlayed });
+  if (!base || !base.mine) return null;
+
+  const myId = String(myTeamId);
+  const myRace = base.race.find(t => t.id === myId);
+  if (!myRace) return null;
+
+  const { profiles } = buildProfiles({ teams, schedule, currentPeriod, gamesPlayed });
+
+  const remaining = (schedule || []).filter(m => m.matchupPeriodId >= currentPeriod && m.matchupPeriodId <= regSeasonPeriods);
+  const meetingsLeft = {};
+  for (const m of remaining) {
+    const a = String((m.home || {}).teamId ?? '');
+    const b = String((m.away || {}).teamId ?? '');
+    if (a === myId && b && b !== myId) meetingsLeft[b] = (meetingsLeft[b] || 0) + 1;
+    else if (b === myId && a && a !== myId) meetingsLeft[a] = (meetingsLeft[a] || 0) + 1;
+  }
+
+  // Threat score: 45% simulated head-to-head edge + 35% their playoff odds + 20% their title odds.
+  const threats = base.race
+    .filter(t => t.id !== myId)
+    .map(t => {
+      const h2hPct = Math.round(pairwiseWinProb(profiles, t.id, myId) * 100);
+      return {
+        ...t,
+        h2hPct,
+        meetingsLeft: meetingsLeft[t.id] || 0,
+        threatScore: Math.round(0.45 * h2hPct + 0.35 * t.playoffPct + 0.20 * Math.min(100, t.titlePct * 3))
+      };
+    })
+    .sort((a, b) => b.threatScore - a.threatScore);
+
+  const myGamesLeft = remaining.filter(m => {
+    const a = String((m.home || {}).teamId ?? '');
+    const b = String((m.away || {}).teamId ?? '');
+    return a === myId || b === myId;
+  }).length;
+
+  const top = threats[0] || null;
+  let winsNeeded = 0;
+  if (top) winsNeeded = Math.min(myGamesLeft, Math.max(0, Math.ceil(top.avgWins - myRace.avgWins + 0.001)));
+
+  const target = computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPeriods, playoffTeamCount, myTeamId, gamesPlayed, forceMyWins: winsNeeded });
+
+  // My playoff odds as I stack up to four extra wins — the keep-ahead runway.
+  const progression = [];
+  const steps = Math.min(4, myGamesLeft);
+  for (let n = 0; n <= steps; n++) {
+    const o = computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPeriods, playoffTeamCount, myTeamId, gamesPlayed, forceMyWins: n });
+    progression.push({ wins: n, playoffPct: o.mine ? o.mine.playoffPct : null });
+  }
+
+  return {
+    sims: base.sims,
+    race: base.race,
+    mine: base.mine,
+    threats,
+    keepAhead: {
+      winsNeeded,
+      gamesLeft: myGamesLeft,
+      topThreat: top ? { id: top.id, name: top.name, avgWins: top.avgWins, playoffPct: top.playoffPct } : null,
+      oddsAtTarget: target.mine ? target.mine.playoffPct : null,
+      progression
+    }
+  };
 }
