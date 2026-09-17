@@ -5,6 +5,13 @@
     {
       "function_name": "linkEspnLeague",
       "description": "Pull live league information, rank standings, points, wins/losses, match up info, projections, player stats and injury news, questionable status, "
+    },
+    {
+      "entity_name": "EspnLeague",
+      "allowed_operations": [
+        "read",
+        "update"
+      ]
     }
   ],
   "context_files": [],
