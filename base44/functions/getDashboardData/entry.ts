@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import {
-  DEFAULT_LEAGUE_ID, espnFetch, fetchLeagueCurrent, POSITION_BY_ID,
-  parseTeamSummary, parseTeamRoster, leaguePeriods, statValue, round1
+  DEFAULT_LEAGUE_ID, fetchLeagueCurrent, fetchFreeAgents,
+  parseTeamSummary, parseTeamRoster, leaguePeriods, round1
 } from '../../shared/espnLeague.js';
 import { computePlayoffOdds } from '../../shared/playoffOdds.js';
 
@@ -119,31 +119,7 @@ export default async function(req) {
     // Free agents (best effort — the dashboard still loads without them)
     let freeAgents = [];
     try {
-      // ESPN requires the X-Fantasy-Filter header for this view — without it the call fails.
-      const faFilter = JSON.stringify({
-        players: {
-          limit: 50,
-          sortPercOwned: { sortAsc: false, sortPriority: 1 },
-          filterStatus: { value: ['FREEAGENT', 'WAIVERS'] }
-        }
-      });
-      const faData = await espnFetch(
-        `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${DEFAULT_LEAGUE_ID}?view=kona_player_info&scoringPeriodId=${currentPeriod}`,
-        { 'X-Fantasy-Filter': faFilter }
-      );
-      const pool = faData.players || [];
-      // These entries carry the player directly on `player` (no playerPoolEntry wrapper).
-      freeAgents = pool.map(entry => {
-        const player = (entry.playerPoolEntry && entry.playerPoolEntry.player) || entry.player || {};
-        return {
-          id: String(player.id ?? ''),
-          name: player.fullName || 'Unknown',
-          position: POSITION_BY_ID[player.defaultPositionId] || player.defaultPosition || '',
-          injuryStatus: player.injuryStatus || 'ACTIVE',
-          seasonProj: round1(statValue(player, 1, 0) || statValue(player, 0, 0)),
-          weeklyProj: round1(statValue(player, 1, currentPeriod))
-        };
-      }).filter(p => p.id)
+      freeAgents = (await fetchFreeAgents(season, DEFAULT_LEAGUE_ID, currentPeriod, 50))
         .sort((a, b) => (b.weeklyProj - a.weeklyProj) || (b.seasonProj - a.seasonProj))
         .slice(0, 15);
     } catch (e) { /* waiver wire data unavailable — skip */ }

@@ -76,6 +76,34 @@ export function statValue(player, sourceId, periodId) {
   return entry ? (entry.appliedTotal ?? 0) : 0;
 }
 
+// Free agents on the league wire — ESPN requires the X-Fantasy-Filter header for this view.
+export async function fetchFreeAgents(season, leagueId, currentPeriod, limit = 50) {
+  const faFilter = JSON.stringify({
+    players: {
+      limit,
+      sortPercOwned: { sortAsc: false, sortPriority: 1 },
+      filterStatus: { value: ['FREEAGENT', 'WAIVERS'] }
+    }
+  });
+  const data = await espnFetch(
+    `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}?view=kona_player_info&scoringPeriodId=${currentPeriod}`,
+    { 'X-Fantasy-Filter': faFilter }
+  );
+  // These entries carry the player directly on `player` (no playerPoolEntry wrapper).
+  return ((data.players || []).map(entry => {
+    const player = (entry.playerPoolEntry && entry.playerPoolEntry.player) || entry.player || {};
+    return {
+      id: String(player.id ?? ''),
+      name: player.fullName || 'Unknown',
+      position: POSITION_BY_ID[player.defaultPositionId] || player.defaultPosition || '',
+      injuryStatus: player.injuryStatus || 'ACTIVE',
+      percentOwned: (player.ownership && player.ownership.percentOwned) || (entry.playerPoolEntry && entry.playerPoolEntry.percentOwned) || 0,
+      seasonProj: round1(statValue(player, 1, 0) || statValue(player, 0, 0)),
+      weeklyProj: round1(statValue(player, 1, currentPeriod))
+    };
+  }).filter(p => p.id));
+}
+
 export function weeklyTrend(player, maxPeriod) {
   const actuals = (player && Array.isArray(player.stats) ? player.stats : [])
     .filter(s => s.statSourceId === 0 && s.scoringPeriodId > 0 && s.scoringPeriodId <= maxPeriod)

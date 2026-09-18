@@ -238,7 +238,7 @@ export default function Dashboard() {
           analyzing={analyzing}
         />
 
-        <WaiverRadar freeAgents={data.freeAgents} bench={data.myTeam.bench} />
+        <WaiverRadar freeAgents={data.freeAgents} bench={data.myTeam.bench} starters={data.myTeam.starters} />
 
         <PlayoffRunway playoffOdds={data.playoffOdds} />
 

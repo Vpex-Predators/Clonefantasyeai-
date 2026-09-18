@@ -68,6 +68,52 @@ function ToolCallDisplay({ toolCall }) {
   );
 }
 
+// Splits an analyst reply into the brief answer plus its collapsible
+// "Sources" and "The numbers" sections (the agent writes these as headings).
+function AssistantContent({ content }) {
+  const [openSection, setOpenSection] = useState(null);
+
+  const markers = [];
+  const numbersMatch = content.match(/^#{1,6}\s*the numbers\s*$/im);
+  const sourcesMatch = content.match(/^#{1,6}\s*sources?\s*$/im);
+  if (numbersMatch) markers.push({ key: "numbers", index: numbersMatch.index });
+  if (sourcesMatch) markers.push({ key: "sources", index: sourcesMatch.index });
+  markers.sort((a, b) => a.index - b.index);
+
+  const main = markers.length ? content.slice(0, markers[0].index).trim() : content;
+  const sectionText = key => {
+    const start = markers.findIndex(m => m.key === key);
+    if (start === -1) return "";
+    const end = start + 1 < markers.length ? markers[start + 1].index : content.length;
+    return content.slice(markers[start].index, end).trim();
+  };
+
+  return (
+    <div>
+      <ReactMarkdown className="prose prose-sm max-w-none text-sm">{main}</ReactMarkdown>
+      {markers.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {markers.map(m => (
+            <button
+              key={m.key}
+              onClick={() => setOpenSection(openSection === m.key ? null : m.key)}
+              className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-500 transition-colors hover:bg-slate-100"
+            >
+              {openSection === m.key ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+              {m.key === "sources" ? "Sources" : "The numbers"}
+            </button>
+          ))}
+        </div>
+      )}
+      {openSection && (
+        <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+          <ReactMarkdown className="prose prose-sm max-w-none text-xs text-slate-600">{sectionText(openSection)}</ReactMarkdown>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function MessageBubble({ message }) {
   const isUser = message.role === "user";
   return (
@@ -78,7 +124,7 @@ export default function MessageBubble({ message }) {
         {message.content && (
           isUser
             ? <p className="whitespace-pre-wrap text-sm">{message.content}</p>
-            : <ReactMarkdown className="prose prose-sm max-w-none text-sm">{message.content}</ReactMarkdown>
+            : <AssistantContent content={message.content} />
         )}
         {message.tool_calls?.map((toolCall, i) => <ToolCallDisplay key={i} toolCall={toolCall} />)}
       </div>
