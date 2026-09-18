@@ -220,6 +220,7 @@ export default function Dashboard() {
           myTeam={data.myTeam}
           opponent={data.opponent}
           opponentStarters={data.opponentStarters}
+          opponentBench={data.opponentBench}
           matchup={matchup}
           week={data.league.week}
           analyzing={analyzing}

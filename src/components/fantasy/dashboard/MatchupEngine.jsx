@@ -16,8 +16,35 @@ function matchupRows(mine, theirs) {
     .map(l => ({ label: l, mine: mineBy[l], theirs: theirsBy[l] }));
 }
 
-export default function MatchupEngine({ myTeam, opponent, opponentStarters, matchup, week, analyzing, onAnalyze, pending, onSeen }) {
+// One grid row: my player | position | opponent player, with projections on the edges.
+function PlayerRow({ mine, theirs, label }) {
+  const both = mine && theirs;
+  const mineWins = both && (mine.weeklyProj || 0) >= (theirs.weeklyProj || 0);
+  return (
+    <div className="flex items-center gap-1 text-[11px]">
+      <span className={`w-7 shrink-0 font-mono text-left ${both && mineWins ? "font-semibold text-emerald-300" : "text-white/60"}`}>
+        {mine ? (mine.weeklyProj || 0).toFixed(1) : "—"}
+      </span>
+      <span className="flex min-w-0 flex-1 items-center gap-1">
+        <span className="truncate text-white/75">{mine ? mine.name : "—"}</span>
+        {mine && <InjuryBadge status={mine.injuryStatus} />}
+      </span>
+      <span className="w-10 shrink-0 text-center font-semibold text-white/45">{label}</span>
+      <span className="flex min-w-0 flex-1 items-center justify-end gap-1">
+        {theirs && <InjuryBadge status={theirs.injuryStatus} />}
+        <span className="truncate text-white/45">{theirs ? theirs.name : "—"}</span>
+      </span>
+      <span className={`w-7 shrink-0 font-mono text-right ${both && !mineWins ? "font-semibold text-rose-300" : "text-white/60"}`}>
+        {theirs ? (theirs.weeklyProj || 0).toFixed(1) : "—"}
+      </span>
+    </div>
+  );
+}
+
+export default function MatchupEngine({ myTeam, opponent, opponentStarters, opponentBench, matchup, week, analyzing, onAnalyze, pending, onSeen }) {
   const rows = matchupRows(myTeam.starters || [], opponentStarters || []);
+  const myBench = myTeam.bench || [];
+  const oppBench = opponentBench || [];
   const myTotal = parseFloat((myTeam.starters || []).reduce((s, p) => s + (p.weeklyProj || 0), 0).toFixed(1));
   const oppTotal = parseFloat((opponentStarters || []).reduce((s, p) => s + (p.weeklyProj || 0), 0).toFixed(1));
   const myPct = Math.round((myTotal / Math.max(myTotal + oppTotal, 1)) * 100);
@@ -58,32 +85,22 @@ export default function MatchupEngine({ myTeam, opponent, opponentStarters, matc
             <div className="flex-1 bg-rose-400/70" />
           </div>
 
-          <div className="mt-3 space-y-1">
-            {rows.map(r => {
-              const both = r.mine && r.theirs;
-              const mineWins = both && (r.mine.weeklyProj || 0) >= (r.theirs.weeklyProj || 0);
-              return (
-                <div key={r.label} className="flex items-center gap-1.5 text-[11px]">
-                  <span className={`w-8 shrink-0 font-mono text-left ${mineWins ? "font-semibold text-emerald-300" : "text-white/60"}`}>
-                    {r.mine ? (r.mine.weeklyProj || 0).toFixed(1) : "—"}
-                  </span>
-                  <span className="w-9 shrink-0 text-center font-semibold text-white/45">{r.label}</span>
-                  <div className="flex min-w-0 flex-1 items-center justify-between gap-1">
-                    <span className="flex min-w-0 items-center gap-1">
-                      <span className="truncate text-white/75">{r.mine ? r.mine.name : "—"}</span>
-                      {r.mine && <InjuryBadge status={r.mine.injuryStatus} />}
-                    </span>
-                    <span className="flex min-w-0 items-center gap-1">
-                      {r.theirs && <InjuryBadge status={r.theirs.injuryStatus} />}
-                      <span className="truncate text-white/45">{r.theirs ? r.theirs.name : "—"}</span>
-                    </span>
-                  </div>
-                  <span className={`w-8 shrink-0 font-mono text-right ${both && !mineWins ? "font-semibold text-rose-300" : "text-white/60"}`}>
-                    {r.theirs ? (r.theirs.weeklyProj || 0).toFixed(1) : "—"}
-                  </span>
-                </div>
-              );
-            })}
+          <div className="mt-3 space-y-1.5">
+            {rows.map(r => (
+              <PlayerRow key={r.label} mine={r.mine} theirs={r.theirs} label={r.label} />
+            ))}
+          </div>
+
+          <div className="my-3 flex items-center gap-2">
+            <span className="h-px flex-1 bg-white/15" />
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-white/40">Bench</span>
+            <span className="h-px flex-1 bg-white/15" />
+          </div>
+
+          <div className="space-y-1.5">
+            {Array.from({ length: Math.max(myBench.length, oppBench.length) }).map((_, i) => (
+              <PlayerRow key={i} mine={myBench[i]} theirs={oppBench[i]} label="BE" />
+            ))}
           </div>
 
           <div className="mt-3 border-t border-white/10 pt-3">

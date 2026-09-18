@@ -95,6 +95,7 @@ export default async function(req) {
     );
     let opponent = null;
     let opponentStarters = [];
+    let opponentBench = [];
     if (currentMatchup) {
       const oppId = String(currentMatchup.home.teamId) === mySummary.id ? String(currentMatchup.away.teamId) : String(currentMatchup.home.teamId);
       const oppRaw = rawTeams.find(t => String(t.id) === oppId);
@@ -108,9 +109,10 @@ export default async function(req) {
           pointsFor: oppSummary.pointsFor,
           avgPoints: round1(oppSummary.pointsFor / gamesPlayed)
         };
-        opponentStarters = parseTeamRoster(oppRaw, currentPeriod)
-          .filter(p => p.isStarter)
-          .map(p => ({ id: p.id, name: p.name, position: p.position, weeklyProj: p.weeklyProj, injuryStatus: p.injuryStatus }));
+        const oppRoster = parseTeamRoster(oppRaw, currentPeriod);
+        const trimOpp = p => ({ id: p.id, name: p.name, position: p.position, slot: p.slot, weeklyProj: p.weeklyProj, injuryStatus: p.injuryStatus });
+        opponentStarters = oppRoster.filter(p => p.isStarter).map(trimOpp);
+        opponentBench = oppRoster.filter(p => !p.isStarter).map(trimOpp);
       }
     }
 
@@ -198,6 +200,7 @@ export default async function(req) {
       weeklyScores,
       opponent,
       opponentStarters,
+      opponentBench,
       freeAgents,
       playoffOdds,
       lastRefresh: now,
