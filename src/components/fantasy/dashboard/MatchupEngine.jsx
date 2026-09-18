@@ -60,7 +60,6 @@ export default function MatchupEngine({ myTeam, opponent, opponentStarters, oppo
   const myTotal = parseFloat((myTeam.starters || []).reduce((s, p) => s + effectivePoints(p), 0).toFixed(1));
   const oppTotal = parseFloat((opponentStarters || []).reduce((s, p) => s + effectivePoints(p), 0).toFixed(1));
   const myPct = Math.round((myTotal / Math.max(myTotal + oppTotal, 1)) * 100);
-  const liveGames = [...(myTeam.starters || []), ...(opponentStarters || [])].filter(p => p && p.livePoints != null).length;
   const ai = matchup?.matchup;
   const oppPending = opponent && (pending || []).includes("opp:" + opponent.id);
 
@@ -78,23 +77,12 @@ export default function MatchupEngine({ myTeam, opponent, opponentStarters, oppo
           NEW
         </span>
       )}
-      <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="font-heading text-sm font-bold uppercase tracking-widest text-white/80">Week {week} matchup</h2>
-        <span className="text-[10px] text-white/40">
-          {myTotal} vs {oppTotal} {liveGames > 0 ? "· live, actual pts" : "proj"}
-        </span>
-      </div>
+      <h2 className="mb-3 font-heading text-sm font-bold uppercase tracking-widest text-white/80">Week {week} matchup</h2>
 
       {!opponent ? (
         <p className="text-xs text-white/50">No matchup this week (bye).</p>
       ) : (
         <>
-          <div className="flex items-center justify-between gap-2 text-xs font-semibold">
-            <span className="max-w-[42%] truncate text-emerald-300">{myTeam.name}</span>
-            <span className="shrink-0 text-[10px] font-normal text-white/40">{myTeam.wins}-{myTeam.losses} · {opponent.wins}-{opponent.losses}</span>
-            <span className="max-w-[42%] truncate text-right text-rose-300">{opponent.name}</span>
-          </div>
-
           <div className="mt-2 flex h-1.5 overflow-hidden rounded-full bg-white/10">
             <div className="bg-emerald-400" style={{ width: myPct + "%" }} />
             <div className="flex-1 bg-rose-400/70" />

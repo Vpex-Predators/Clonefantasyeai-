@@ -174,6 +174,12 @@ export default function Dashboard() {
     );
   }
 
+  // This week's headline score: actual points for games live/over, projections before kickoff.
+  const eff = p => (p.livePoints != null ? p.livePoints : (p.weeklyProj || 0));
+  const myScore = (data.myTeam.starters || []).reduce((s, p) => s + eff(p), 0);
+  const oppScore = (data.opponentStarters || []).reduce((s, p) => s + eff(p), 0);
+  const anyLive = [...(data.myTeam.starters || []), ...(data.opponentStarters || [])].some(p => p.livePoints != null);
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950 pb-28 text-white">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-emerald-500/15 via-emerald-500/5 to-transparent" />
@@ -182,32 +188,53 @@ export default function Dashboard() {
           <div className="rounded-xl border border-rose-400/30 bg-rose-400/10 p-3 text-sm text-rose-300">{error}</div>
         )}
 
-        <header className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-emerald-400/80">
+        <header>
+          <div className="flex items-start justify-between gap-3">
+            <p className="pt-1 text-[11px] font-semibold uppercase tracking-widest text-emerald-400/80">
               {data.league.name} · Week {data.league.week}
             </p>
-            <h1 className="font-heading text-3xl font-bold tracking-tight">{data.myTeam.name}</h1>
-            <p className="mt-1 text-sm text-white/60">
-              {data.myTeam.wins}-{data.myTeam.losses} record · {data.myTeam.pointsFor} pts for · {data.myTeam.pointsAgainst} against
-            </p>
+            <div className="flex flex-col items-end gap-1.5">
+              <RefreshBar
+                lastRefresh={data.lastRefresh}
+                refreshing={refreshing}
+                analyzing={analyzing}
+                pendingCount={(data.pending || []).length}
+                onRefresh={refreshAll}
+              />
+              <button
+                onClick={() => base44.auth.logout()}
+                className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-white/40 transition-colors hover:text-rose-300"
+              >
+                <LogOut className="h-3 w-3" />
+                Log out
+              </button>
+            </div>
           </div>
-          <div className="flex flex-col items-end gap-1.5">
-            <RefreshBar
-              lastRefresh={data.lastRefresh}
-              refreshing={refreshing}
-              analyzing={analyzing}
-              pendingCount={(data.pending || []).length}
-              onRefresh={refreshAll}
-            />
-            <button
-              onClick={() => base44.auth.logout()}
-              className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-white/40 transition-colors hover:text-rose-300"
-            >
-              <LogOut className="h-3 w-3" />
-              Log out
-            </button>
+
+          <div className="mt-2 flex items-end justify-center gap-4">
+            <div className="min-w-0 flex-1 text-center">
+              <p className="font-mono text-4xl font-bold leading-none text-emerald-300">{myScore.toFixed(1)}</p>
+              <p className="mt-1 truncate text-xs font-semibold text-emerald-300/90">{data.myTeam.name}</p>
+              <p className="text-[10px] text-white/40">{data.myTeam.wins}-{data.myTeam.losses} record</p>
+            </div>
+            <span className="shrink-0 bg-gradient-to-r from-emerald-400 to-rose-400 bg-clip-text pb-1 font-heading text-xl font-bold italic tracking-widest text-transparent">
+              VS
+            </span>
+            <div className="min-w-0 flex-1 text-center">
+              <p className="font-mono text-4xl font-bold leading-none text-rose-300">
+                {data.opponent ? oppScore.toFixed(1) : "—"}
+              </p>
+              <p className="mt-1 truncate text-xs font-semibold text-rose-300/90">
+                {data.opponent ? data.opponent.name : "Bye week"}
+              </p>
+              {data.opponent && (
+                <p className="text-[10px] text-white/40">{data.opponent.wins}-{data.opponent.losses} record</p>
+              )}
+            </div>
           </div>
+          <p className="mt-1.5 text-center text-[10px] text-white/40">
+            {anyLive ? "live — actual points lock in as games finish" : "projected totals"}
+          </p>
         </header>
 
         <div className="flex rounded-full border border-white/10 bg-white/5 p-1">
@@ -230,12 +257,21 @@ export default function Dashboard() {
         </div>
 
         {tab === "season" ? (
-          <SeasonScoreChart
-            myTeam={data.myTeam}
-            teams={data.teams}
-            headToHead={data.headToHead}
-            weeklyScores={data.weeklyScores}
-          />
+          <>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-sm text-white/70">
+                Season totals: <span className="font-semibold text-white">{data.myTeam.pointsFor} pts for</span> ·{" "}
+                <span className="font-semibold text-white">{data.myTeam.pointsAgainst} against</span>
+              </p>
+              <p className="mt-0.5 text-[10px] text-white/40">Starters-only scoring across completed weeks.</p>
+            </div>
+            <SeasonScoreChart
+              myTeam={data.myTeam}
+              teams={data.teams}
+              headToHead={data.headToHead}
+              weeklyScores={data.weeklyScores}
+            />
+          </>
         ) : (
           <>
             <MatchupEngine
