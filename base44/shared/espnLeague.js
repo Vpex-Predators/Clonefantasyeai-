@@ -115,4 +115,17 @@ export function parseRosterPlayer(entry, currentPeriod) {
   };
 }
 
+// Current matchup period + regular-season length, derived from the live league payload.
+export function leaguePeriods(league) {
+  return {
+    currentPeriod: (league.status && (league.status.currentMatchupPeriod || league.status.latestScoringPeriod)) || 1,
+    regSeasonPeriods: (league.settings && league.settings.scheduleSettings && league.settings.scheduleSettings.regSeasonMatchupPeriodCount) || 14
+  };
+}
+
+// Full parsed roster (starters + bench) for one raw ESPN team.
+export function parseTeamRoster(rawTeam, currentPeriod) {
+  return ((rawTeam && rawTeam.roster && rawTeam.roster.entries) || []).map(e => parseRosterPlayer(e, currentPeriod));
+}
+
 export const PLAYBOOK_MODEL = 'Weighted decision model — apply to every call: Projections 30% + Matchup 25% + Injury risk 20% + Recent form (last 3 games) 15% + Schedule strength 10% = weighted edge in fantasy points. Confidence: HIGH if edge > 15 points, MEDIUM if edge > 5 points, LOW otherwise. Also weigh the player\'s QB situation and their history with their QB (target share, chemistry, recent game logs together).';

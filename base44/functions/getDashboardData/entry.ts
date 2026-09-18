@@ -1,8 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import {
   DEFAULT_LEAGUE_ID, espnFetch, fetchLeagueCurrent,
-  parseTeamSummary, parseRosterPlayer, statValue, round1
+  parseTeamSummary, parseTeamRoster, leaguePeriods, statValue, round1
 } from '../../shared/espnLeague.js';
+import { computePlayoffOdds } from '../../shared/playoffOdds.js';
 
 function trimPlayer(p) {
   return {
@@ -27,8 +28,7 @@ export default async function(req) {
 
     const { league, season } = await fetchLeagueCurrent(['mNav', 'mTeam', 'mRoster', 'mScoreboard']);
     const leagueName = (league.settings && league.settings.name) || 'ESPN League';
-    const currentPeriod = (league.status && (league.status.currentMatchupPeriod || league.status.latestScoringPeriod)) || 1;
-    const regSeasonPeriods = (league.settings && league.settings.scheduleSettings && league.settings.scheduleSettings.regSeasonMatchupPeriodCount) || 14;
+    const { currentPeriod, regSeasonPeriods } = leaguePeriods(league);
     const rawTeams = league.teams || [];
     const teams = rawTeams.map(parseTeamSummary);
     const schedule = league.schedule || [];
@@ -49,7 +49,7 @@ export default async function(req) {
     const mySummary = teams.find(t => t.id === String(lock.team_id));
     if (!mySummary) return Response.json({ error: 'Your locked team is no longer in this league. Ask the admin to fix your pick.' }, { status: 400 });
     const myRaw = rawTeams.find(t => String(t.id) === String(lock.team_id));
-    const roster = ((myRaw.roster && myRaw.roster.entries) || []).map(e => parseRosterPlayer(e, currentPeriod));
+    const roster = parseTeamRoster(myRaw, currentPeriod);
 
     // Season scoring trend from the schedule
     const scoringTrend = [];
@@ -108,8 +108,7 @@ export default async function(req) {
           pointsFor: oppSummary.pointsFor,
           avgPoints: round1(oppSummary.pointsFor / gamesPlayed)
         };
-        opponentStarters = ((oppRaw.roster && oppRaw.roster.entries) || [])
-          .map(e => parseRosterPlayer(e, currentPeriod))
+        opponentStarters = parseTeamRoster(oppRaw, currentPeriod)
           .filter(p => p.isStarter)
           .map(p => ({ id: p.id, name: p.name, position: p.position, weeklyProj: p.weeklyProj, injuryStatus: p.injuryStatus }));
       }
@@ -135,22 +134,10 @@ export default async function(req) {
         .slice(0, 15);
     } catch (e) { /* waiver wire data unavailable — skip */ }
 
-    // Playoff runway: last four weeks of the regular season
     const leagueAvgPoints = teams.length ? round1(teams.reduce((s, t) => s + t.pointsFor, 0) / teams.length / gamesPlayed) : 0;
-    const playoff = [];
-    for (let w = Math.max(1, regSeasonPeriods - 3); w <= regSeasonPeriods; w++) {
-      const m = schedule.find(x => x.matchupPeriodId === w &&
-        (String((x.home || {}).teamId) === mySummary.id || String((x.away || {}).teamId) === mySummary.id));
-      if (!m) continue;
-      const oppId = String(m.home.teamId) === mySummary.id ? String(m.away.teamId) : String(m.home.teamId);
-      const opp = teams.find(t => t.id === oppId);
-      if (opp) {
-        playoff.push({
-          week: w,
-          opponent: { id: opp.id, name: opp.name, wins: opp.wins, losses: opp.losses, avgPoints: round1(opp.pointsFor / gamesPlayed) }
-        });
-      }
-    }
+
+    // Playoff odds: per-matchup win-probability model + 1,000-run season simulation
+    const playoffOdds = computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPeriods, myTeamId: mySummary.id, gamesPlayed });
 
     // Live-data diff: which items changed since the user's last refresh
     const signatures = {};
@@ -167,8 +154,11 @@ export default async function(req) {
       pending = Array.from(new Set(oldPending.filter(k => k in signatures).concat(changed)));
     }
     const stateRecord = { user_id: user.id, league_id: DEFAULT_LEAGUE_ID, last_refresh: now, signatures, pending };
-    if (state) await base44.asServiceRole.entities.RefreshState.update(state.id, stateRecord);
-    else await base44.asServiceRole.entities.RefreshState.create(stateRecord);
+    try {
+      // Best effort — a failure here must never block the briefing itself.
+      if (state) await base44.asServiceRole.entities.RefreshState.update(state.id, stateRecord);
+      else await base44.asServiceRole.entities.RefreshState.create(stateRecord);
+    } catch (e) { /* refresh-state persistence unavailable — skip */ }
 
     // Attach each user's cached AI verdicts to their roster players
     const analyses = await base44.asServiceRole.entities.PlayerAnalysis.filter({ user_id: user.id });
@@ -191,7 +181,7 @@ export default async function(req) {
       locked: true,
       league: { id: DEFAULT_LEAGUE_ID, name: leagueName, season, week: currentPeriod, leagueAvgPoints },
       lock: { team_id: String(lock.team_id), team_name: lock.team_name, espn_email: lock.espn_email, birthday: lock.birthday },
-      teams: teams.map(t => ({ id: t.id, name: t.name })),
+      teams: teams.map(t => ({ id: t.id, name: t.name, wins: t.wins, losses: t.losses, ties: t.ties, pointsFor: t.pointsFor })),
       myTeam: {
         id: mySummary.id,
         name: mySummary.name,
@@ -209,7 +199,7 @@ export default async function(req) {
       opponent,
       opponentStarters,
       freeAgents,
-      playoff,
+      playoffOdds,
       lastRefresh: now,
       pending
     });

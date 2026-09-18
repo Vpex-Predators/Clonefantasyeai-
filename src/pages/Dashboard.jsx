@@ -230,7 +230,7 @@ export default function Dashboard() {
 
         <WaiverRadar freeAgents={data.freeAgents} bench={data.myTeam.bench} />
 
-        <PlayoffRunway playoff={data.playoff} leagueAvgPoints={data.league.leagueAvgPoints} />
+        <PlayoffRunway playoffOdds={data.playoffOdds} />
 
         <AdminPanel isAdmin={user?.role === "admin"} teams={data.teams} />
       </div>

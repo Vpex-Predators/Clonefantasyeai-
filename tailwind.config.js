@@ -69,6 +69,24 @@ module.exports = {
   			mono: ['var(--font-mono)']
   		},
   		keyframes: {
+  			'fade-up': {
+  				'0%': {
+  					opacity: '0',
+  					transform: 'translateY(14px)'
+  				},
+  				'100%': {
+  					opacity: '1',
+  					transform: 'translateY(0)'
+  				}
+  			},
+  			'float-slow': {
+  				'0%, 100%': {
+  					transform: 'translate3d(0, 0, 0) scale(1)'
+  				},
+  				'50%': {
+  					transform: 'translate3d(24px, -18px, 0) scale(1.1)'
+  				}
+  			},
   			'accordion-down': {
   				from: {
   					height: '0'
@@ -87,6 +105,8 @@ module.exports = {
   			}
   		},
   		animation: {
+  			'fade-up': 'fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both',
+  			'float-slow': 'float-slow 16s ease-in-out infinite',
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out'
   		}
