@@ -8,7 +8,7 @@ export function defaultSeason() {
   return now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1;
 }
 
-export async function espnFetch(url) {
+export async function espnFetch(url, extraHeaders = {}) {
   const espnS2 = secrets.get('ESPN_S2');
   const swid = secrets.get('ESPN_SWID');
   if (!espnS2 || !swid) {
@@ -19,7 +19,8 @@ export async function espnFetch(url) {
       Cookie: `espn_s2=${espnS2}; SWID=${swid}`,
       'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
       'Accept': 'application/json, text/plain, */*',
-      'Referer': 'https://fantasy.espn.com/'
+      'Referer': 'https://fantasy.espn.com/',
+      ...extraHeaders
     }
   });
   if (!res.ok) {
@@ -63,6 +64,7 @@ export async function fetchLeagueCurrent(views) {
 
 export const SLOT_LABELS = { 0: 'QB', 2: 'RB', 3: 'RB/WR', 4: 'WR', 5: 'WR/TE', 6: 'TE', 7: 'OP', 16: 'DST', 17: 'K', 20: 'BE', 21: 'IR', 23: 'FLEX' };
 export const BENCH_SLOTS = [20, 21];
+export const POSITION_BY_ID = { 1: 'QB', 2: 'RB', 3: 'WR', 4: 'TE', 5: 'K', 16: 'D/ST' };
 
 export function round1(value) {
   return Math.round((Number(value) || 0) * 10) / 10;
