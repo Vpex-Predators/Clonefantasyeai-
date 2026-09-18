@@ -1,6 +1,40 @@
 {
   "auth": "oauth",
+  "login_path": null,
+  "consent_path": null,
   "tools": {
+    "excluded_agents": [],
+    "entity_overrides": {
+      "EspnLeague": {
+        "operations": [
+          "read",
+          "create"
+        ],
+        "description": null
+      },
+      "PlayerAnalysis": {
+        "operations": [
+          "read",
+          "create"
+        ],
+        "description": null
+      },
+      "RefreshState": {
+        "operations": [
+          "read",
+          "create",
+          "update"
+        ],
+        "description": null
+      },
+      "TeamLock": {
+        "operations": [
+          "read",
+          "create"
+        ],
+        "description": null
+      }
+    },
     "functions": [
       {
         "name": "analyze_fantasy_screenshot",
@@ -14,14 +48,18 @@
               "description": "Public https URL of the screenshot image to analyze"
             }
           },
-          "required": ["file_url"]
+          "required": [
+            "file_url"
+          ]
         },
-        "handler": "analyzeScreenshot",
         "annotations": {
           "read_only_hint": true,
           "destructive_hint": false,
-          "idempotent_hint": true
-        }
+          "idempotent_hint": true,
+          "open_world_hint": null
+        },
+        "handler": "analyzeScreenshot",
+        "disabled": false
       }
     ]
   }
