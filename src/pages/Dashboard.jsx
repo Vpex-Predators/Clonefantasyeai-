@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState(null);
+  const [tab, setTab] = useState("matchup");
   const lastLoadRef = useRef(0);
 
   const loadBoard = useCallback(async () => {
@@ -209,40 +210,63 @@ export default function Dashboard() {
           </div>
         </header>
 
-        <SeasonScoreChart
-          myTeam={data.myTeam}
-          teams={data.teams}
-          headToHead={data.headToHead}
-          weeklyScores={data.weeklyScores}
-        />
+        <div className="flex rounded-full border border-white/10 bg-white/5 p-1">
+          <button
+            onClick={() => setTab("matchup")}
+            className={`flex-1 rounded-full py-1.5 text-xs font-semibold transition-colors ${
+              tab === "matchup" ? "bg-emerald-400 text-slate-950" : "text-white/60"
+            }`}
+          >
+            This week
+          </button>
+          <button
+            onClick={() => setTab("season")}
+            className={`flex-1 rounded-full py-1.5 text-xs font-semibold transition-colors ${
+              tab === "season" ? "bg-emerald-400 text-slate-950" : "text-white/60"
+            }`}
+          >
+            Season
+          </button>
+        </div>
 
-        <MatchupEngine
-          myTeam={data.myTeam}
-          opponent={data.opponent}
-          opponentStarters={data.opponentStarters}
-          opponentBench={data.opponentBench}
-          matchup={matchup}
-          week={data.league.week}
-          analyzing={analyzing}
-          onAnalyze={analyzeMatchupNow}
-          pending={data.pending}
-          onSeen={markSeen}
-        />
+        {tab === "season" ? (
+          <SeasonScoreChart
+            myTeam={data.myTeam}
+            teams={data.teams}
+            headToHead={data.headToHead}
+            weeklyScores={data.weeklyScores}
+          />
+        ) : (
+          <>
+            <MatchupEngine
+              myTeam={data.myTeam}
+              opponent={data.opponent}
+              opponentStarters={data.opponentStarters}
+              opponentBench={data.opponentBench}
+              matchup={matchup}
+              week={data.league.week}
+              analyzing={analyzing}
+              onAnalyze={analyzeMatchupNow}
+              pending={data.pending}
+              onSeen={markSeen}
+            />
 
-        <RosterCompare
-          starters={data.myTeam.starters}
-          bench={data.myTeam.bench}
-          pending={data.pending}
-          onSeen={markSeen}
-          onAnalyze={analyzeOne}
-          analyzing={analyzing}
-        />
+            <RosterCompare
+              starters={data.myTeam.starters}
+              bench={data.myTeam.bench}
+              pending={data.pending}
+              onSeen={markSeen}
+              onAnalyze={analyzeOne}
+              analyzing={analyzing}
+            />
 
-        <WaiverRadar freeAgents={data.freeAgents} bench={data.myTeam.bench} starters={data.myTeam.starters} />
+            <WaiverRadar freeAgents={data.freeAgents} bench={data.myTeam.bench} starters={data.myTeam.starters} />
 
-        <PlayoffRunway playoffOdds={data.playoffOdds} />
+            <PlayoffRunway playoffOdds={data.playoffOdds} />
 
-        <AdminPanel isAdmin={user?.role === "admin"} teams={data.teams} />
+            <AdminPanel isAdmin={user?.role === "admin"} teams={data.teams} />
+          </>
+        )}
       </div>
       <AppNavBar />
     </div>

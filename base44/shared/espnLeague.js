@@ -142,6 +142,7 @@ export function parseRosterPlayer(entry, currentPeriod) {
     id: String(player.id ?? ''),
     name: player.fullName || 'Unknown player',
     position: SLOT_LABELS[slot] || player.defaultPosition || 'Player',
+    realPosition: POSITION_BY_ID[player.defaultPositionId] || player.defaultPosition || '',
     slot,
     isStarter: !BENCH_SLOTS.includes(slot),
     injuryStatus: player.injuryStatus || 'ACTIVE',

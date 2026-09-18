@@ -1,6 +1,8 @@
 import { Loader2, Sparkles } from "lucide-react";
 import { sortStarters } from "@/lib/lineupOrder";
 import InjuryBadge from "./InjuryBadge";
+import BenchDepth from "./BenchDepth";
+import StartSitAdvisor from "./StartSitAdvisor";
 
 const ROW_ORDER = ["QB", "RB1", "RB2", "WR1", "WR2", "TE", "FLX", "D/ST", "K"];
 
@@ -104,18 +106,8 @@ export default function MatchupEngine({ myTeam, opponent, opponentStarters, oppo
             ))}
           </div>
 
-          <div className="my-3 flex items-center gap-2">
-            <span className="h-px flex-1 bg-white/15" />
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-white/40">Bench</span>
-            <span className="h-px flex-1 bg-white/15" />
-          </div>
-
-          <div className="space-y-1.5">
-            {Array.from({ length: Math.max(myBench.length, oppBench.length) }).map((_, i) => (
-              <PlayerRow key={i} mine={myBench[i]} theirs={oppBench[i]} label="BE" />
-            ))}
-          </div>
-          <p className="pt-1 text-[10px] text-white/35">Bench points don't count toward the matchup totals.</p>
+          <BenchDepth myBench={myBench} oppBench={oppBench} myName={myTeam.name} oppName={opponent.name} />
+          <StartSitAdvisor starters={myTeam.starters || []} bench={myBench} />
 
           <div className="mt-3 border-t border-white/10 pt-3">
             {ai ? (

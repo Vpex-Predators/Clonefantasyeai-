@@ -24,6 +24,7 @@ function ChartTooltip({ active, payload }) {
 export default function SeasonScoreChart({ myTeam, teams, headToHead, weeklyScores }) {
   const [selectedOpp, setSelectedOpp] = useState(null);
   const [visible, setVisible] = useState({ me: true, opp: true, vs: true });
+  const [selectedWeek, setSelectedWeek] = useState(null);
 
   const games = headToHead || [];
   const wins = games.filter(g => g.win).length;
@@ -41,6 +42,8 @@ export default function SeasonScoreChart({ myTeam, teams, headToHead, weeklyScor
     }
     return row;
   });
+
+  const detail = chartData.find(r => r.week === selectedWeek) || null;
 
   const seriesChips = [
     { key: "me", label: myTeam?.name || "My score", color: COLORS.me },
@@ -119,23 +122,44 @@ export default function SeasonScoreChart({ myTeam, teams, headToHead, weeklyScor
                   name="My score"
                   stroke={COLORS.me}
                   strokeWidth={2.5}
+                  animationDuration={1600}
+                  animationEasing="ease-out"
                   dot={({ cx, cy, payload }) =>
                     cx == null || cy == null ? null : (
-                      <circle
+                      <g
                         key={payload.week}
-                        cx={cx}
-                        cy={cy}
-                        r={3.5}
-                        fill={payload.win ? COLORS.me : COLORS.loss}
-                        stroke="#0f172a"
-                        strokeWidth={1}
-                      />
+                        onClick={() => setSelectedWeek(w => (w === payload.week ? null : payload.week))}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <circle
+                          cx={cx}
+                          cy={cy}
+                          r={selectedWeek === payload.week ? 5.5 : 3.5}
+                          fill={payload.win ? COLORS.me : COLORS.loss}
+                          stroke={selectedWeek === payload.week ? "#ffffff" : "#0f172a"}
+                          strokeWidth={selectedWeek === payload.week ? 2 : 1}
+                        />
+                      </g>
                     )
                   }
                 />
               )}
             </ComposedChart>
           </ResponsiveContainer>
+        </div>
+      )}
+
+      {detail && (
+        <div className="mt-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs">
+          <p className="font-bold text-white">Week {detail.week} vs {detail.oppName}</p>
+          <p className="mt-0.5 text-white/70">
+            You <span className="font-semibold text-emerald-300">{detail.mine}</span> — {detail.opp} ·{" "}
+            <span className={detail.win ? "font-bold text-emerald-400" : "font-bold text-rose-400"}>
+              {detail.win ? "WIN" : "LOSS"}
+            </span>{" "}
+            by {Math.abs(detail.mine - detail.opp).toFixed(1)}
+            {detail.vs !== undefined && <> · {detail.vsName} scored {detail.vs} that week</>}
+          </p>
         </div>
       )}
 
@@ -158,7 +182,7 @@ export default function SeasonScoreChart({ myTeam, teams, headToHead, weeklyScor
       </div>
 
       <p className="mt-2 text-[10px] text-white/40">
-        Tap a team to overlay their season — tap again to clear. Dots show wins (green) and losses (red).
+        Tap a team to overlay their season — tap again to clear. Tap any week dot for that game's result.
       </p>
     </section>
   );
