@@ -93,13 +93,17 @@ ${opponentLines}
 
 Look up the LATEST news, injuries, depth charts, and expert projections for these players and their NFL teams right now. Factor in each skill player's QB situation and their history with their QB (target share, chemistry, recent game logs together).
 
-Write a concise tactical mission briefing in markdown with exactly these sections:
-### Mission status — read on the record, playoff odds, and where the season stands
-### This week — matchup verdict with the win probability, and the key player-status swings on both sides
-### Playoff runway — what the remaining schedule grades mean and what must happen to make the playoffs
-### Edge actions — 3 to 5 concrete moves (waiver adds, trade targets, lineup changes) that most improve title odds, each with the numbers behind it
+Write a SHORT plain-English briefing for someone who has never played fantasy football. Hard rules:
+- Everyday words only. No jargon — say "your chance to make the playoffs", not "seed equity" or "ROS floor".
+- Each section: at most 3 short sentences. Whole briefing under 160 words.
+- Quote the 2-3 numbers that matter (win %, playoff %, one projection) and immediately say what each means.
+- Use markdown with exactly these sections:
+### Where you stand — record and playoff chance in one breath
+### This week — who you play, your chance to win, and the one player story that matters most
+### The road ahead — the rest of the schedule in one or two plain sentences
+### Do this now — exactly 3 moves (start / bench / add / trade), one short line each with the number behind it
 
-Cite specific numbers from the data above and from current news. Be direct and confident. No preamble.`;
+Be direct and confident. No preamble.`;
 
     const llm = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt,

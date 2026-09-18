@@ -6,6 +6,7 @@ import { Loader2, Lock } from "lucide-react";
 import AppNavBar from "@/components/AppNavBar";
 import HudStatusBar from "@/components/hud/HudStatusBar";
 import HudPanel from "@/components/hud/HudPanel";
+import GlassBackdrop from "@/components/hud/GlassBackdrop";
 import ThreatBoard from "@/components/warroom/ThreatBoard";
 import PowerRankings from "@/components/warroom/PowerRankings";
 import TradeSimulator from "@/components/warroom/TradeSimulator";
@@ -53,13 +54,14 @@ export default function WarRoom() {
 
   return (
     <div className="min-h-screen bg-slate-950 pb-28 text-white">
+      <GlassBackdrop />
       <HudStatusBar
         title="War room"
         sub={d ? `${d.league.name.trim()} · WK ${d.league.week} · ${d.myTeam.name.trim()}` : "LEAGUE WARFARE INTEL"}
         tag={d ? "INTEL" : "STANDBY"}
       />
 
-      <div className="mx-auto max-w-2xl space-y-3 px-3 pt-3">
+      <div className="relative z-10 mx-auto max-w-2xl space-y-3 px-3 pt-3">
         {loadingData ? (
           <div className="flex justify-center py-10">
             <Loader2 className="h-7 w-7 animate-spin text-emerald-400" />
@@ -88,13 +90,15 @@ export default function WarRoom() {
           </HudPanel>
         ) : d ? (
           <>
-            <div className="grid grid-cols-3 border border-white/10 bg-white/[0.03] p-1">
+            <div className="grid grid-cols-3 gap-1 rounded-full border border-white/10 bg-white/[0.05] p-1 backdrop-blur-xl">
               {TABS.map((t) => (
                 <button
                   key={t.id}
                   onClick={() => setTab(t.id)}
-                  className={`py-2 text-[10px] font-bold uppercase tracking-[0.15em] transition-colors ${
-                    tab === t.id ? "bg-emerald-400 text-slate-950" : "text-white/55 hover:text-white"
+                  className={`rounded-full py-2 text-[10px] font-bold uppercase tracking-[0.15em] transition-all duration-300 ${
+                    tab === t.id
+                      ? "bg-gradient-to-r from-emerald-400 to-cyan-400 text-slate-950 shadow-[0_0_16px_rgba(52,211,153,0.45)]"
+                      : "text-white/55 hover:text-white"
                   }`}
                 >
                   {t.label}

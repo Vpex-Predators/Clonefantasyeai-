@@ -27,7 +27,7 @@ export default function AiAnalystPanel({ data }) {
   return (
     <HudPanel label="On-demand AI analyst" right="ANALYTICS">
       <p className="text-[10px] text-white/45">
-        Live league data plus the latest news, injuries, and QB history — pick your engine.
+        Live league data plus the latest news, injuries, and QB history — answers come back short and in plain English.
       </p>
 
       <div className="mt-2.5 flex gap-2">
@@ -35,7 +35,7 @@ export default function AiAnalystPanel({ data }) {
           value={model}
           onChange={(e) => setModel(e.target.value)}
           disabled={running}
-          className="h-8 min-w-0 flex-1 border border-white/10 bg-slate-900 px-2 font-mono text-[11px] text-white outline-none focus:border-emerald-400/60 disabled:opacity-50"
+          className="h-8 min-w-0 flex-1 rounded-lg border border-white/10 bg-slate-900/70 px-2 font-mono text-[11px] text-white outline-none focus:border-emerald-400/60 disabled:opacity-50"
         >
           {AI_MODELS.map((m) => (
             <option key={m.id} value={m.id}>{m.label}</option>
@@ -44,7 +44,7 @@ export default function AiAnalystPanel({ data }) {
         <button
           onClick={run}
           disabled={running || !data?.locked}
-          className="flex h-8 shrink-0 items-center gap-1.5 bg-emerald-400 px-3.5 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-950 hover:bg-emerald-300 disabled:opacity-50"
+          className="flex h-8 shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 px-3.5 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-950 shadow-[0_0_16px_rgba(52,211,153,0.35)] transition-all hover:from-emerald-300 hover:to-cyan-300 disabled:opacity-50"
         >
           {running ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
           {running ? "Analyzing…" : briefing ? "Re-run" : "Run analyst"}
@@ -59,7 +59,7 @@ export default function AiAnalystPanel({ data }) {
       )}
 
       {briefing && (
-        <div className="mt-3 border border-white/10 bg-slate-950/60 p-3 text-sm leading-relaxed text-white/80 [&_h3]:mb-1 [&_h3]:mt-3 [&_h3]:text-xs [&_h3]:font-bold [&_h3]:uppercase [&_h3]:tracking-widest [&_h3]:text-emerald-300 [&_li]:mt-0.5 [&_strong]:text-white [&_ul]:list-disc [&_ul]:pl-5">
+        <div className="mt-3 rounded-2xl border border-white/10 bg-slate-950/50 p-3.5 text-sm leading-relaxed text-white/80 backdrop-blur-xl [&_h3]:mb-1 [&_h3]:mt-3 [&_h3]:text-xs [&_h3]:font-bold [&_h3]:uppercase [&_h3]:tracking-widest [&_h3]:text-emerald-300 [&_li]:mt-0.5 [&_strong]:text-white [&_ul]:list-disc [&_ul]:pl-5">
           <ReactMarkdown>{briefing.briefing}</ReactMarkdown>
           <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.15em] text-white/35">
             {briefing.model} · {briefing.webContext ? "with live web context" : "ESPN league data only"} ·{" "}

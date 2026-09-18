@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Loader2, Lock, Radar, Swords, LayoutDashboard, Calculator } from "lucide-react";
 import AppNavBar from "@/components/AppNavBar";
+import GlassBackdrop from "@/components/hud/GlassBackdrop";
 import HudStatusBar from "@/components/hud/HudStatusBar";
 import FloatingAuthCard from "@/components/fantasy/home/FloatingAuthCard";
 import MissionStats from "@/components/fantasy/home/MissionStats";
@@ -63,13 +64,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-950 pb-28 text-white">
+      <GlassBackdrop />
       <HudStatusBar
         title="Mission briefing"
         sub={d ? `${d.league.name.trim()} · WK ${d.league.week} · ${d.myTeam.wins}-${d.myTeam.losses}` : "FANTASYEDGE TACTICAL BRIEFING SYSTEM"}
         tag={d ? "LIVE" : "STANDBY"}
       />
 
-      <div className="mx-auto max-w-2xl space-y-3 px-3 pt-3">
+      <div className="relative z-10 mx-auto max-w-2xl space-y-3 px-3 pt-3">
         <FloatingAuthCard />
 
         {loadingBriefing ? (
@@ -107,7 +109,7 @@ export default function Home() {
 
             <Link
               to="/warroom"
-              className="relative block border border-rose-400/40 bg-rose-400/[0.07] p-4 transition-colors hover:border-rose-400/70 hover:bg-rose-400/10"
+              className="relative block rounded-2xl border border-rose-400/40 bg-rose-400/[0.07] p-4 backdrop-blur-xl transition-colors hover:border-rose-400/70 hover:bg-rose-400/10"
             >
               <div className="flex items-center gap-2 text-rose-300">
                 <Swords className="h-4 w-4" />
@@ -122,7 +124,7 @@ export default function Home() {
             <div className="grid grid-cols-2 gap-2">
               <Link
                 to="/dashboard"
-                className="border border-white/10 bg-white/[0.04] p-3 transition-colors hover:border-emerald-400/40"
+                className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-400/40"
               >
                 <LayoutDashboard className="h-4 w-4 text-emerald-300" />
                 <p className="mt-1.5 text-xs font-bold text-white">Command deck</p>
@@ -130,7 +132,7 @@ export default function Home() {
               </Link>
               <Link
                 to="/analyst"
-                className="border border-white/10 bg-white/[0.04] p-3 transition-colors hover:border-emerald-400/40"
+                className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-400/40"
               >
                 <Calculator className="h-4 w-4 text-emerald-300" />
                 <p className="mt-1.5 text-xs font-bold text-white">Trade analyst</p>

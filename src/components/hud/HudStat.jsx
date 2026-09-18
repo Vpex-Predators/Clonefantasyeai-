@@ -11,7 +11,7 @@ const TONES = {
 // Single HUD data tile — micro-label, big monospace figure, context sub-line.
 export default function HudStat({ label, value, sub, tone = "plain" }) {
   return (
-    <div className="relative border border-white/10 bg-white/[0.04] px-3 py-2.5">
+    <div className="relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.06] px-3.5 py-3 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-400/30">
       <span aria-hidden="true" className="pointer-events-none absolute -left-px -top-px h-2 w-2 border-l border-t border-emerald-400/60" />
       <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/45">{label}</p>
       <p className={cn("mt-1 font-mono text-xl font-bold leading-none tabular-nums", TONES[tone])}>{value}</p>
