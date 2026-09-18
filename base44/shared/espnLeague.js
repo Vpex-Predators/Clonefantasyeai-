@@ -104,6 +104,14 @@ export async function fetchFreeAgents(season, leagueId, currentPeriod, limit = 5
   }).filter(p => p.id));
 }
 
+// Actual points for the current scoring period — present once the player's game
+// has kicked off (live or final); null before it. Totals "lock in" on these.
+export function livePointsFor(player, period) {
+  const stats = (player && Array.isArray(player.stats)) ? player.stats : [];
+  const entry = stats.find(s => s.statSourceId === 0 && s.scoringPeriodId === period && s.appliedTotal != null);
+  return entry ? round1(entry.appliedTotal) : null;
+}
+
 export function weeklyTrend(player, maxPeriod) {
   const actuals = (player && Array.isArray(player.stats) ? player.stats : [])
     .filter(s => s.statSourceId === 0 && s.scoringPeriodId > 0 && s.scoringPeriodId <= maxPeriod)
@@ -137,6 +145,7 @@ export function parseRosterPlayer(entry, currentPeriod) {
     slot,
     isStarter: !BENCH_SLOTS.includes(slot),
     injuryStatus: player.injuryStatus || 'ACTIVE',
+    livePoints: livePointsFor(player, currentPeriod),
     weeklyProj: round1(statValue(player, 1, currentPeriod)),
     seasonProj: round1(statValue(player, 1, 0) || seasonActual),
     seasonActual: round1(seasonActual),

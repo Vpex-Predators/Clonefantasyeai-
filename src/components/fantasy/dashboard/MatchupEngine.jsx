@@ -16,15 +16,27 @@ function matchupRows(mine, theirs) {
     .map(l => ({ label: l, mine: mineBy[l], theirs: theirsBy[l] }));
 }
 
-// One grid row: my player | position | opponent player, with projections on the edges.
+// Points that count: actuals once the player's game is live or over, projection before kickoff.
+const effectivePoints = p => (p && p.livePoints != null ? p.livePoints : (p && p.weeklyProj) || 0);
+
+function PointsCell({ p, className }) {
+  if (!p) return <span className={className}>—</span>;
+  const live = p.livePoints != null;
+  return (
+    <span className={className}>
+      {effectivePoints(p).toFixed(1)}
+      {live && <span className="ml-1 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 align-middle" />}
+    </span>
+  );
+}
+
+// One grid row: my player | position | opponent player, with points on the edges.
 function PlayerRow({ mine, theirs, label }) {
   const both = mine && theirs;
-  const mineWins = both && (mine.weeklyProj || 0) >= (theirs.weeklyProj || 0);
+  const mineWins = both && effectivePoints(mine) >= effectivePoints(theirs);
   return (
     <div className="flex items-center gap-1 text-[11px]">
-      <span className={`w-7 shrink-0 font-mono text-left ${both && mineWins ? "font-semibold text-emerald-300" : "text-white/60"}`}>
-        {mine ? (mine.weeklyProj || 0).toFixed(1) : "—"}
-      </span>
+      <PointsCell p={mine} className={`w-8 shrink-0 font-mono text-left ${both && mineWins ? "font-semibold text-emerald-300" : "text-white/60"}`} />
       <span className="flex min-w-0 flex-1 items-center gap-1">
         <span className="truncate text-white/75">{mine ? mine.name : "—"}</span>
         {mine && <InjuryBadge status={mine.injuryStatus} />}
@@ -34,9 +46,7 @@ function PlayerRow({ mine, theirs, label }) {
         {theirs && <InjuryBadge status={theirs.injuryStatus} />}
         <span className="truncate text-white/45">{theirs ? theirs.name : "—"}</span>
       </span>
-      <span className={`w-7 shrink-0 font-mono text-right ${both && !mineWins ? "font-semibold text-rose-300" : "text-white/60"}`}>
-        {theirs ? (theirs.weeklyProj || 0).toFixed(1) : "—"}
-      </span>
+      <PointsCell p={theirs} className={`w-8 shrink-0 font-mono text-right ${both && !mineWins ? "font-semibold text-rose-300" : "text-white/60"}`} />
     </div>
   );
 }
@@ -45,9 +55,10 @@ export default function MatchupEngine({ myTeam, opponent, opponentStarters, oppo
   const rows = matchupRows(myTeam.starters || [], opponentStarters || []);
   const myBench = myTeam.bench || [];
   const oppBench = opponentBench || [];
-  const myTotal = parseFloat((myTeam.starters || []).reduce((s, p) => s + (p.weeklyProj || 0), 0).toFixed(1));
-  const oppTotal = parseFloat((opponentStarters || []).reduce((s, p) => s + (p.weeklyProj || 0), 0).toFixed(1));
+  const myTotal = parseFloat((myTeam.starters || []).reduce((s, p) => s + effectivePoints(p), 0).toFixed(1));
+  const oppTotal = parseFloat((opponentStarters || []).reduce((s, p) => s + effectivePoints(p), 0).toFixed(1));
   const myPct = Math.round((myTotal / Math.max(myTotal + oppTotal, 1)) * 100);
+  const liveGames = [...(myTeam.starters || []), ...(opponentStarters || [])].filter(p => p && p.livePoints != null).length;
   const ai = matchup?.matchup;
   const oppPending = opponent && (pending || []).includes("opp:" + opponent.id);
 
@@ -67,7 +78,9 @@ export default function MatchupEngine({ myTeam, opponent, opponentStarters, oppo
       )}
       <div className="mb-3 flex items-baseline justify-between">
         <h2 className="font-heading text-sm font-bold uppercase tracking-widest text-white/80">Week {week} matchup</h2>
-        <span className="text-[10px] text-white/40">{myTotal} vs {oppTotal} proj</span>
+        <span className="text-[10px] text-white/40">
+          {myTotal} vs {oppTotal} {liveGames > 0 ? "· live, actual pts" : "proj"}
+        </span>
       </div>
 
       {!opponent ? (
@@ -102,6 +115,7 @@ export default function MatchupEngine({ myTeam, opponent, opponentStarters, oppo
               <PlayerRow key={i} mine={myBench[i]} theirs={oppBench[i]} label="BE" />
             ))}
           </div>
+          <p className="pt-1 text-[10px] text-white/35">Bench points don't count toward the matchup totals.</p>
 
           <div className="mt-3 border-t border-white/10 pt-3">
             {ai ? (

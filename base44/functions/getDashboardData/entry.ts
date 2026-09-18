@@ -13,6 +13,7 @@ function trimPlayer(p) {
     slot: p.slot,
     injuryStatus: p.injuryStatus,
     weeklyProj: p.weeklyProj,
+    livePoints: p.livePoints,
     seasonProj: p.seasonProj,
     seasonAvg: p.seasonAvg,
     trend: p.trend,
@@ -110,7 +111,7 @@ export default async function(req) {
           avgPoints: round1(oppSummary.pointsFor / gamesPlayed)
         };
         const oppRoster = parseTeamRoster(oppRaw, currentPeriod);
-        const trimOpp = p => ({ id: p.id, name: p.name, position: p.position, slot: p.slot, weeklyProj: p.weeklyProj, injuryStatus: p.injuryStatus });
+        const trimOpp = p => ({ id: p.id, name: p.name, position: p.position, slot: p.slot, weeklyProj: p.weeklyProj, livePoints: p.livePoints, injuryStatus: p.injuryStatus });
         opponentStarters = oppRoster.filter(p => p.isStarter).map(trimOpp);
         opponentBench = oppRoster.filter(p => !p.isStarter).map(trimOpp);
       }
