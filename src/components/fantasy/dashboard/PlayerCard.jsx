@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Loader2, Sparkles } from "lucide-react";
+import InjuryBadge from "./InjuryBadge";
 
 const VERDICT_STYLES = {
   Start: "bg-emerald-400/15 text-emerald-300 border-emerald-400/40",
@@ -24,7 +25,6 @@ function Sparkline({ points }) {
 export default function PlayerCard({ player, pending, analyzing, onOpen, onAnalyze }) {
   const [open, setOpen] = useState(false);
   const a = player.analysis;
-  const injured = player.injuryStatus && player.injuryStatus !== "ACTIVE";
 
   const toggle = () => {
     if (!open && pending) onOpen(player.id);
@@ -48,17 +48,11 @@ export default function PlayerCard({ player, pending, analyzing, onOpen, onAnaly
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
-            {injured && (
-              <span
-                className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                  player.injuryStatus === "OUT" || player.injuryStatus === "INJURY_RESERVE" ? "bg-rose-400" : "bg-amber-400"
-                }`}
-              />
-            )}
             <span className="truncate text-[13px] font-semibold leading-tight text-white">{player.name}</span>
+            <InjuryBadge status={player.injuryStatus} />
           </div>
           <div className="mt-1 flex items-center gap-2 text-[10px] text-white/45">
-            <span className="rounded bg-white/10 px-1 py-0.5 font-medium text-white/60">{player.position}</span>
+            <span className="rounded bg-white/10 px-1 py-0.5 font-medium text-white/60">{player.lineupLabel || player.position}</span>
             <span>{player.weeklyProj > 0 ? `${player.weeklyProj} proj` : `${player.seasonAvg} avg`}</span>
             <Sparkline points={player.trend} />
           </div>

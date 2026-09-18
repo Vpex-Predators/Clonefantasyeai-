@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import { Loader2 } from "lucide-react";
+import { Loader2, LogOut } from "lucide-react";
 import AppNavBar from "@/components/AppNavBar";
 import RefreshBar from "@/components/fantasy/dashboard/RefreshBar";
 import TeamLockOverlay from "@/components/fantasy/dashboard/TeamLockOverlay";
@@ -191,13 +191,22 @@ export default function Dashboard() {
               {data.myTeam.wins}-{data.myTeam.losses} record · {data.myTeam.pointsFor} pts for · {data.myTeam.pointsAgainst} against
             </p>
           </div>
-          <RefreshBar
-            lastRefresh={data.lastRefresh}
-            refreshing={refreshing}
-            analyzing={analyzing}
-            pendingCount={(data.pending || []).length}
-            onRefresh={refreshAll}
-          />
+          <div className="flex flex-col items-end gap-1.5">
+            <RefreshBar
+              lastRefresh={data.lastRefresh}
+              refreshing={refreshing}
+              analyzing={analyzing}
+              pendingCount={(data.pending || []).length}
+              onRefresh={refreshAll}
+            />
+            <button
+              onClick={() => base44.auth.logout()}
+              className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-white/40 transition-colors hover:text-rose-300"
+            >
+              <LogOut className="h-3 w-3" />
+              Log out
+            </button>
+          </div>
         </header>
 
         <SeasonScoreChart

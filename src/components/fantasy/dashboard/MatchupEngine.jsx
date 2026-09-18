@@ -1,15 +1,23 @@
 import { Loader2, Sparkles } from "lucide-react";
+import { sortStarters } from "@/lib/lineupOrder";
+import InjuryBadge from "./InjuryBadge";
 
-function positionRows(mine, theirs) {
-  const keys = [...new Set([...mine.map(p => p.position), ...(theirs || []).map(p => p.position)])];
-  return keys.map(pos => {
-    const best = list => (list || []).filter(p => p.position === pos).reduce((m, p) => Math.max(m, p.weeklyProj || 0), 0);
-    return { position: pos, mine: best(mine), theirs: best(theirs) };
-  });
+const ROW_ORDER = ["QB", "RB1", "RB2", "WR1", "WR2", "TE", "FLEX", "DEF", "K"];
+
+function matchupRows(mine, theirs) {
+  const mineBy = Object.fromEntries(sortStarters(mine).map(p => [p.lineupLabel, p]));
+  const theirsBy = Object.fromEntries(sortStarters(theirs).map(p => [p.lineupLabel, p]));
+  const labels = [];
+  for (const l of [...ROW_ORDER, ...Object.keys(mineBy), ...Object.keys(theirsBy)]) {
+    if (!labels.includes(l)) labels.push(l);
+  }
+  return labels
+    .filter(l => mineBy[l] || theirsBy[l])
+    .map(l => ({ label: l, mine: mineBy[l], theirs: theirsBy[l] }));
 }
 
 export default function MatchupEngine({ myTeam, opponent, opponentStarters, matchup, week, analyzing, onAnalyze, pending, onSeen }) {
-  const rows = positionRows(myTeam.starters || [], opponentStarters || []);
+  const rows = matchupRows(myTeam.starters || [], opponentStarters || []);
   const myTotal = parseFloat((myTeam.starters || []).reduce((s, p) => s + (p.weeklyProj || 0), 0).toFixed(1));
   const oppTotal = parseFloat((opponentStarters || []).reduce((s, p) => s + (p.weeklyProj || 0), 0).toFixed(1));
   const myPct = Math.round((myTotal / Math.max(myTotal + oppTotal, 1)) * 100);
@@ -52,15 +60,26 @@ export default function MatchupEngine({ myTeam, opponent, opponentStarters, matc
 
           <div className="mt-3 space-y-1">
             {rows.map(r => {
-              const mineWins = r.mine >= r.theirs;
+              const both = r.mine && r.theirs;
+              const mineWins = both && (r.mine.weeklyProj || 0) >= (r.theirs.weeklyProj || 0);
               return (
-                <div key={r.position} className="flex items-center gap-1 text-[11px]">
-                  <span className={`w-9 shrink-0 text-left ${mineWins ? "font-semibold text-emerald-300" : "text-white/60"}`}>
-                    {r.mine}
+                <div key={r.label} className="flex items-center gap-1.5 text-[11px]">
+                  <span className={`w-8 shrink-0 font-mono text-left ${mineWins ? "font-semibold text-emerald-300" : "text-white/60"}`}>
+                    {r.mine ? (r.mine.weeklyProj || 0).toFixed(1) : "—"}
                   </span>
-                  <span className="flex-1 text-center text-white/40">{r.position}</span>
-                  <span className={`w-9 shrink-0 text-right ${!mineWins ? "font-semibold text-rose-300" : "text-white/60"}`}>
-                    {r.theirs}
+                  <span className="w-9 shrink-0 text-center font-semibold text-white/45">{r.label}</span>
+                  <div className="flex min-w-0 flex-1 items-center justify-between gap-1">
+                    <span className="flex min-w-0 items-center gap-1">
+                      <span className="truncate text-white/75">{r.mine ? r.mine.name : "—"}</span>
+                      {r.mine && <InjuryBadge status={r.mine.injuryStatus} />}
+                    </span>
+                    <span className="flex min-w-0 items-center gap-1">
+                      {r.theirs && <InjuryBadge status={r.theirs.injuryStatus} />}
+                      <span className="truncate text-white/45">{r.theirs ? r.theirs.name : "—"}</span>
+                    </span>
+                  </div>
+                  <span className={`w-8 shrink-0 font-mono text-right ${both && !mineWins ? "font-semibold text-rose-300" : "text-white/60"}`}>
+                    {r.theirs ? (r.theirs.weeklyProj || 0).toFixed(1) : "—"}
                   </span>
                 </div>
               );
