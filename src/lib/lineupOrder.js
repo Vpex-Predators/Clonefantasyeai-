@@ -2,7 +2,7 @@
 // and injury status badges shared across dashboard components.
 
 const SLOT_RANK = { 0: 0, 2: 1, 4: 2, 6: 3, 23: 4, 7: 5, 3: 6, 5: 7, 16: 8, 17: 9 };
-const SLOT_LABEL = { 0: "QB", 2: "RB", 4: "WR", 6: "TE", 23: "FLEX", 7: "FLEX", 3: "RB", 5: "WR", 16: "DEF", 17: "K" };
+const SLOT_LABEL = { 0: "QB", 2: "RB", 4: "WR", 6: "TE", 23: "FLX", 7: "FLX", 3: "RB", 5: "WR", 16: "D/ST", 17: "K" };
 
 // Sorts starters into standard lineup order and labels them QB / RB1 / RB2 / WR1 / WR2 / TE / FLEX / DEF / K.
 export function sortStarters(players) {

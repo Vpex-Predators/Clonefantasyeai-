@@ -2,7 +2,7 @@ import { Loader2, Sparkles } from "lucide-react";
 import { sortStarters } from "@/lib/lineupOrder";
 import InjuryBadge from "./InjuryBadge";
 
-const ROW_ORDER = ["QB", "RB1", "RB2", "WR1", "WR2", "TE", "FLEX", "DEF", "K"];
+const ROW_ORDER = ["QB", "RB1", "RB2", "WR1", "WR2", "TE", "FLX", "D/ST", "K"];
 
 function matchupRows(mine, theirs) {
   const mineBy = Object.fromEntries(sortStarters(mine).map(p => [p.lineupLabel, p]));
