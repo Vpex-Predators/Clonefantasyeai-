@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Loader2, LogOut } from "lucide-react";
@@ -21,16 +21,13 @@ export default function Dashboard() {
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState(null);
   const [tab, setTab] = useState("matchup");
-  const lastLoadRef = useRef(0);
-
   const loadBoard = useCallback(async () => {
     const res = await base44.functions.invoke("getDashboardData", {});
     setData(res.data);
-    lastLoadRef.current = Date.now();
     return res.data;
   }, []);
 
-  // Live data auto-refreshes whenever the user comes back to the app.
+  // Live data loads once per visit — all refreshing is manual (button taps).
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -42,16 +39,7 @@ export default function Dashboard() {
         if (!cancelled) setLoading(false);
       }
     })();
-    const onVisible = () => {
-      if (document.visibilityState !== "visible") return;
-      if (Date.now() - lastLoadRef.current < 120000) return;
-      loadBoard().catch(() => {});
-    };
-    window.addEventListener("focus", onVisible);
-    return () => {
-      cancelled = true;
-      window.removeEventListener("focus", onVisible);
-    };
+    return () => { cancelled = true; };
   }, [loadBoard]);
 
   const analyzeOne = async player => {
@@ -91,35 +79,36 @@ export default function Dashboard() {
     }
   };
 
-  // Manual refresh: fresh live data + deep AI analysis (players + matchup).
-  const refreshAll = async () => {
+  // Manual refresh: cheap live-scores update only — no AI re-analysis.
+  const lightRefresh = async () => {
     setRefreshing(true);
     try {
-      const board = await loadBoard();
-      setMatchup(null);
-      if (!board.locked || !board.myTeam) return;
-      setAnalyzing(true);
-      const players = [...board.myTeam.starters, ...board.myTeam.bench]
-        .slice(0, 15)
-        .map(p => ({
-          id: p.id,
-          name: p.name,
-          position: p.position,
-          opponent: board.opponent ? board.opponent.name : "TBD",
-          weeklyProj: p.weeklyProj,
-          seasonAvg: p.seasonAvg,
-          injuryStatus: p.injuryStatus
-        }));
-      const calls = [base44.functions.invoke("analyzePlayers", { players, week: board.league.week })];
-      if (board.opponent) calls.push(base44.functions.invoke("analyzeMatchup", {}));
-      const results = await Promise.all(calls);
-      if (results[1]) setMatchup(results[1].data);
-      await loadBoard();
+      const res = await base44.functions.invoke("getLiveScores", {});
+      const live = res.data;
+      const mine = new Map((live.mine || []).map(p => [p.id, p]));
+      const opp = new Map((live.opponent || []).map(p => [p.id, p]));
+      const merge = (list, map) => (list || []).map(p => {
+        const u = map.get(p.id);
+        return u ? { ...p, livePoints: u.livePoints, weeklyProj: u.weeklyProj, injuryStatus: u.injuryStatus } : p;
+      });
+      setData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          lastRefresh: live.refreshedAt || new Date().toISOString(),
+          myTeam: prev.myTeam ? {
+            ...prev.myTeam,
+            starters: merge(prev.myTeam.starters, mine),
+            bench: merge(prev.myTeam.bench, mine)
+          } : prev.myTeam,
+          opponentStarters: merge(prev.opponentStarters, opp),
+          opponentBench: merge(prev.opponentBench, opp)
+        };
+      });
       setError(null);
     } catch (err) {
       setError(err.response?.data?.error || err.message);
     } finally {
-      setAnalyzing(false);
       setRefreshing(false);
     }
   };
@@ -199,7 +188,7 @@ export default function Dashboard() {
                 refreshing={refreshing}
                 analyzing={analyzing}
                 pendingCount={(data.pending || []).length}
-                onRefresh={refreshAll}
+                onRefresh={lightRefresh}
               />
               <button
                 onClick={() => base44.auth.logout()}

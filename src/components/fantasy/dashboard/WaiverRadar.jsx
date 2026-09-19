@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { AlertTriangle, ChevronDown, ChevronRight, ExternalLink, Loader2, Newspaper, Radar, Trash2 } from "lucide-react";
 
@@ -25,6 +25,7 @@ export default function WaiverRadar({ freeAgents, bench, starters }) {
   const [error, setError] = useState(null);
   const [openName, setOpenName] = useState(null);
   const [posTab, setPosTab] = useState("All");
+  const [scannedAt, setScannedAt] = useState(null);
 
   // Quick live flags from the lineup: injured starters without a backup.
   const lineFlags = useMemo(() => {
@@ -34,19 +35,24 @@ export default function WaiverRadar({ freeAgents, bench, starters }) {
       .map(s => `${lastName(s.name)} is ${INJURY_LABELS[s.injuryStatus]} and you have no backup ${s.position}`);
   }, [starters, bench]);
 
-  const scan = async () => {
+  // force=true runs a fresh scan; force=false serves this week's cached scan instantly.
+  const scan = async (force = true) => {
     setScanning(true);
     setError(null);
     try {
-      const res = await base44.functions.invoke("getWaiverTargets", {});
+      const res = await base44.functions.invoke("getWaiverTargets", { force });
       setTargets(res.data.targets || []);
       setWeaknesses(res.data.weaknesses || []);
+      setScannedAt(res.data.scanned_at || null);
     } catch (err) {
       setError(err.response?.data?.error || err.message || "Scan failed — try again in a bit.");
     } finally {
       setScanning(false);
     }
   };
+
+  // On open, load this week's scan from the cache — instant after the first scan of the week.
+  useEffect(() => { scan(false); }, []);
 
   const matchesPos = p => posTab === "All" || positionLabel(p.position) === posTab;
   const wireList = (freeAgents || []).filter(matchesPos).slice(0, 5);
@@ -161,7 +167,14 @@ export default function WaiverRadar({ freeAgents, bench, starters }) {
             );
           })}
           <div className="flex items-center justify-between pt-1">
-            <p className="text-[10px] text-white/40">Tap a player for the source and a drop idea.</p>
+            <p className="text-[10px] text-white/40">
+              Tap a player for the source and a drop idea.
+              {scannedAt && (
+                <span className="ml-1 text-white/25">
+                  Scanned {new Date(scannedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                </span>
+              )}
+            </p>
             <button onClick={scan} className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400/80 hover:text-emerald-300">
               Re-scan
             </button>

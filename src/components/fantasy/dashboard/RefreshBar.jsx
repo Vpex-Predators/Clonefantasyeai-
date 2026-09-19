@@ -15,7 +15,7 @@ export default function RefreshBar({ lastRefresh, refreshing, analyzing, pending
       <button
         onClick={onRefresh}
         disabled={busy}
-        title="Refresh live data and run the analysis"
+        title="Refresh live scores"
         className={`flex h-11 w-11 items-center justify-center rounded-full border transition-all active:scale-95 ${
           pendingCount > 0
             ? "animate-pulse border-emerald-400/60 bg-emerald-400/15"

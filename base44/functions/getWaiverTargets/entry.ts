@@ -12,12 +12,32 @@ export default async function(req) {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
+    const body = await req.json().catch(() => ({}));
+    const force = body.force === true;
+
     const { league, season } = await fetchLeagueCurrent(['mNav', 'mTeam', 'mRoster']);
     const { currentPeriod } = leaguePeriods(league);
 
-    const locks = await base44.asServiceRole.entities.TeamLock.filter({ user_id: user.id, league_id: DEFAULT_LEAGUE_ID });
+    const [locks, states] = await Promise.all([
+      base44.asServiceRole.entities.TeamLock.filter({ user_id: user.id, league_id: DEFAULT_LEAGUE_ID }),
+      base44.asServiceRole.entities.RefreshState.filter({ user_id: user.id, league_id: DEFAULT_LEAGUE_ID })
+    ]);
     const lock = locks[0];
     if (!lock) return Response.json({ error: 'Lock your team on the dashboard first.' }, { status: 400 });
+    const state = states[0] || null;
+
+    // Per-week cache: serve last week's-in-progress scan instantly; only a new
+    // week or an explicit re-scan triggers a fresh (AI) wire scan.
+    const cache = state && state.waiver_cache ? state.waiver_cache : null;
+    if (!force && cache && cache.week === currentPeriod && Array.isArray(cache.targets)) {
+      return Response.json({
+        week: currentPeriod,
+        weaknesses: cache.weaknesses || [],
+        targets: cache.targets,
+        cached: true,
+        scanned_at: cache.scanned_at
+      });
+    }
 
     const myRaw = (league.teams || []).find(t => String(t.id) === String(lock.team_id));
     if (!myRaw) return Response.json({ error: 'Your locked team is no longer in the league.' }, { status: 400 });
@@ -113,7 +133,14 @@ Return JSON matching the schema.`;
     const parsed = typeof llm === 'string' ? JSON.parse(llm) : llm;
     const targets = Array.isArray(parsed && parsed.targets) ? parsed.targets.slice(0, 5) : [];
 
-    return Response.json({ week: currentPeriod, weaknesses, targets });
+    // Save the scan for the rest of the week (best effort — never block the result).
+    const waiverCache = { week: currentPeriod, weaknesses, targets, scanned_at: new Date().toISOString() };
+    try {
+      if (state) await base44.asServiceRole.entities.RefreshState.update(state.id, { waiver_cache: waiverCache });
+      else await base44.asServiceRole.entities.RefreshState.create({ user_id: user.id, league_id: DEFAULT_LEAGUE_ID, waiver_cache: waiverCache });
+    } catch (e) { /* cache persistence unavailable — skip */ }
+
+    return Response.json({ week: currentPeriod, weaknesses, targets, cached: false, scanned_at: waiverCache.scanned_at });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

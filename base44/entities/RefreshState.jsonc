@@ -25,6 +25,10 @@
         "type": "string"
       },
       "description": "Item keys with unseen updates (highlighted until viewed)"
+    },
+    "waiver_cache": {
+      "type": "object",
+      "description": "Cached waiver scan for the current week: { week, weaknesses, targets, scanned_at } \u2014 served instantly until the week changes or the user re-scans"
     }
   },
   "required": [
