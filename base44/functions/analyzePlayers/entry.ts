@@ -12,7 +12,22 @@ export default async function(req) {
     if (players.length === 0) return Response.json({ error: 'No players provided.' }, { status: 400 });
     const week = Number(body.week) || null;
 
-    const lines = players.map(p =>
+    // Skip players whose inputs (week, projection, injury, opponent) haven't
+    // changed and whose analysis is under a day old — repeated refreshes stay cheap.
+    const existingAnalyses = await base44.asServiceRole.entities.PlayerAnalysis.filter({ user_id: user.id });
+    const byPlayer = {};
+    for (const a of existingAnalyses) byPlayer[String(a.player_id)] = a;
+    const inputSignature = p => [week, p.weeklyProj ?? 0, p.injuryStatus || 'ACTIVE', p.opponent || 'TBD'].join('|');
+    const freshCutoff = Date.now() - 24 * 60 * 60 * 1000;
+    const toAnalyze = players.filter(p => {
+      const a = byPlayer[String(p.id)];
+      if (!a) return true;
+      if (a.input_signature !== inputSignature(p)) return true;
+      return !a.analyzed_at || new Date(a.analyzed_at).getTime() < freshCutoff;
+    });
+    if (toAnalyze.length === 0) return Response.json({ players: [], skipped: players.length });
+
+    const lines = toAnalyze.map(p =>
       `${p.name} (${p.position}) — this week vs ${p.opponent || 'TBD'}; projected ${p.weeklyProj ?? 0} pts; season avg ${p.seasonAvg ?? 0}; injury status ${p.injuryStatus || 'ACTIVE'}`
     ).join('\n');
 
@@ -49,7 +64,7 @@ export default async function(req) {
     const now = new Date().toISOString();
     const saved = [];
     for (const r of returned) {
-      const match = players.find(p => (p.name || '').toLowerCase().trim() === (r.name || '').toLowerCase().trim());
+      const match = toAnalyze.find(p => (p.name || '').toLowerCase().trim() === (r.name || '').toLowerCase().trim());
       if (!match || !match.id) continue;
       const record = {
         user_id: user.id,
@@ -61,10 +76,11 @@ export default async function(req) {
         news_headline: r.news_headline || '',
         analysis: r.analysis || '',
         factors: Array.isArray(r.factors) ? r.factors.slice(0, 5) : [],
-        analyzed_at: now
+        analyzed_at: now,
+        input_signature: inputSignature(match)
       };
-      const existing = await base44.asServiceRole.entities.PlayerAnalysis.filter({ user_id: user.id, player_id: record.player_id });
-      if (existing.length > 0) await base44.asServiceRole.entities.PlayerAnalysis.update(existing[0].id, record);
+      const existing = byPlayer[record.player_id];
+      if (existing) await base44.asServiceRole.entities.PlayerAnalysis.update(existing.id, record);
       else await base44.asServiceRole.entities.PlayerAnalysis.create(record);
       saved.push(record);
     }

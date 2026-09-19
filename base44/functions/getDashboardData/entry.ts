@@ -28,16 +28,23 @@ export default async function(req) {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { league, season } = await fetchLeagueCurrent(['mNav', 'mTeam', 'mRoster', 'mScoreboard']);
+    const [leagueRes, locks] = await Promise.all([
+      fetchLeagueCurrent(['mNav', 'mTeam', 'mRoster', 'mScoreboard']),
+      base44.asServiceRole.entities.TeamLock.filter({ user_id: user.id, league_id: DEFAULT_LEAGUE_ID })
+    ]);
+    const { league, season } = leagueRes;
     const leagueName = (league.settings && league.settings.name) || 'ESPN League';
     const { currentPeriod, regSeasonPeriods } = leaguePeriods(league);
     const rawTeams = league.teams || [];
     const teams = rawTeams.map(parseTeamSummary);
     const schedule = league.schedule || [];
     const gamesPlayed = Math.max(1, currentPeriod - 1);
-
-    const locks = await base44.asServiceRole.entities.TeamLock.filter({ user_id: user.id, league_id: DEFAULT_LEAGUE_ID });
     const lock = locks[0] || null;
+
+    // Kick off the waiver-wire fetch immediately — it runs while we build the rest.
+    const freeAgentsPromise = fetchFreeAgents(season, DEFAULT_LEAGUE_ID, currentPeriod, 50)
+      .then(fa => [...fa].sort((a, b) => (b.weeklyProj - a.weeklyProj) || (b.seasonProj - a.seasonProj)).slice(0, 15))
+      .catch(() => []);
 
     // Not locked yet — return the team list so the user can pick theirs.
     if (!lock) {
@@ -119,12 +126,7 @@ export default async function(req) {
     }
 
     // Free agents (best effort — the dashboard still loads without them)
-    let freeAgents = [];
-    try {
-      freeAgents = (await fetchFreeAgents(season, DEFAULT_LEAGUE_ID, currentPeriod, 50))
-        .sort((a, b) => (b.weeklyProj - a.weeklyProj) || (b.seasonProj - a.seasonProj))
-        .slice(0, 15);
-    } catch (e) { /* waiver wire data unavailable — skip */ }
+    const freeAgents = await freeAgentsPromise;
 
     const leagueAvgPoints = teams.length ? round1(teams.reduce((s, t) => s + t.pointsFor, 0) / teams.length / gamesPlayed) : 0;
 
@@ -136,7 +138,10 @@ export default async function(req) {
     for (const p of roster) signatures['p:' + p.id] = [p.injuryStatus, p.weeklyProj, p.slot].join('|');
     if (opponent) signatures['opp:' + opponent.id] = [opponent.id, opponent.wins, opponent.losses, opponent.avgPoints].join('|');
 
-    const states = await base44.asServiceRole.entities.RefreshState.filter({ user_id: user.id, league_id: DEFAULT_LEAGUE_ID });
+    const [states, analyses] = await Promise.all([
+      base44.asServiceRole.entities.RefreshState.filter({ user_id: user.id, league_id: DEFAULT_LEAGUE_ID }),
+      base44.asServiceRole.entities.PlayerAnalysis.filter({ user_id: user.id })
+    ]);
     const state = states[0] || null;
     const now = new Date().toISOString();
     let pending = [];
@@ -145,15 +150,19 @@ export default async function(req) {
       const changed = Object.keys(signatures).filter(k => state.signatures[k] !== signatures[k]);
       pending = Array.from(new Set(oldPending.filter(k => k in signatures).concat(changed)));
     }
-    const stateRecord = { user_id: user.id, league_id: DEFAULT_LEAGUE_ID, last_refresh: now, signatures, pending };
-    try {
-      // Best effort — a failure here must never block the briefing itself.
-      if (state) await base44.asServiceRole.entities.RefreshState.update(state.id, stateRecord);
-      else await base44.asServiceRole.entities.RefreshState.create(stateRecord);
-    } catch (e) { /* refresh-state persistence unavailable — skip */ }
+    // Skip the write when nothing changed since last time (same signatures + pending).
+    const unchanged = state && JSON.stringify(state.signatures) === JSON.stringify(signatures)
+      && JSON.stringify(Array.isArray(state.pending) ? state.pending : []) === JSON.stringify(pending);
+    if (!unchanged) {
+      const stateRecord = { user_id: user.id, league_id: DEFAULT_LEAGUE_ID, last_refresh: now, signatures, pending };
+      try {
+        // Best effort — a failure here must never block the briefing itself.
+        if (state) await base44.asServiceRole.entities.RefreshState.update(state.id, stateRecord);
+        else await base44.asServiceRole.entities.RefreshState.create(stateRecord);
+      } catch (e) { /* refresh-state persistence unavailable — skip */ }
+    }
 
-    // Attach each user's cached AI verdicts to their roster players
-    const analyses = await base44.asServiceRole.entities.PlayerAnalysis.filter({ user_id: user.id });
+    // Attach each user's cached AI verdicts (fetched above in parallel) to their roster players
     const byPlayer = {};
     for (const a of analyses) byPlayer[String(a.player_id)] = a;
     for (const p of roster) {

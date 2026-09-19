@@ -56,6 +56,10 @@
       "type": "string",
       "format": "date-time",
       "description": "ISO timestamp of the analysis"
+    },
+    "input_signature": {
+      "type": "string",
+      "description": "Inputs this analysis was based on (week|projection|injury|opponent) \u2014 used to skip re-analyzing unchanged players"
     }
   },
   "required": [

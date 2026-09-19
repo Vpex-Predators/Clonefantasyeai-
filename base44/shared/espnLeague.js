@@ -37,22 +37,31 @@ export async function espnFetch(url, extraHeaders = {}) {
   return res.json();
 }
 
+// Short-lived shared cache: dashboard, war room and waiver scans inside the
+// same minute reuse one ESPN response instead of re-fetching the whole league.
+const CACHE_TTL_MS = 60 * 1000;
+const espnCache = new Map();
+
 export async function fetchLeague(season, leagueId, views) {
+  const key = `league|${season}|${leagueId}|${views.join(',')}`;
+  const cached = espnCache.get(key);
+  if (cached && Date.now() - cached.at < CACHE_TTL_MS) return cached.data;
   const url = `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}?view=${views.join('&view=')}`;
   const data = await espnFetch(url);
   const league = (data.leagues && data.leagues[0]) || ((data.teams || data.settings || data.id) ? data : null);
   if (!league) throw new Error('ESPN responded, but no league data was returned.');
+  espnCache.set(key, { at: Date.now(), data: league });
   return league;
 }
 
 // The league lives under the season ESPN currently serves it for — if the
 // rollover hasn't happened yet, the previous season still holds the data.
-export async function fetchLeagueCurrent(views) {
+export async function fetchLeagueCurrent(views, leagueId = DEFAULT_LEAGUE_ID) {
   const seasons = [defaultSeason(), defaultSeason() - 1];
   let lastError = null;
   for (const season of seasons) {
     try {
-      const league = await fetchLeague(season, DEFAULT_LEAGUE_ID, views);
+      const league = await fetchLeague(season, leagueId, views);
       return { league, season };
     } catch (e) {
       if (e && e.status === 404) { lastError = e; continue; }
@@ -85,12 +94,15 @@ export async function fetchFreeAgents(season, leagueId, currentPeriod, limit = 5
       filterStatus: { value: ['FREEAGENT', 'WAIVERS'] }
     }
   });
+  const cacheKey = `fa|${season}|${leagueId}|${currentPeriod}|${limit}`;
+  const cached = espnCache.get(cacheKey);
+  if (cached && Date.now() - cached.at < CACHE_TTL_MS) return cached.data;
   const data = await espnFetch(
     `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}?view=kona_player_info&scoringPeriodId=${currentPeriod}`,
     { 'X-Fantasy-Filter': faFilter }
   );
   // These entries carry the player directly on `player` (no playerPoolEntry wrapper).
-  return ((data.players || []).map(entry => {
+  const parsed = ((data.players || []).map(entry => {
     const player = (entry.playerPoolEntry && entry.playerPoolEntry.player) || entry.player || {};
     return {
       id: String(player.id ?? ''),
@@ -102,6 +114,8 @@ export async function fetchFreeAgents(season, leagueId, currentPeriod, limit = 5
       weeklyProj: round1(statValue(player, 1, currentPeriod))
     };
   }).filter(p => p.id));
+  espnCache.set(cacheKey, { at: Date.now(), data: parsed });
+  return parsed;
 }
 
 // Actual points for the current scoring period — present once the player's game
