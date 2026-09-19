@@ -63,9 +63,26 @@ export default async function(req) {
     const returned = result && Array.isArray(result.players) ? result.players : [];
     const now = new Date().toISOString();
     const saved = [];
+
+    // Name matching: exact normalized match, with a core-token fallback so D/ST
+    // variants like "Pittsburgh Steelers D/ST" resolve to a roster's "Steelers D/ST".
+    const norm = s => (s || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+    const core = s => norm(s).replace(/\bd ?st\b|\bdefense\b|\bdef\b/g, ' ').replace(/\s+/g, ' ').trim();
+    const nameMatches = (a, b) => {
+      if (norm(a) === norm(b)) return true;
+      const ca = core(a), cb = core(b);
+      return !!ca && !!cb && (ca.endsWith(cb) || cb.endsWith(ca));
+    };
+
+    const unmatched = [];
+    const claimed = new Set(); // one LLM result per roster player — a twin can never be created twice
     for (const r of returned) {
-      const match = toAnalyze.find(p => (p.name || '').toLowerCase().trim() === (r.name || '').toLowerCase().trim());
-      if (!match || !match.id) continue;
+      const match = toAnalyze.find(p => p.id && !claimed.has(String(p.id)) && nameMatches(p.name, r.name));
+      if (!match) {
+        if (r && r.name) unmatched.push(r.name);
+        continue;
+      }
+      claimed.add(String(match.id));
       const record = {
         user_id: user.id,
         player_id: String(match.id),
@@ -79,13 +96,20 @@ export default async function(req) {
         analyzed_at: now,
         input_signature: inputSignature(match)
       };
-      const existing = byPlayer[record.player_id];
-      if (existing) await base44.asServiceRole.entities.PlayerAnalysis.update(existing.id, record);
+      // Re-check for an existing record NOW (per player) — never trust the pre-loop snapshot.
+      const existingList = await base44.asServiceRole.entities.PlayerAnalysis.filter({ user_id: user.id, player_id: record.player_id });
+      const freshest = existingList
+        .slice()
+        .sort((x, y) => new Date(y.analyzed_at || 0) - new Date(x.analyzed_at || 0))[0];
+      if (freshest) await base44.asServiceRole.entities.PlayerAnalysis.update(freshest.id, record);
       else await base44.asServiceRole.entities.PlayerAnalysis.create(record);
       saved.push(record);
     }
+    if (unmatched.length) {
+      console.warn(`analyzePlayers: LLM returned names matching no roster player: ${unmatched.join(', ')}`);
+    }
 
-    return Response.json({ players: saved });
+    return Response.json({ players: saved, unmatched });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
