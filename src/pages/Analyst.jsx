@@ -79,6 +79,10 @@ export default function Analyst() {
         setConversation(convo);
       }
       await base44.agents.addMessage(convo, { role: "user", content });
+      base44.analytics.track({
+        eventName: "analyst_query_sent",
+        properties: { length: content.length, content_length: content.length },
+      });
     } catch (err) {
       setMessages((prev) => [...prev, {
         role: "assistant",

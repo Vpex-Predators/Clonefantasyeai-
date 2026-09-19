@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Loader2, LogOut } from "lucide-react";
@@ -21,9 +21,14 @@ export default function Dashboard() {
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState(null);
   const [tab, setTab] = useState("matchup");
+  const hasTrackedView = useRef(false);
   const loadBoard = useCallback(async () => {
     const res = await base44.functions.invoke("getDashboardData", {});
     setData(res.data);
+    if (res.data && !hasTrackedView.current) {
+      hasTrackedView.current = true;
+      base44.analytics.track({ eventName: "dashboard_viewed" });
+    }
     return res.data;
   }, []);
 
