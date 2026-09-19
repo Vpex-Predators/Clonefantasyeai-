@@ -1,8 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
-import { Crosshair, LayoutDashboard, Calculator, Swords } from "lucide-react";
+import { Crosshair, LayoutDashboard, Calculator, Radar, Swords } from "lucide-react";
 
 const ITEMS = [
   { to: "/", label: "Command", icon: Crosshair },
+  { to: "/waivers", label: "Waivers", icon: Radar },
   { to: "/warroom", label: "War Room", icon: Swords },
   { to: "/dashboard", label: "My Team", icon: LayoutDashboard },
   { to: "/analyst", label: "Analyst", icon: Calculator },
@@ -19,7 +20,7 @@ export default function AppNavBar() {
             <Link
               key={to}
               to={to}
-              className={`flex items-center gap-1 px-2.5 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+              className={`flex items-center gap-1 px-1.5 py-2 text-[9px] font-bold uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[10px] ${
                 active
                   ? "rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 text-slate-950 shadow-[0_0_16px_rgba(52,211,153,0.45)]"
                   : "text-white/60 hover:text-white"

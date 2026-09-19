@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import {
-  DEFAULT_LEAGUE_ID, fetchLeagueCurrent,
+  DEFAULT_LEAGUE_ID, fetchLeagueCurrent, fetchFreeAgents,
   parseTeamSummary, parseTeamRoster, leaguePeriods
 } from '../../shared/espnLeague.js';
 import { computeThreatBoard } from '../../shared/playoffOdds.js';
@@ -16,6 +16,7 @@ function trimRoster(p) {
     weeklyProj: p.weeklyProj,
     seasonProj: p.seasonProj,
     seasonAvg: p.seasonAvg,
+    percentOwned: p.percentOwned,
     trend: p.trend
   };
 }
@@ -53,6 +54,7 @@ export default async function(req) {
       teams, schedule, currentPeriod, regSeasonPeriods,
       myTeamId: mySummary.id, gamesPlayed
     });
+    const freeAgents = await fetchFreeAgents(season, DEFAULT_LEAGUE_ID, currentPeriod, 200);
 
     // Every team's full roster powers the trade simulator.
     const rosters = {};
@@ -75,6 +77,7 @@ export default async function(req) {
       teams: teams.map(t => ({ id: t.id, name: t.name, wins: t.wins, losses: t.losses, ties: t.ties, pointsFor: t.pointsFor })),
       threatBoard,
       rosters,
+      freeAgents: freeAgents.map(trimRoster),
       generatedAt: new Date().toISOString()
     });
   } catch (error) {

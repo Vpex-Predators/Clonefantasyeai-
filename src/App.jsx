@@ -11,6 +11,7 @@ import Home from './pages/Home';
 import Analyst from './pages/Analyst';
 import Dashboard from './pages/Dashboard';
 import WarRoom from './pages/WarRoom';
+import WaiverWire from './pages/WaiverWire';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -53,6 +54,7 @@ const AuthenticatedApp = () => {
       <Route path="/analyst" element={<Analyst />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/warroom" element={<WarRoom />} />
+      <Route path="/waivers" element={<WaiverWire />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

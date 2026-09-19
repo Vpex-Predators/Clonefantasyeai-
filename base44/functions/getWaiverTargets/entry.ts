@@ -29,11 +29,23 @@ export default async function(req) {
     // Per-week cache: serve last week's-in-progress scan instantly; only a new
     // week or an explicit re-scan triggers a fresh (AI) wire scan.
     const cache = state && state.waiver_cache ? state.waiver_cache : null;
-    if (!force && cache && cache.week === currentPeriod && Array.isArray(cache.targets)) {
+    if (!force && cache && cache.week === currentPeriod && cache.rulesVersion === 2 && Array.isArray(cache.targets)) {
+      const cachedTargets = cache.targets.map(target => {
+        const isHigh = target.priority === 'high';
+        const canRecommendDrop = isHigh && ['overlooked', 'fills_weak_spot'].includes(target.category);
+        const dropSuggestion = canRecommendDrop ? (target.drop_suggestion || '') : '';
+        return {
+          ...target,
+          drop_suggestion: dropSuggestion,
+          no_drop_reason: isHigh && !dropSuggestion
+            ? (target.no_drop_reason || 'This add would not benefit this roster.')
+            : ''
+        };
+      });
       return Response.json({
         week: currentPeriod,
         weaknesses: cache.weaknesses || [],
-        targets: cache.targets,
+        targets: cachedTargets,
         cached: true,
         scanned_at: cache.scanned_at
       });
@@ -98,6 +110,10 @@ Rules:
 - Write for a casual fan in plain, everyday English. No fantasy jargon; if you must use a term, explain it in a few words.
 - Keep every sentence short. why_brief is ONE sentence about how he helps THIS team right now.
 - news_note should say what is NEW (fresh injury news, role change, projection move) or be empty.
+- For a high-priority pick only: recommend one exact bench player to drop only when the target is an overlooked player with a verified role increase or fills an absolute roster need and clearly improves this roster. Put that exact roster name in drop_suggestion.
+- If a high-priority pick does not justify replacing anyone, leave drop_suggestion empty and state either "No bench player is worth replacing for this add." or "This add would not benefit this roster." in no_drop_reason.
+- Medium- and low-priority picks must have empty drop_suggestion and no_drop_reason.
+- Never name a starter as the drop. Never invent a player; use an exact name from THE TEAM'S BENCH.
 - For each pick give the single best source (site name + URL) for the news you cited.
 
 Return JSON matching the schema.`;
@@ -120,6 +136,7 @@ Return JSON matching the schema.`;
                 why_brief: { type: 'string' },
                 news_note: { type: 'string' },
                 drop_suggestion: { type: 'string' },
+                no_drop_reason: { type: 'string' },
                 source: { type: 'string' },
                 source_url: { type: 'string' }
               },
@@ -131,10 +148,24 @@ Return JSON matching the schema.`;
       }
     });
     const parsed = typeof llm === 'string' ? JSON.parse(llm) : llm;
-    const targets = Array.isArray(parsed && parsed.targets) ? parsed.targets.slice(0, 5) : [];
+    const benchNames = new Set(benchPlayers.map(p => p.name));
+    const targets = Array.isArray(parsed && parsed.targets) ? parsed.targets.slice(0, 5).map(target => {
+      const isHigh = target.priority === 'high';
+      const canRecommendDrop = isHigh && ['overlooked', 'fills_weak_spot'].includes(target.category);
+      const validDrop = canRecommendDrop && benchNames.has(target.drop_suggestion);
+      return {
+        ...target,
+        drop_suggestion: validDrop ? target.drop_suggestion : '',
+        no_drop_reason: isHigh && !validDrop
+          ? (target.no_drop_reason === 'No bench player is worth replacing for this add.'
+            ? target.no_drop_reason
+            : 'This add would not benefit this roster.')
+          : ''
+      };
+    }) : [];
 
     // Save the scan for the rest of the week (best effort — never block the result).
-    const waiverCache = { week: currentPeriod, weaknesses, targets, scanned_at: new Date().toISOString() };
+    const waiverCache = { week: currentPeriod, rulesVersion: 2, weaknesses, targets, scanned_at: new Date().toISOString() };
     try {
       if (state) await base44.asServiceRole.entities.RefreshState.update(state.id, { waiver_cache: waiverCache });
       else await base44.asServiceRole.entities.RefreshState.create({ user_id: user.id, league_id: DEFAULT_LEAGUE_ID, waiver_cache: waiverCache });

@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Loader2, Crosshair, Sparkles, RotateCcw } from "lucide-react";
 import HudPanel from "@/components/hud/HudPanel";
 import TradeRoster from "@/components/warroom/TradeRoster";
-import TradeOdds from "@/components/warroom/TradeOdds";
+import SimCrushReplay from "@/components/warroom/SimCrushReplay";
 import TradeSuggest from "@/components/warroom/TradeSuggest";
 import { AI_MODELS } from "@/lib/aiModels";
 
@@ -173,7 +173,7 @@ export default function TradeSimulator({ data }) {
         <p className="border border-rose-400/30 bg-rose-400/10 p-2 font-mono text-[10px] text-rose-300">{error}</p>
       )}
 
-      {odds && <TradeOdds odds={odds} myName={myTeam.name.trim()} partnerName={partner ? partner.name.trim() : ""} />}
+      {odds && <SimCrushReplay odds={odds} myName={myTeam.name.trim()} partnerName={partner ? partner.name.trim() : ""} />}
 
       {odds && (
         <HudPanel label="AI verdict" right="WEB + LIVE DATA">

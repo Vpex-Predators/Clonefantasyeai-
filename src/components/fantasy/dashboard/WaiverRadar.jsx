@@ -131,6 +131,12 @@ export default function WaiverRadar({ freeAgents, bench, starters }) {
                         <Newspaper className="mt-0.5 h-3 w-3 shrink-0" /> {t.news_note}
                       </p>
                     )}
+                    {t.priority === "high" && t.drop_suggestion && (
+                      <p className="mt-1 text-[10px] font-semibold text-emerald-300">Add {t.name} · drop {t.drop_suggestion}</p>
+                    )}
+                    {t.priority === "high" && !t.drop_suggestion && t.no_drop_reason && (
+                      <p className="mt-1 text-[10px] text-white/45">{t.no_drop_reason}</p>
+                    )}
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">
                     <span className={`rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${cat.cls}`}>
@@ -145,7 +151,7 @@ export default function WaiverRadar({ freeAgents, bench, starters }) {
                 </button>
                 {open && (
                   <div className="space-y-1.5 border-t border-white/10 px-3 py-2 text-[10px] text-white/55">
-                    {t.drop_suggestion && (
+                    {t.priority === "high" && t.drop_suggestion && (
                       <p className="flex items-start gap-1.5 text-amber-200/90">
                         <Trash2 className="mt-0.5 h-3 w-3 shrink-0" />
                         <span>If you add him, drop <span className="font-bold">{t.drop_suggestion}</span></span>
