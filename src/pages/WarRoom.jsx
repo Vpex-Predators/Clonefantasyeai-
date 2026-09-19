@@ -10,11 +10,13 @@ import GlassBackdrop from "@/components/hud/GlassBackdrop";
 import ThreatBoard from "@/components/warroom/ThreatBoard";
 import PowerRankings from "@/components/warroom/PowerRankings";
 import TradeSimulator from "@/components/warroom/TradeSimulator";
+import WaiverRadar from "@/components/fantasy/dashboard/WaiverRadar";
 
 const TABS = [
   { id: "threats", label: "Threat board" },
   { id: "rankings", label: "Power rankings" },
   { id: "trade", label: "Trade sim" },
+  { id: "waiver", label: "Waiver wire" },
 ];
 
 export default function WarRoom() {
@@ -51,6 +53,9 @@ export default function WarRoom() {
 
   const loadingData = isLoadingAuth || (isAuthenticated && loading && !data);
   const d = data && data.locked ? data : null;
+  const myRoster = (d?.rosters?.[d.myTeam.id] || []);
+  const waiverStarters = myRoster.filter(p => p.isStarter);
+  const waiverBench = myRoster.filter(p => !p.isStarter);
 
   return (
     <div className="min-h-screen bg-slate-950 pb-28 text-white">
@@ -90,7 +95,7 @@ export default function WarRoom() {
           </HudPanel>
         ) : d ? (
           <>
-            <div className="grid grid-cols-3 gap-1 rounded-full border border-white/10 bg-white/[0.05] p-1 backdrop-blur-xl">
+            <div className="grid grid-cols-4 gap-1 rounded-full border border-white/10 bg-white/[0.05] p-1 backdrop-blur-xl">
               {TABS.map((t) => (
                 <button
                   key={t.id}
@@ -109,6 +114,7 @@ export default function WarRoom() {
             {tab === "threats" && <ThreatBoard board={d.threatBoard} />}
             {tab === "rankings" && <PowerRankings data={d} />}
             {tab === "trade" && <TradeSimulator data={d} />}
+            {tab === "waiver" && <WaiverRadar bench={waiverBench} starters={waiverStarters} />}
           </>
         ) : null}
       </div>

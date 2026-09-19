@@ -8,7 +8,6 @@ import TeamLockOverlay from "@/components/fantasy/dashboard/TeamLockOverlay";
 import SeasonScoreChart from "@/components/fantasy/dashboard/SeasonScoreChart";
 import MatchupEngine from "@/components/fantasy/dashboard/MatchupEngine";
 import RosterCompare from "@/components/fantasy/dashboard/RosterCompare";
-import WaiverRadar from "@/components/fantasy/dashboard/WaiverRadar";
 import PlayoffRunway from "@/components/fantasy/dashboard/PlayoffRunway";
 import AdminPanel from "@/components/fantasy/dashboard/AdminPanel";
 
@@ -289,8 +288,6 @@ export default function Dashboard() {
               onAnalyze={analyzeOne}
               analyzing={analyzing}
             />
-
-            <WaiverRadar freeAgents={data.freeAgents} bench={data.myTeam.bench} starters={data.myTeam.starters} />
 
             <PlayoffRunway playoffOdds={data.playoffOdds} />
 
