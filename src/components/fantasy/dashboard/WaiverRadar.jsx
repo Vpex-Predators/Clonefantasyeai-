@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { AlertTriangle, ChevronDown, ChevronRight, ExternalLink, Loader2, Newspaper, Radar, Trash2 } from "lucide-react";
+import { AlertTriangle, ChevronDown, ChevronUp, ExternalLink, Loader2, Newspaper, Radar, Trash2 } from "lucide-react";
 import GlossaryChip from "@/components/hud/GlossaryChip";
+import WireList from "@/components/waiver/WireList";
 
 const CATEGORY_STYLES = {
   fills_weak_spot: { label: "Fills a hole", cls: "border-amber-400/30 bg-amber-400/15 text-amber-300" },
@@ -27,6 +28,7 @@ export default function WaiverRadar({ freeAgents, bench, starters }) {
   const [openName, setOpenName] = useState(null);
   const [posTab, setPosTab] = useState("All");
   const [scannedAt, setScannedAt] = useState(null);
+  const [showAll, setShowAll] = useState(false);
 
   // Quick live flags from the lineup: injured starters without a backup.
   const lineFlags = useMemo(() => {
@@ -56,8 +58,8 @@ export default function WaiverRadar({ freeAgents, bench, starters }) {
   useEffect(() => { scan(false); }, []);
 
   const matchesPos = p => posTab === "All" || positionLabel(p.position) === posTab;
-  const wireList = (freeAgents || []).filter(matchesPos).slice(0, 5);
   const shownTargets = (targets || []).filter(matchesPos);
+  const wireCount = (freeAgents || []).filter(matchesPos).length;
 
   return (
     <section className="rounded-2xl border border-white/10 bg-white/5 p-4">
@@ -205,28 +207,23 @@ export default function WaiverRadar({ freeAgents, bench, starters }) {
       )}
 
       {!scanning && !targets && (
-        <div className="space-y-2">
-          {wireList.length > 0 && (
-            <div className="space-y-1.5">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-white/40">On the wire now</p>
-              {wireList.map(fa => (
-                <div key={fa.id} className="flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
-                  <p className="truncate text-xs text-white/80">
-                    {fa.name} <span className="text-white/40">· {fa.position}</span>
-                  </p>
-                  <p className="shrink-0 text-[10px] text-white/50">proj {fa.weeklyProj || 0} wk</p>
-                </div>
-              ))}
-            </div>
-          )}
-          {wireList.length === 0 && (
-            <p className="text-xs text-white/50">No {posTab === "All" ? "players" : posTab + "s"} available on the wire right now.</p>
-          )}
-          <p className="text-[10px] text-white/40">
-            Hit “Scan the wire” for targets picked around your team’s weak spots, hidden gems and injury backups.
-          </p>
-        </div>
+        <p className="text-[10px] text-white/40">
+          Hit “Scan the wire” for targets picked around your team’s weak spots, hidden gems and injury backups.
+        </p>
       )}
+
+      {/* Full wire browsing — one tool, collapsed behind Show more */}
+      <div className="mt-3 border-t border-white/10 pt-3">
+        <button
+          onClick={() => setShowAll(o => !o)}
+          className="flex w-full items-center justify-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-white/60 transition-colors hover:bg-white/10"
+        >
+          {showAll ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          {showAll ? "Show less" : "Show more +"}
+          {!showAll && <span className="font-normal normal-case text-white/35">· {wireCount} available</span>}
+        </button>
+        {showAll && <WireList players={(freeAgents || []).filter(matchesPos)} />}
+      </div>
 
       {targets && targets.length > 0 && weaknesses.length > 0 && (
         <p className="mt-3 border-t border-white/10 pt-2 text-[10px] leading-snug text-white/35">
