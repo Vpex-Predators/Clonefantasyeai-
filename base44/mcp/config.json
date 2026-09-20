@@ -30,7 +30,8 @@
       "TeamLock": {
         "operations": [
           "read",
-          "create"
+          "create",
+          "update"
         ],
         "description": null
       }
