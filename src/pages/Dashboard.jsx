@@ -26,7 +26,7 @@ export default function Dashboard() {
   const [tab, setTab] = useState("matchup");
   const hasTrackedView = useRef(false);
   const loadBoard = useCallback(async () => {
-    const res = await base44.functions.invoke("getDashboardData", {});
+    const res = await base44.functions.invoke("getDashboardData", { localDate: new Date().toLocaleDateString("en-CA") });
     setData(res.data);
     if (res.data && !hasTrackedView.current) {
       hasTrackedView.current = true;
@@ -91,7 +91,7 @@ export default function Dashboard() {
   const lightRefresh = async () => {
     setRefreshing(true);
     try {
-      const res = await base44.functions.invoke("getLiveScores", {});
+      const res = await base44.functions.invoke("getLiveScores", { localDate: new Date().toLocaleDateString("en-CA") });
       const live = res.data;
       const mine = new Map((live.mine || []).map(p => [p.id, p]));
       const opp = new Map((live.opponent || []).map(p => [p.id, p]));
@@ -104,6 +104,7 @@ export default function Dashboard() {
         return {
           ...prev,
           lastRefresh: live.refreshedAt || new Date().toISOString(),
+          playoffOdds: live.playoffOdds || prev.playoffOdds,
           myTeam: prev.myTeam ? {
             ...prev.myTeam,
             starters: merge(prev.myTeam.starters, mine),
