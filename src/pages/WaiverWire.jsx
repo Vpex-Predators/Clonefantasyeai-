@@ -38,7 +38,7 @@ export default function WaiverWire() {
           : error ? <div className="border border-rose-400/30 bg-rose-400/10 p-3 text-xs text-rose-300">{error}</div>
           : !isAuthenticated ? <HudPanel label="Access restricted"><p className="text-xs text-white/60">Sign in to scan your league's waiver wire.</p><Link to="/" className="mt-3 inline-block bg-emerald-400 px-4 py-2 text-[10px] font-bold uppercase text-slate-950">Back to command</Link></HudPanel>
           : data && !data.locked ? <HudPanel label="Team lock required"><p className="text-xs text-white/60">Lock your team before scanning the wire.</p><Link to="/dashboard" className="mt-3 inline-block bg-emerald-400 px-4 py-2 text-[10px] font-bold uppercase text-slate-950">Lock my team</Link></HudPanel>
-          : d ? <><WaiverRadar starters={roster.filter((p) => p.isStarter)} bench={roster.filter((p) => !p.isStarter)} /><FreeAgentWire players={d.freeAgents || []} /></> : null}
+          : d ? <><WaiverRadar starters={roster.filter((p) => p.isStarter)} bench={roster.filter((p) => !p.isStarter)} freeAgents={d.freeAgents || []} /><FreeAgentWire players={d.freeAgents || []} /></> : null}
       </main>
       <AppNavBar />
     </div>
