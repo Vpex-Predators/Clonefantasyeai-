@@ -92,6 +92,41 @@
   }
 }
 
+/* Soft-cream iOS light theme — reskins the HUD's hardcoded dark utility
+   classes globally, so individual screens don't need per-component edits. */
+html.light body {
+  background-color: hsl(40 35% 97%);
+  color: hsl(222 20% 18%);
+}
+
+html.light [class*="bg-slate-950"],
+html.light [class*="bg-slate-900"] {
+  background-color: hsl(40 35% 97%) !important;
+}
+
+html.light [class*="from-slate-950"],
+html.light [class*="via-slate-950"],
+html.light [class*="to-slate-950"] {
+  --tw-gradient-from: hsl(40 35% 97%) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: hsl(40 35% 97% / 0) var(--tw-gradient-to-position) !important;
+}
+
+html.light [class*="text-white"] {
+  color: hsl(222 20% 18%) !important;
+}
+
+html.light [class*="bg-white/"] {
+  background-color: hsl(222 20% 18% / 0.05) !important;
+}
+
+html.light [class*="border-white/"] {
+  border-color: hsl(222 20% 18% / 0.12) !important;
+}
+
+html.light .hud-grid {
+  opacity: 0.4;
+}
+
 /* Faint holographic grid that fades toward the bottom of the viewport. */
 .hud-grid {
   background-image:

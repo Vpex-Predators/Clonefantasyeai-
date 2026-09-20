@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { Crosshair, LayoutDashboard, Calculator, Radar, Swords } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const ITEMS = [
   { to: "/", label: "Command", icon: Crosshair },
@@ -31,6 +32,8 @@ export default function AppNavBar() {
             </Link>
           );
         })}
+        <div className="ml-0.5 h-5 w-px bg-white/15" />
+        <ThemeToggle />
       </div>
     </nav>
   );
