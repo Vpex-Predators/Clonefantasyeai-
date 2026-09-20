@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { AlertTriangle, ChevronDown, ChevronUp, ExternalLink, Loader2, Newspaper, Radar, Trash2 } from "lucide-react";
 import GlossaryChip from "@/components/hud/GlossaryChip";
 import WireList from "@/components/waiver/WireList";
+import WaiverPlayerNumbers from "@/components/waiver/WaiverPlayerNumbers";
 
 const CATEGORY_STYLES = {
   fills_weak_spot: { label: "Fills a hole", cls: "border-amber-400/30 bg-amber-400/15 text-amber-300" },
@@ -161,6 +162,7 @@ export default function WaiverRadar({ freeAgents, bench, starters }) {
                     )}
                   </div>
                 </button>
+                <WaiverPlayerNumbers target={t} players={freeAgents || []} />
                 {open && (
                   <div className="space-y-1.5 border-t border-white/10 px-3 py-2 text-[10px] text-white/55">
                     {t.priority === "high" && t.drop_suggestion && (
