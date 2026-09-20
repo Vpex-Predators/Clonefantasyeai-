@@ -22,10 +22,10 @@ export default function ThreatCard({ threat, rank }) {
           </div>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-white/5 pt-2 font-mono text-[10px] text-white/55">
-          <span>H2H <span className="font-bold text-white">{threat.h2hPct}%</span></span>
-          <span>PLAYOFF <span className="font-bold text-white">{threat.playoffPct}%</span></span>
-          <span>TITLE <span className="font-bold text-white">{threat.titlePct}%</span></span>
-          <span>MEETS <span className="font-bold text-white">×{threat.meetingsLeft}</span></span>
+          <span>HEAD-TO-HEAD <span className="font-bold text-white">{threat.h2hPct}%</span></span>
+          <span>PLAYOFF CHANCE <span className="font-bold text-white">{threat.playoffPct}%</span></span>
+          <span>TITLE CHANCE <span className="font-bold text-white">{threat.titlePct}%</span></span>
+          <span>MATCHUPS LEFT <span className="font-bold text-white">×{threat.meetingsLeft}</span></span>
           <ChevronDown className={`ml-auto h-3.5 w-3.5 text-white/40 transition-transform ${open ? "rotate-180" : ""}`} />
         </div>
       </button>
@@ -35,7 +35,7 @@ export default function ThreatCard({ threat, rank }) {
           <p className="uppercase tracking-[0.18em] text-white/40">Simulated profile</p>
           <p className="mt-1.5">SCORING <span className="font-bold text-white">{threat.avgPoints} ppg</span></p>
           <p>PROJ FINISH <span className="font-bold text-white">{threat.avgWins} wins</span></p>
-          <p>PLAYOFF FIELD <span className="font-bold text-white">{threat.playoffPct}%</span> · TITLE SHOT <span className="font-bold text-white">{threat.titlePct}%</span></p>
+          <p>PLAYOFF CHANCE <span className="font-bold text-white">{threat.playoffPct}%</span> · TITLE CHANCE <span className="font-bold text-white">{threat.titlePct}%</span></p>
           <p className="mt-2 text-white/35">
             Threat score = 45% head-to-head edge + 35% their playoff odds + 20% their title odds.
           </p>

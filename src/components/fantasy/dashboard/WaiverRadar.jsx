@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { AlertTriangle, ChevronDown, ChevronRight, ExternalLink, Loader2, Newspaper, Radar, Trash2 } from "lucide-react";
+import GlossaryChip from "@/components/hud/GlossaryChip";
 
 const CATEGORY_STYLES = {
   fills_weak_spot: { label: "Fills a hole", cls: "border-amber-400/30 bg-amber-400/15 text-amber-300" },
@@ -123,7 +124,10 @@ export default function WaiverRadar({ freeAgents, bench, starters }) {
                 >
                   <div className="min-w-0">
                     <p className="truncate text-xs font-semibold text-white">
-                      {t.name} <span className="text-white/40">· {positionLabel(t.position)}</span>
+                      {t.name}{" "}
+                      <span className="text-white/40">
+                        · {positionLabel(t.position) === "D/ST" ? <GlossaryChip term="dst" bare>D/ST</GlossaryChip> : positionLabel(t.position)}
+                      </span>
                     </p>
                     <p className="mt-0.5 text-[10px] leading-snug text-white/55">{t.why_brief}</p>
                     {t.news_note && (
@@ -132,15 +136,21 @@ export default function WaiverRadar({ freeAgents, bench, starters }) {
                       </p>
                     )}
                     {t.priority === "high" && t.drop_suggestion && (
-                      <p className="mt-1 text-[10px] font-semibold text-emerald-300">Add {t.name} · drop {t.drop_suggestion}</p>
+                      <p className="mt-1 text-[10px] font-semibold text-emerald-300">Drop {t.drop_suggestion} to add {t.name}.</p>
                     )}
-                    {t.priority === "high" && !t.drop_suggestion && t.no_drop_reason && (
-                      <p className="mt-1 text-[10px] text-white/45">{t.no_drop_reason}</p>
+                    {t.priority === "high" && !t.drop_suggestion && (
+                      <p className="mt-1 text-[10px] text-white/45">{t.no_drop_reason || "No roster change needed."}</p>
                     )}
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">
                     <span className={`rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${cat.cls}`}>
-                      {cat.label}
+                      {t.category === "handcuff" ? (
+                        <GlossaryChip term="handcuff" bare>{cat.label}</GlossaryChip>
+                      ) : t.category === "streamer" ? (
+                        <GlossaryChip term="streaming" bare>{cat.label}</GlossaryChip>
+                      ) : (
+                        cat.label
+                      )}
                     </span>
                     {t.priority && (
                       <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${pr.cls}`}>
@@ -154,7 +164,7 @@ export default function WaiverRadar({ freeAgents, bench, starters }) {
                     {t.priority === "high" && t.drop_suggestion && (
                       <p className="flex items-start gap-1.5 text-amber-200/90">
                         <Trash2 className="mt-0.5 h-3 w-3 shrink-0" />
-                        <span>If you add him, drop <span className="font-bold">{t.drop_suggestion}</span></span>
+                        <span>Drop <span className="font-bold">{t.drop_suggestion}</span> to add {t.name}.</span>
                       </p>
                     )}
                     {t.source_url && (

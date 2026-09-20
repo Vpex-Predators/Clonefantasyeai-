@@ -57,7 +57,7 @@ export default function WarRoom() {
       <GlassBackdrop />
       <HudStatusBar
         title="War room"
-        sub={d ? `${d.league.name.trim()} · WK ${d.league.week} · ${d.myTeam.name.trim()}` : "LEAGUE WARFARE INTEL"}
+        sub={d ? `${d.league.name.trim()} · WK ${d.league.week} · ${d.myTeam.name.trim()}` : "Trades, rankings & threats"}
         tag={d ? "INTEL" : "STANDBY"}
       />
 

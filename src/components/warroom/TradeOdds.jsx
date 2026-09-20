@@ -14,20 +14,20 @@ function Side({ name, before, after, mine, crushed }) {
       </p>
       <div className="mt-2 space-y-1 font-mono text-[10px] text-white/55">
         <p className="flex items-center justify-between gap-1">
-          PLAYOFF
+          PLAYOFF CHANCE
           <span className="text-white">
             {before.playoffPct ?? "—"}% → <span className="font-bold">{after.playoffPct ?? "—"}%</span>{" "}
             {delta(before.playoffPct, after.playoffPct)}
           </span>
         </p>
         <p className="flex items-center justify-between gap-1">
-          TITLE
+          TITLE CHANCE
           <span className="text-white">
             {before.titlePct ?? "—"}% → <span className="font-bold">{after.titlePct ?? "—"}%</span>
           </span>
         </p>
         <p className="flex items-center justify-between gap-1">
-          PROJ WINS
+          PROJECTED WINS
           <span className="text-white">
             {before.avgWins ?? "—"} → <span className="font-bold">{after.avgWins ?? "—"}</span>
           </span>
@@ -54,8 +54,8 @@ export default function TradeOdds({ odds, myName, partnerName, crushedSide }) {
         <Side name={partnerName} before={before.partner} after={after.partner} crushed={crushedSide === "partner"} />
       </div>
       <p className="mt-2 border-t border-dashed border-white/10 pt-2 font-mono text-[9px] uppercase tracking-[0.15em] text-white/40">
-        Lineup shift: me {lineupDelta.mine >= 0 ? "+" : ""}{lineupDelta.mine} pts/wk · them{" "}
-        {lineupDelta.partner >= 0 ? "+" : ""}{lineupDelta.partner} pts/wk
+        This trade changes your lineup by {lineupDelta.mine >= 0 ? "+" : ""}{lineupDelta.mine} pts/wk and theirs by{" "}
+        {lineupDelta.partner >= 0 ? "+" : ""}{lineupDelta.partner} pts/wk.
       </p>
     </HudPanel>
   );

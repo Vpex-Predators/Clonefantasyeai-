@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import HudPanel from "@/components/hud/HudPanel";
+import GlossaryChip from "@/components/hud/GlossaryChip";
 
 const POSITIONS = ["All", "QB", "RB", "WR", "TE", "D/ST", "K"];
 const label = (position) => position === "DST" ? "D/ST" : position;
@@ -25,11 +26,13 @@ export default function FreeAgentWire({ players = [] }) {
             <span className="font-mono text-[9px] text-white/25">{index + 1}</span>
             <div className="min-w-0">
               <p className="truncate text-xs font-semibold text-white/85">{player.name}</p>
-              <p className="font-mono text-[9px] uppercase text-white/35">{label(player.position)} · {player.percentOwned || 0}% owned</p>
+              <p className="font-mono text-[9px] uppercase text-white/35">
+                {label(player.position) === "D/ST" ? <GlossaryChip term="dst" bare>D/ST</GlossaryChip> : label(player.position)} · {player.percentOwned || 0}% owned
+              </p>
             </div>
             <div className="text-right font-mono text-[9px] uppercase text-white/45">
               <p><span className="text-emerald-300">{player.weeklyProj || 0}</span> wk</p>
-              <p><span className="text-white/75">{player.seasonProj || 0}</span> ROS</p>
+              <p><span className="text-white/75">{player.seasonProj || 0}</span> <GlossaryChip term="ros" bare>ROS</GlossaryChip></p>
             </div>
           </div>
         ))}

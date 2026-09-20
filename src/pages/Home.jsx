@@ -66,8 +66,8 @@ export default function Home() {
     <div className="min-h-screen bg-slate-950 pb-28 text-white">
       <GlassBackdrop />
       <HudStatusBar
-        title="Mission briefing"
-        sub={d ? `${d.league.name.trim()} · WK ${d.league.week} · ${d.myTeam.wins}-${d.myTeam.losses}` : "FANTASYEDGE TACTICAL BRIEFING SYSTEM"}
+        title="This week's matchup"
+        sub={d ? `${d.league.name.trim()} · WK ${d.league.week} · ${d.myTeam.wins}-${d.myTeam.losses}` : "Live scores, odds & waiver picks"}
         tag={d ? "LIVE" : "STANDBY"}
       />
 

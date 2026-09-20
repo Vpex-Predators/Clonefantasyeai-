@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import InjuryBadge from "./InjuryBadge";
+import GlossaryChip from "@/components/hud/GlossaryChip";
 
 const VERDICT_STYLES = {
   Start: "bg-emerald-400/15 text-emerald-300 border-emerald-400/40",
@@ -72,6 +73,10 @@ export default function PlayerCard({ player, pending, analyzing, onOpen, onAnaly
         )}
       </div>
 
+      {a && !open && (
+        <p className="mt-1.5 truncate text-[10px] text-white/50">{a.analysis}</p>
+      )}
+
       {open && (
         <div className="mt-2.5 space-y-2 border-t border-white/10 pt-2.5">
           {a ? (
@@ -87,7 +92,8 @@ export default function PlayerCard({ player, pending, analyzing, onOpen, onAnaly
               )}
               <div className="flex items-center gap-2 text-[10px]">
                 <span className="text-white/40">
-                  Edge {typeof a.weighted_edge === "number" ? a.weighted_edge.toFixed(1) : "—"} pts
+                  <GlossaryChip term="weighted_edge" bare>Edge</GlossaryChip>{" "}
+                  {typeof a.weighted_edge === "number" ? a.weighted_edge.toFixed(1) : "—"} pts
                 </span>
                 <span
                   className={`font-semibold uppercase ${

@@ -32,7 +32,7 @@ export default function WaiverWire() {
   return (
     <div className="min-h-screen bg-slate-950 pb-28 text-white">
       <GlassBackdrop />
-      <HudStatusBar title="Waiver wire" sub={d ? `${d.league.name.trim()} · WK ${d.league.week} · ${d.myTeam.name.trim()}` : "FREE-AGENT INTELLIGENCE"} tag={d ? "LIVE" : "STANDBY"} />
+      <HudStatusBar title="Waiver wire" sub={d ? `${d.league.name.trim()} · WK ${d.league.week} · ${d.myTeam.name.trim()}` : "Available players & smart adds"} tag={d ? "LIVE" : "STANDBY"} />
       <main className="relative z-10 mx-auto max-w-2xl space-y-3 px-3 pt-3">
         {isLoadingAuth || loading ? <div className="flex justify-center py-12"><Loader2 className="h-7 w-7 animate-spin text-emerald-400" /></div>
           : error ? <div className="border border-rose-400/30 bg-rose-400/10 p-3 text-xs text-rose-300">{error}</div>

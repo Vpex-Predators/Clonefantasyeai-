@@ -18,7 +18,7 @@ export default function ThreatBoard({ board }) {
   return (
     <div className="space-y-3">
       {top && (
-        <HudPanel label="Keep-ahead calculus" right={`${board.sims} SIMS`}>
+        <HudPanel label="Catching the leader" right={`${board.sims} SIMS`}>
           <div className="grid grid-cols-2 gap-2">
             <HudStat
               label="Wins to clear top threat"
