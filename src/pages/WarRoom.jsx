@@ -10,6 +10,7 @@ import GlassBackdrop from "@/components/hud/GlassBackdrop";
 import ThreatBoard from "@/components/warroom/ThreatBoard";
 import PowerRankings from "@/components/warroom/PowerRankings";
 import TradeSimulator from "@/components/warroom/TradeSimulator";
+import PlayerCompare from "@/components/warroom/PlayerCompare";
 
 const TABS = [
   { id: "threats", label: "Threat board" },
@@ -22,7 +23,14 @@ export default function WarRoom() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [tab, setTab] = useState("threats");
+  // A ?compare=id1,id2 link (from the My Team swap view) opens straight into the compare tool.
+  const [tab, setTab] = useState(() =>
+    new URLSearchParams(window.location.search).get("compare") ? "trade" : "threats"
+  );
+  const [compareIds] = useState(() => {
+    const raw = new URLSearchParams(window.location.search).get("compare");
+    return raw ? raw.split(",").map(id => id.trim()).filter(Boolean) : null;
+  });
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -108,7 +116,12 @@ export default function WarRoom() {
 
             {tab === "threats" && <ThreatBoard board={d.threatBoard} />}
             {tab === "rankings" && <PowerRankings data={d} />}
-            {tab === "trade" && <TradeSimulator data={d} />}
+            {tab === "trade" && (
+              <>
+                <TradeSimulator data={d} />
+                <PlayerCompare data={d} initialIds={compareIds} />
+              </>
+            )}
           </>
         ) : null}
       </div>

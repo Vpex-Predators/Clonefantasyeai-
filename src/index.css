@@ -136,3 +136,17 @@ html.light .hud-grid {
   -webkit-mask-image: radial-gradient(ellipse 85% 55% at 50% 0%, black 30%, transparent 78%);
   mask-image: radial-gradient(ellipse 85% 55% at 50% 0%, black 30%, transparent 78%);
 }
+
+/* Dark-mode readability: the HUD's faintest text tiers (white at 15–50%
+   opacity) sit under the WCAG 4.5:1 bar on dark glass. Lifting them to 70%
+   keeps the muted look while staying legible on every tab. */
+html:not(.light) [class*="text-white/15"],
+html:not(.light) [class*="text-white/20"],
+html:not(.light) [class*="text-white/25"],
+html:not(.light) [class*="text-white/30"],
+html:not(.light) [class*="text-white/35"],
+html:not(.light) [class*="text-white/40"],
+html:not(.light) [class*="text-white/45"],
+html:not(.light) [class*="text-white/50"] {
+  color: rgb(255 255 255 / 0.7) !important;
+}

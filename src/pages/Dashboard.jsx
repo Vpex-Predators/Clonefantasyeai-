@@ -8,6 +8,7 @@ import TeamLockOverlay from "@/components/fantasy/dashboard/TeamLockOverlay";
 import SeasonScoreChart from "@/components/fantasy/dashboard/SeasonScoreChart";
 import MatchupEngine from "@/components/fantasy/dashboard/MatchupEngine";
 import RosterCompare from "@/components/fantasy/dashboard/RosterCompare";
+import SwapView from "@/components/fantasy/dashboard/SwapView";
 import PlayoffRunway from "@/components/fantasy/dashboard/PlayoffRunway";
 import AdminPanel from "@/components/fantasy/dashboard/AdminPanel";
 
@@ -240,6 +241,14 @@ export default function Dashboard() {
             This week
           </button>
           <button
+            onClick={() => setTab("swap")}
+            className={`flex-1 rounded-full py-1.5 text-xs font-semibold transition-colors ${
+              tab === "swap" ? "bg-emerald-400 text-slate-950" : "text-white/60"
+            }`}
+          >
+            Swap
+          </button>
+          <button
             onClick={() => setTab("season")}
             className={`flex-1 rounded-full py-1.5 text-xs font-semibold transition-colors ${
               tab === "season" ? "bg-emerald-400 text-slate-950" : "text-white/60"
@@ -265,6 +274,8 @@ export default function Dashboard() {
               weeklyScores={data.weeklyScores}
             />
           </>
+        ) : tab === "swap" ? (
+          <SwapView starters={data.myTeam.starters} bench={data.myTeam.bench} />
         ) : (
           <>
             <MatchupEngine
