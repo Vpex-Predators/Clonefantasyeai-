@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ComparePicker from "./ComparePicker";
+import DrawBar from "@/components/hud/DrawBar";
 
 const positionLabel = pos => (pos === "DST" ? "D/ST" : pos || "—");
 const INJURY_LABELS = { QUESTIONABLE: "Questionable", DOUBTFUL: "Doubtful", OUT: "Out", INJURY_RESERVE: "On IR", SUSPENSION: "Suspended" };
@@ -66,6 +67,13 @@ export default function PlayerCompare({ data, initialIds }) {
     return `${lead.name} projects ${Math.abs(d).toFixed(1)} pts higher than ${trail.name} this week.`;
   }, [pickA, pickB]);
 
+  // Each player's share of the two week projections combined.
+  const weekSplit = useMemo(() => {
+    if (!pickA || !pickB) return 50;
+    const total = (pickA.weeklyProj || 0) + (pickB.weeklyProj || 0);
+    return total > 0 ? ((pickA.weeklyProj || 0) / total) * 100 : 50;
+  }, [pickA, pickB]);
+
   return (
     <section className="rounded-2xl border border-white/10 bg-white/5 p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
@@ -114,9 +122,17 @@ export default function PlayerCompare({ data, initialIds }) {
           </div>
 
           {edge && (
-            <p className="mt-2.5 rounded-lg border border-emerald-400/25 bg-emerald-400/10 px-3 py-2 text-[11px] font-semibold text-emerald-300">
-              {edge}
-            </p>
+            <div className="mt-2.5 rounded-lg border border-emerald-400/25 bg-emerald-400/10 px-3 py-2">
+              <p className="text-[11px] font-semibold text-emerald-300">{edge}</p>
+              {/* Week-projection split drawn as two growing bars */}
+              <div className="mt-1.5 flex items-center gap-1.5">
+                <DrawBar
+                  pct={weekSplit}
+                  className="bg-emerald-400"
+                />
+                <DrawBar pct={100 - weekSplit} className="bg-cyan-400" />
+              </div>
+            </div>
           )}
         </>
       ) : (

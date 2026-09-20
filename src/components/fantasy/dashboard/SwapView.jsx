@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { TrendingUp } from "lucide-react";
 import InjuryBadge from "./InjuryBadge";
+import DrawBar from "@/components/hud/DrawBar";
 
 // Which real positions can fill each lineup slot (ESPN slot ids).
 const SLOT_ELIGIBLE = {
@@ -35,6 +36,8 @@ export default function SwapView({ starters = [], bench = [] }) {
     return { swaps: found, swapByBench: byBench, swapByStarter: byStarter };
   }, [starters, bench]);
 
+  const maxMargin = Math.max(...swaps.map(s => Number(s.margin)), 1);
+
   return (
     <div className="space-y-3">
       <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
@@ -48,14 +51,20 @@ export default function SwapView({ starters = [], bench = [] }) {
               <Link
                 key={`${sw.starter.id}-${sw.bench.id}`}
                 to={`/warroom?compare=${sw.bench.id},${sw.starter.id}`}
-                className="flex items-center justify-between gap-2 rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-3 py-2 transition-colors hover:bg-emerald-400/20"
+                className="block rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-3 py-2 transition-colors hover:bg-emerald-400/20"
               >
-                <span className="min-w-0 truncate text-[11px] font-semibold text-emerald-200">
-                  Start {sw.bench.name} over {sw.starter.name}
-                </span>
-                <span className="flex shrink-0 items-center gap-1 font-mono text-[10px] font-bold text-emerald-300">
-                  <TrendingUp className="h-3 w-3" /> +{sw.margin} pts
-                </span>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="min-w-0 truncate text-[11px] font-semibold text-emerald-200">
+                    Start {sw.bench.name} over {sw.starter.name}
+                  </span>
+                  <span className="flex shrink-0 items-center gap-1 font-mono text-[10px] font-bold text-emerald-300">
+                    <TrendingUp className="h-3 w-3" /> +{sw.margin} pts
+                  </span>
+                </div>
+                {/* Edge drawn relative to the biggest upgrade on the board */}
+                <div className="mt-1.5">
+                  <DrawBar pct={(Number(sw.margin) / maxMargin) * 100} />
+                </div>
               </Link>
             ))}
           </div>

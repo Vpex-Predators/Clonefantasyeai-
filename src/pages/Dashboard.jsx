@@ -1,9 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import { Loader2, LogOut } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import AppNavBar from "@/components/AppNavBar";
-import RefreshBar from "@/components/fantasy/dashboard/RefreshBar";
+import GlassBackdrop from "@/components/hud/GlassBackdrop";
+import HudStatusBar from "@/components/hud/HudStatusBar";
+import HudPanel from "@/components/hud/HudPanel";
+import TeamScoreboard from "@/components/fantasy/dashboard/TeamScoreboard";
 import TeamLockOverlay from "@/components/fantasy/dashboard/TeamLockOverlay";
 import SeasonScoreChart from "@/components/fantasy/dashboard/SeasonScoreChart";
 import MatchupEngine from "@/components/fantasy/dashboard/MatchupEngine";
@@ -151,8 +154,9 @@ export default function Dashboard() {
   if (!data.locked) {
     return (
       <div className="relative min-h-screen overflow-hidden bg-slate-950 text-white">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-emerald-500/15 via-emerald-500/5 to-transparent" />
-        <div className="relative mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center px-4 text-center">
+        <GlassBackdrop />
+        <HudStatusBar title="My team command" sub={`${data.league.name.trim()} · WK ${data.league.week}`} tag="STANDBY" />
+        <div className="relative z-10 mx-auto flex min-h-[70vh] max-w-2xl flex-col items-center justify-center px-4 text-center">
           <p className="text-[11px] font-semibold uppercase tracking-widest text-emerald-400/80">
             {data.league.name} · Week {data.league.week}
           </p>
@@ -176,97 +180,56 @@ export default function Dashboard() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950 pb-28 text-white">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-emerald-500/15 via-emerald-500/5 to-transparent" />
-      <div className="relative mx-auto max-w-2xl space-y-5 px-4 pt-8">
+      <GlassBackdrop />
+      <HudStatusBar
+        title="My team command"
+        sub={`${data.league.name.trim()} · WK ${data.league.week} · ${data.myTeam.name.trim()}`}
+        tag={anyLive ? "LIVE" : "READY"}
+      />
+      <div className="relative z-10 mx-auto max-w-2xl space-y-3 px-3 pt-3">
         {error && (
           <div className="rounded-xl border border-rose-400/30 bg-rose-400/10 p-3 text-sm text-rose-300">{error}</div>
         )}
 
-        <header>
-          <div className="flex items-start justify-between gap-3">
-            <p className="pt-1 text-[11px] font-semibold uppercase tracking-widest text-emerald-400/80">
-              {data.league.name} · Week {data.league.week}
-            </p>
-            <div className="flex flex-col items-end gap-1.5">
-              <RefreshBar
-                lastRefresh={data.lastRefresh}
-                refreshing={refreshing}
-                analyzing={analyzing}
-                pendingCount={(data.pending || []).length}
-                onRefresh={lightRefresh}
-              />
-              <button
-                onClick={() => base44.auth.logout()}
-                className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-white/40 transition-colors hover:text-rose-300"
-              >
-                <LogOut className="h-3 w-3" />
-                Log out
-              </button>
-            </div>
-          </div>
+        <TeamScoreboard
+          data={data}
+          myScore={myScore}
+          oppScore={oppScore}
+          anyLive={anyLive}
+          refreshing={refreshing}
+          analyzing={analyzing}
+          onRefresh={lightRefresh}
+        />
 
-          <div className="mt-2 flex items-end justify-center gap-4">
-            <div className="min-w-0 flex-1 text-center">
-              <p className="font-mono text-4xl font-bold leading-none text-emerald-300">{myScore.toFixed(1)}</p>
-              <p className="mt-1 truncate text-xs font-semibold text-emerald-300/90">{data.myTeam.name}</p>
-              <p className="text-[10px] text-white/40">{data.myTeam.wins}-{data.myTeam.losses} record</p>
-            </div>
-            <span className="shrink-0 bg-gradient-to-r from-emerald-400 to-rose-400 bg-clip-text pb-1 font-heading text-xl font-bold italic tracking-widest text-transparent">
-              VS
-            </span>
-            <div className="min-w-0 flex-1 text-center">
-              <p className="font-mono text-4xl font-bold leading-none text-rose-300">
-                {data.opponent ? oppScore.toFixed(1) : "—"}
-              </p>
-              <p className="mt-1 truncate text-xs font-semibold text-rose-300/90">
-                {data.opponent ? data.opponent.name : "Bye week"}
-              </p>
-              {data.opponent && (
-                <p className="text-[10px] text-white/40">{data.opponent.wins}-{data.opponent.losses} record</p>
-              )}
-            </div>
-          </div>
-          <p className="mt-1.5 text-center text-[10px] text-white/40">
-            {anyLive ? "live — actual points lock in as games finish" : "projected totals"}
-          </p>
-        </header>
-
-        <div className="flex rounded-full border border-white/10 bg-white/5 p-1">
-          <button
-            onClick={() => setTab("matchup")}
-            className={`flex-1 rounded-full py-1.5 text-xs font-semibold transition-colors ${
-              tab === "matchup" ? "bg-emerald-400 text-slate-950" : "text-white/60"
-            }`}
-          >
-            This week
-          </button>
-          <button
-            onClick={() => setTab("swap")}
-            className={`flex-1 rounded-full py-1.5 text-xs font-semibold transition-colors ${
-              tab === "swap" ? "bg-emerald-400 text-slate-950" : "text-white/60"
-            }`}
-          >
-            Swap
-          </button>
-          <button
-            onClick={() => setTab("season")}
-            className={`flex-1 rounded-full py-1.5 text-xs font-semibold transition-colors ${
-              tab === "season" ? "bg-emerald-400 text-slate-950" : "text-white/60"
-            }`}
-          >
-            Season
-          </button>
+        <div className="grid grid-cols-3 gap-1 rounded-full border border-white/10 bg-white/[0.05] p-1 backdrop-blur-xl">
+          {[
+            { id: "matchup", label: "This week" },
+            { id: "swap", label: "Swap" },
+            { id: "season", label: "Season" },
+          ].map(t => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`rounded-full py-2 text-[10px] font-bold uppercase tracking-[0.15em] transition-all duration-300 ${
+                tab === t.id
+                  ? "bg-gradient-to-r from-emerald-400 to-cyan-400 text-slate-950 shadow-[0_0_16px_rgba(52,211,153,0.45)]"
+                  : "text-white/55 hover:text-white"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
 
         {tab === "season" ? (
           <>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <HudPanel label="Season totals">
               <p className="text-sm text-white/70">
-                Season totals: <span className="font-semibold text-white">{data.myTeam.pointsFor} pts for</span> ·{" "}
+                <span className="font-semibold text-white">{data.myTeam.pointsFor} pts for</span> ·{" "}
                 <span className="font-semibold text-white">{data.myTeam.pointsAgainst} against</span>
               </p>
-              <p className="mt-0.5 text-[10px] text-white/40">Starters-only scoring across completed weeks.</p>
-            </div>
+              <p className="mt-0.5 text-[10px] text-white/60">Starters-only scoring across completed weeks.</p>
+            </HudPanel>
             <SeasonScoreChart
               myTeam={data.myTeam}
               teams={data.teams}

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import InjuryBadge from "./InjuryBadge";
 import GlossaryChip from "@/components/hud/GlossaryChip";
+import DrawSparkline from "@/components/hud/DrawSparkline";
 
 const VERDICT_STYLES = {
   Start: "bg-emerald-400/15 text-emerald-300 border-emerald-400/40",
@@ -9,19 +10,6 @@ const VERDICT_STYLES = {
   Trade: "bg-amber-400/15 text-amber-300 border-amber-400/40",
   Hold: "bg-slate-400/15 text-slate-300 border-slate-400/40",
 };
-
-function Sparkline({ points }) {
-  if (!points || points.length < 2) return null;
-  const max = Math.max(...points.map(p => p.points), 1);
-  const path = points
-    .map((p, i) => `${(i / (points.length - 1)) * 60},${18 - (p.points / max) * 16}`)
-    .join(" ");
-  return (
-    <svg viewBox="0 0 60 18" className="h-4 w-14 text-emerald-400/80" preserveAspectRatio="none">
-      <polyline points={path} fill="none" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-  );
-}
 
 export default function PlayerCard({ player, pending, analyzing, onOpen, onAnalyze }) {
   const [open, setOpen] = useState(false);
@@ -55,7 +43,7 @@ export default function PlayerCard({ player, pending, analyzing, onOpen, onAnaly
           <div className="mt-1 flex items-center gap-2 text-[10px] text-white/45">
             <span className="rounded bg-white/10 px-1 py-0.5 font-medium text-white/60">{player.lineupLabel || player.position}</span>
             <span>{player.weeklyProj > 0 ? `${player.weeklyProj} proj` : `${player.seasonAvg} avg`}</span>
-            <Sparkline points={player.trend} />
+            <DrawSparkline points={player.trend} />
           </div>
         </div>
         {a ? (

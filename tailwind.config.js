@@ -87,6 +87,14 @@ module.exports = {
   					transform: 'translate3d(24px, -18px, 0) scale(1.1)'
   				}
   			},
+  			'draw-line': {
+  				from: {
+  					strokeDashoffset: '120'
+  				},
+  				to: {
+  					strokeDashoffset: '0'
+  				}
+  			},
   			'accordion-down': {
   				from: {
   					height: '0'
@@ -107,6 +115,7 @@ module.exports = {
   		animation: {
   			'fade-up': 'fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both',
   			'float-slow': 'float-slow 16s ease-in-out infinite',
+  			'draw-line': 'draw-line 0.9s ease-out both',
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out'
   		}
