@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap');
+/* Fonts load via <link> tags in index.html (preconnect + display=swap)
+   so text paints without waiting on a CSS @import chain. */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -149,4 +150,82 @@ html:not(.light) [class*="text-white/40"],
 html:not(.light) [class*="text-white/45"],
 html:not(.light) [class*="text-white/50"] {
   color: rgb(255 255 255 / 0.7) !important;
+}
+
+/* ---- Android WebView readiness ----------------------------------------- */
+
+/* No elastic overscroll: the app owns pull gestures (custom pull-to-refresh)
+   and rubber-banding behind the floating nav reads as a glitch. */
+html,
+body {
+  overscroll-behavior-y: none;
+}
+
+/* Touch chrome: no gray tap flashes, no double-tap-zoom delay on controls. */
+a,
+button,
+[role="button"],
+input,
+select,
+textarea,
+label,
+svg {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a,
+button,
+[role="button"],
+select {
+  touch-action: manipulation;
+}
+
+/* Chrome elements (nav, pills, chips, stat tiles) resist text selection and
+   long-press callouts; message and analysis text stays selectable. */
+.no-callout {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Scrollable strips that shouldn't show a scrollbar (bottom nav). */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Accessibility floor: no UI text below 14px anywhere in the app. */
+[class*="text-[9px]"],
+[class*="text-[10px]"],
+[class*="text-[11px]"],
+[class*="text-[12px]"],
+[class*="text-[13px]"],
+[class*="text-xs"] {
+  font-size: 0.875rem !important;
+}
+
+/* Light mode: the tinted -200/-300 accent text built for dark glass is
+   unreadable on the soft-cream palette — remap to deep tones. */
+html.light [class*="text-emerald-200"] { color: hsl(161 88% 22%) !important; }
+html.light [class*="text-emerald-300"] { color: hsl(161 88% 22%) !important; }
+html.light [class*="text-rose-200"] { color: hsl(347 77% 32%) !important; }
+html.light [class*="text-rose-300"] { color: hsl(347 77% 32%) !important; }
+html.light [class*="text-amber-200"] { color: hsl(30 85% 28%) !important; }
+html.light [class*="text-amber-300"] { color: hsl(30 85% 28%) !important; }
+html.light [class*="text-sky-200"] { color: hsl(206 80% 30%) !important; }
+html.light [class*="text-sky-300"] { color: hsl(206 80% 30%) !important; }
+html.light [class*="text-slate-300"] { color: hsl(222 20% 30%) !important; }
+
+/* Respect the OS "remove animations" switch (Android WebView included). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

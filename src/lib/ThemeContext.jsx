@@ -4,9 +4,9 @@ const ThemeContext = createContext(null);
 const STORAGE_KEY = "theme_pref";
 
 function detectDefaultTheme() {
-  if (typeof navigator === "undefined") return "dark";
-  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-  return isIOS ? "light" : "dark";
+  if (typeof window === "undefined" || !window.matchMedia) return "dark";
+  // No stored preference: follow the OS color scheme.
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
 export function ThemeProvider({ children }) {
@@ -15,10 +15,23 @@ export function ThemeProvider({ children }) {
     return localStorage.getItem(STORAGE_KEY) || detectDefaultTheme();
   });
 
+  const [hasStoredPref] = useState(
+    () => typeof localStorage !== "undefined" && Boolean(localStorage.getItem(STORAGE_KEY))
+  );
+
   useEffect(() => {
     document.documentElement.classList.remove("light", "dark");
     document.documentElement.classList.add(theme);
   }, [theme]);
+
+  // Until the user picks a theme manually, keep following the OS setting live.
+  useEffect(() => {
+    if (hasStoredPref || typeof window === "undefined" || !window.matchMedia) return undefined;
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = (e) => setTheme(e.matches ? "dark" : "light");
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, [hasStoredPref]);
 
   const toggleTheme = () => {
     setTheme(prev => {

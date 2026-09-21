@@ -63,7 +63,7 @@ export default function Home() {
   const d = data && data.locked ? data : null;
 
   return (
-    <div className="min-h-screen bg-slate-950 pb-28 text-white">
+    <div className="min-h-screen bg-slate-950 pb-[calc(env(safe-area-inset-bottom)+7rem)] text-white">
       <GlassBackdrop />
       <HudStatusBar
         title="This week's matchup"
@@ -97,7 +97,7 @@ export default function Home() {
             <p className="mt-1 text-xs text-white/50">One-time verification anchors your account to your roster.</p>
             <Link
               to="/dashboard"
-              className="mt-3 inline-block bg-emerald-400 px-5 py-2 text-xs font-bold uppercase tracking-widest text-slate-950 hover:bg-emerald-300"
+              className="no-callout mt-3 inline-flex min-h-[44px] items-center bg-emerald-400 px-5 py-2 text-sm font-bold uppercase tracking-widest text-slate-950 hover:bg-emerald-300"
             >
               Go to dashboard
             </Link>
@@ -109,7 +109,7 @@ export default function Home() {
 
             <Link
               to="/warroom"
-              className="relative block rounded-2xl border border-rose-400/40 bg-rose-400/[0.07] p-4 backdrop-blur-xl transition-colors hover:border-rose-400/70 hover:bg-rose-400/10"
+              className="no-callout relative block rounded-2xl border border-rose-400/40 bg-rose-400/[0.07] p-4 backdrop-blur-xl transition-colors hover:border-rose-400/70 hover:bg-rose-400/10"
             >
               <div className="flex items-center gap-2 text-rose-300">
                 <Swords className="h-4 w-4" />
@@ -124,7 +124,7 @@ export default function Home() {
             <div className="grid grid-cols-2 gap-2">
               <Link
                 to="/dashboard"
-                className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-400/40"
+                className="no-callout rounded-2xl border border-white/10 bg-white/[0.04] p-3 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-400/40"
               >
                 <LayoutDashboard className="h-4 w-4 text-emerald-300" />
                 <p className="mt-1.5 text-xs font-bold text-white">Command deck</p>
@@ -132,7 +132,7 @@ export default function Home() {
               </Link>
               <Link
                 to="/analyst"
-                className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-400/40"
+                className="no-callout rounded-2xl border border-white/10 bg-white/[0.04] p-3 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-400/40"
               >
                 <Calculator className="h-4 w-4 text-emerald-300" />
                 <p className="mt-1.5 text-xs font-bold text-white">Trade analyst</p>

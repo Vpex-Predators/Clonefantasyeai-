@@ -27,7 +27,7 @@ function ToolCallDisplay({ toolCall }) {
   const hideDetails = projection && projection.hide_details && projection.details_redacted;
   if (hideDetails) {
     return (
-      <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-500">
+      <div className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
         {success ? (
           <span className="flex items-center gap-1"><Wrench className="h-3 w-3" /> {projection.label || "Done"}</span>
         ) : failed ? (
@@ -40,20 +40,20 @@ function ToolCallDisplay({ toolCall }) {
   }
 
   return (
-    <div className="mt-2 rounded-md border border-slate-200 bg-slate-50 text-xs">
+    <div className="mt-2 rounded-md border border-border bg-muted text-sm">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="flex w-full items-center gap-1.5 px-3 py-2 text-left font-medium text-slate-600"
+        className="no-callout flex min-h-[44px] w-full items-center gap-1.5 px-3 py-2 text-left text-sm font-medium text-muted-foreground"
       >
         {expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
         <Wrench className="h-3.5 w-3.5" />
         <span className="capitalize">{(toolCall.name || "").replace(/_/g, " ")}</span>
-        <span className={failed ? "text-red-500" : success ? "text-emerald-600" : "text-slate-400"}>
+        <span className={failed ? "text-red-500" : success ? "text-emerald-500" : "text-muted-foreground"}>
           {success && !failed ? "· success" : failed ? "· failed" : "· running"}
         </span>
       </button>
       {expanded && (
-        <div className="space-y-2 border-t border-slate-200 px-3 py-2 font-mono text-[11px] text-slate-600">
+        <div className="space-y-2 border-t border-border px-3 py-2 font-mono text-sm text-muted-foreground">
           <div>
             <span className="font-semibold">Args:</span>{" "}
             <span className="break-all">{typeof args === "string" ? args : JSON.stringify(args, null, 2)}</span>
@@ -97,7 +97,7 @@ function AssistantContent({ content }) {
             <button
               key={m.key}
               onClick={() => setOpenSection(openSection === m.key ? null : m.key)}
-              className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-500 transition-colors hover:bg-slate-100"
+              className="no-callout flex min-h-[44px] items-center gap-1 rounded-full border border-border bg-muted px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent"
             >
               {openSection === m.key ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
               {m.key === "sources" ? "Sources" : "The numbers"}
@@ -106,8 +106,8 @@ function AssistantContent({ content }) {
         </div>
       )}
       {openSection && (
-        <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-          <ReactMarkdown className="prose prose-sm max-w-none text-xs text-slate-600">{sectionText(openSection)}</ReactMarkdown>
+        <div className="mt-2 rounded-lg border border-border bg-muted px-3 py-2">
+          <ReactMarkdown className="prose prose-sm max-w-none text-sm text-muted-foreground">{sectionText(openSection)}</ReactMarkdown>
         </div>
       )}
     </div>
@@ -119,7 +119,7 @@ export default function MessageBubble({ message }) {
   return (
     <div className={isUser ? "flex justify-end" : "flex justify-start"}>
       <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
-        isUser ? "bg-slate-900 text-white" : "border border-slate-200 bg-white text-slate-900"
+        isUser ? "bg-primary text-primary-foreground" : "border border-border bg-card text-foreground"
       }`}>
         {message.content && (
           isUser

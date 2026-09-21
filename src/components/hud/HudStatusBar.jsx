@@ -1,13 +1,33 @@
 import React from "react";
-import { Radar } from "lucide-react";
+import { ArrowLeft, Radar } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // Sticky HUD status bar shared by the briefing and the war room.
 export default function HudStatusBar({ title, sub, tag = "LIVE" }) {
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  // Android-style back affordance on non-root screens: go back in history
+  // when there is one, otherwise fall back to the briefing.
+  const goBack = () => {
+    if (window.history.state?.idx > 0) navigate(-1);
+    else navigate("/");
+  };
+
   return (
     <div className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/55 backdrop-blur-2xl">
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-emerald-400/50 to-transparent" />
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-2.5">
         <div className="flex min-w-0 items-center gap-2.5">
+          {pathname !== "/" && (
+            <button
+              type="button"
+              onClick={goBack}
+              aria-label="Go back"
+              className="no-callout flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/70 transition-colors hover:text-white"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+          )}
           <Radar className="h-4 w-4 shrink-0 text-emerald-400" />
           <div className="min-w-0">
             <h1 className="truncate font-heading text-xs font-bold uppercase tracking-[0.22em] text-white">{title}</h1>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Loader2, Sparkles } from "lucide-react";
 import HudPanel from "@/components/hud/HudPanel";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AI_MODELS } from "@/lib/aiModels";
 
 const sameName = (a, b) => (a || "").trim().toLowerCase() === (b || "").trim().toLowerCase();
@@ -34,20 +35,22 @@ export default function PowerRankings({ data }) {
       </p>
 
       <div className="mt-2.5 flex gap-2">
-        <select
-          value={model}
-          onChange={(e) => setModel(e.target.value)}
-          disabled={running}
-          className="h-8 min-w-0 flex-1 border border-white/10 bg-slate-900 px-2 font-mono text-[11px] text-white outline-none focus:border-emerald-400/60 disabled:opacity-50"
-        >
-          {AI_MODELS.map((m) => (
-            <option key={m.id} value={m.id}>{m.label}</option>
-          ))}
-        </select>
+        <Select value={model} onValueChange={setModel} disabled={running}>
+          <SelectTrigger className="h-11 min-h-[44px] min-w-0 flex-1 rounded-none border-white/10 bg-slate-900 font-mono text-sm text-white focus:border-emerald-400/60">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="rounded-none border-white/10 bg-slate-900 text-white">
+            {AI_MODELS.map((m) => (
+              <SelectItem key={m.id} value={m.id} className="min-h-[44px] rounded-none py-2.5 text-sm focus:bg-white/10">
+                {m.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <button
           onClick={run}
           disabled={running}
-          className="flex h-8 shrink-0 items-center gap-1.5 bg-emerald-400 px-3.5 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-950 hover:bg-emerald-300 disabled:opacity-50"
+          className="no-callout flex h-11 min-h-[44px] shrink-0 items-center gap-1.5 bg-emerald-400 px-4 text-sm font-bold uppercase tracking-[0.15em] text-slate-950 hover:bg-emerald-300 disabled:opacity-50"
         >
           {running ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
           {running ? "Ranking…" : result ? "Re-run" : "Generate"}

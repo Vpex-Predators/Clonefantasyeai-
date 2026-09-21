@@ -22,47 +22,63 @@ export default function PlayerCard({ player, pending, analyzing, onOpen, onAnaly
 
   return (
     <div
-      onClick={toggle}
-      className={`relative cursor-pointer rounded-xl border p-3 transition-all ${
+      className={`relative rounded-xl border p-3 transition-all ${
         pending
           ? "border-emerald-400/60 bg-emerald-400/5 shadow-[0_0_18px_rgba(52,211,153,0.25)]"
           : "border-white/10 bg-white/5"
       }`}
     >
       {pending && (
-        <span className="absolute -right-1.5 -top-1.5 animate-pulse rounded-full bg-emerald-400 px-1.5 py-0.5 text-[9px] font-bold text-slate-950">
+        <span className="absolute -right-1.5 -top-1.5 z-10 animate-pulse rounded-full bg-emerald-400 px-1.5 py-0.5 text-sm font-bold text-slate-950">
           NEW
         </span>
       )}
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span className="truncate text-[13px] font-semibold leading-tight text-white">{player.name}</span>
-            <InjuryBadge status={player.injuryStatus} />
-          </div>
-          <div className="mt-1 flex items-center gap-2 text-[10px] text-white/45">
-            <span className="rounded bg-white/10 px-1 py-0.5 font-medium text-white/60">{player.lineupLabel || player.position}</span>
-            <span>{player.weeklyProj > 0 ? `${player.weeklyProj} proj` : `${player.seasonAvg} avg`}</span>
-            <DrawSparkline points={player.trend} />
-          </div>
-        </div>
-        {a ? (
-          <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold ${VERDICT_STYLES[a.verdict] || VERDICT_STYLES.Hold}`}>
-            {a.verdict}
-          </span>
-        ) : (
-          <button
-            onClick={e => { e.stopPropagation(); onAnalyze(player); }}
-            className="shrink-0 rounded-full border border-white/15 p-1 text-white/50 hover:text-emerald-300"
-            title="Analyze this player"
-          >
-            {analyzing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-          </button>
-        )}
-      </div>
 
-      {a && !open && (
-        <p className="mt-1.5 truncate text-[10px] text-white/50">{a.analysis}</p>
+      {/* The whole card is one large tap target — a real <button> announced
+          as expandable. The ✨ analyze control sits outside it (no nested
+          buttons) and floats into the space the verdict badge occupies. */}
+      <button
+        type="button"
+        onClick={toggle}
+        aria-expanded={open}
+        className="no-callout block w-full text-left"
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="truncate text-sm font-semibold leading-tight text-white">{player.name}</span>
+              <InjuryBadge status={player.injuryStatus} />
+            </div>
+            <div className="mt-1 flex items-center gap-2 text-[11px] text-white/45">
+              <span className="rounded bg-white/10 px-1 py-0.5 font-medium text-white/60">{player.lineupLabel || player.position}</span>
+              <span>{player.weeklyProj > 0 ? `${player.weeklyProj} proj` : `${player.seasonAvg} avg`}</span>
+              <DrawSparkline points={player.trend} />
+            </div>
+          </div>
+          {a ? (
+            <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-bold ${VERDICT_STYLES[a.verdict] || VERDICT_STYLES.Hold}`}>
+              {a.verdict}
+            </span>
+          ) : (
+            <span aria-hidden="true" className="w-11 shrink-0" />
+          )}
+        </div>
+
+        {a && !open && (
+          <p className="mt-1.5 truncate text-[11px] text-white/50">{a.analysis}</p>
+        )}
+      </button>
+
+      {!a && (
+        <button
+          type="button"
+          onClick={() => onAnalyze(player)}
+          className="absolute right-1.5 top-1.5 flex h-11 w-11 items-center justify-center rounded-full text-white/50 transition-colors hover:text-emerald-300"
+          title="Analyze this player"
+          aria-label={`Analyze ${player.name}`}
+        >
+          {analyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+        </button>
       )}
 
       {open && (
@@ -74,11 +90,11 @@ export default function PlayerCard({ player, pending, analyzing, onOpen, onAnaly
               {a.factors?.length > 0 && (
                 <ul className="space-y-0.5">
                   {a.factors.map((f, i) => (
-                    <li key={i} className="text-[10px] text-white/50">• {f}</li>
+                    <li key={i} className="text-[11px] text-white/50">• {f}</li>
                   ))}
                 </ul>
               )}
-              <div className="flex items-center gap-2 text-[10px]">
+              <div className="flex items-center gap-2 text-[11px]">
                 <span className="text-white/40">
                   <GlossaryChip term="weighted_edge" bare>Edge</GlossaryChip>{" "}
                   {typeof a.weighted_edge === "number" ? a.weighted_edge.toFixed(1) : "—"} pts
@@ -91,7 +107,7 @@ export default function PlayerCard({ player, pending, analyzing, onOpen, onAnaly
                   {a.confidence} confidence
                 </span>
               </div>
-              <p className="text-[9px] text-white/30">Updated {new Date(a.analyzed_at).toLocaleString()}</p>
+              <p className="text-[11px] text-white/30">Updated {new Date(a.analyzed_at).toLocaleString()}</p>
             </>
           ) : (
             <p className="text-[11px] text-white/50">

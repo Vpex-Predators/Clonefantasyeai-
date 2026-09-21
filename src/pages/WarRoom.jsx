@@ -11,6 +11,7 @@ import ThreatBoard from "@/components/warroom/ThreatBoard";
 import PowerRankings from "@/components/warroom/PowerRankings";
 import TradeSimulator from "@/components/warroom/TradeSimulator";
 import PlayerCompare from "@/components/warroom/PlayerCompare";
+import TabFade from "@/components/hud/TabFade";
 
 const TABS = [
   { id: "threats", label: "Threat board" },
@@ -61,7 +62,7 @@ export default function WarRoom() {
   const d = data && data.locked ? data : null;
 
   return (
-    <div className="min-h-screen bg-slate-950 pb-28 text-white">
+    <div className="min-h-screen bg-slate-950 pb-[calc(env(safe-area-inset-bottom)+7rem)] text-white">
       <GlassBackdrop />
       <HudStatusBar
         title="War room"
@@ -103,7 +104,7 @@ export default function WarRoom() {
                 <button
                   key={t.id}
                   onClick={() => setTab(t.id)}
-                  className={`rounded-full py-2 text-[10px] font-bold uppercase tracking-[0.15em] transition-all duration-300 ${
+                  className={`no-callout min-h-[44px] rounded-full px-1 text-sm font-bold uppercase tracking-[0.15em] transition-all duration-300 ${
                     tab === t.id
                       ? "bg-gradient-to-r from-emerald-400 to-cyan-400 text-slate-950 shadow-[0_0_16px_rgba(52,211,153,0.45)]"
                       : "text-white/55 hover:text-white"
@@ -114,6 +115,7 @@ export default function WarRoom() {
               ))}
             </div>
 
+            <TabFade tabKey={tab}>
             {tab === "threats" && <ThreatBoard board={d.threatBoard} />}
             {tab === "rankings" && <PowerRankings data={d} />}
             {tab === "trade" && (
@@ -122,6 +124,7 @@ export default function WarRoom() {
                 <PlayerCompare data={d} initialIds={compareIds} />
               </>
             )}
+            </TabFade>
           </>
         ) : null}
       </div>

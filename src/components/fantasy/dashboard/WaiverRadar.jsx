@@ -21,7 +21,7 @@ const INJURY_LABELS = { QUESTIONABLE: "questionable", OUT: "out", INJURY_RESERVE
 const lastName = n => String(n || "").split(" ").slice(-1)[0];
 const positionLabel = pos => (pos === "DST" ? "D/ST" : pos);
 
-export default function WaiverRadar({ freeAgents, bench, starters }) {
+export default function WaiverRadar({ freeAgents, bench, starters, onScanReady }) {
   const [targets, setTargets] = useState(null);
   const [weaknesses, setWeaknesses] = useState([]);
   const [scanning, setScanning] = useState(false);
@@ -58,6 +58,9 @@ export default function WaiverRadar({ freeAgents, bench, starters }) {
   // On open, load this week's scan from the cache — instant after the first scan of the week.
   useEffect(() => { scan(false); }, []);
 
+  // Hand the scan handler to the page so pull-to-refresh can trigger it.
+  useEffect(() => { onScanReady?.(scan); }, [onScanReady]);
+
   const matchesPos = p => posTab === "All" || positionLabel(p.position) === posTab;
   const shownTargets = (targets || []).filter(matchesPos);
   const wireCount = (freeAgents || []).filter(matchesPos).length;
@@ -69,7 +72,7 @@ export default function WaiverRadar({ freeAgents, bench, starters }) {
         <button
           onClick={scan}
           disabled={scanning}
-          className="flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300 transition-colors hover:bg-emerald-400/20 disabled:opacity-50"
+          className="no-callout flex min-h-[44px] items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 text-sm font-bold uppercase tracking-wider text-emerald-300 transition-colors hover:bg-emerald-400/20 disabled:opacity-50"
         >
           {scanning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Radar className="h-3.5 w-3.5" />}
           {scanning ? "Scanning" : "Scan the wire"}
@@ -81,7 +84,7 @@ export default function WaiverRadar({ freeAgents, bench, starters }) {
           <button
             key={pos}
             onClick={() => setPosTab(pos)}
-            className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide transition-colors ${
+            className={`no-callout min-h-[44px] shrink-0 rounded-full px-3 text-sm font-bold uppercase tracking-wide transition-colors ${
               posTab === pos ? "bg-emerald-400 text-slate-950" : "border border-white/10 bg-white/5 text-white/50"
             }`}
           >
@@ -195,7 +198,7 @@ export default function WaiverRadar({ freeAgents, bench, starters }) {
                 </span>
               )}
             </p>
-            <button onClick={scan} className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400/80 hover:text-emerald-300">
+            <button onClick={scan} className="no-callout min-h-[44px] px-1 text-sm font-semibold uppercase tracking-wider text-emerald-400/80 hover:text-emerald-300">
               Re-scan
             </button>
           </div>
@@ -218,7 +221,7 @@ export default function WaiverRadar({ freeAgents, bench, starters }) {
       <div className="mt-3 border-t border-white/10 pt-3">
         <button
           onClick={() => setShowAll(o => !o)}
-          className="flex w-full items-center justify-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-white/60 transition-colors hover:bg-white/10"
+          className="no-callout flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 text-sm font-bold uppercase tracking-wider text-white/60 transition-colors hover:bg-white/10"
         >
           {showAll ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
           {showAll ? "Show less" : "Show more +"}

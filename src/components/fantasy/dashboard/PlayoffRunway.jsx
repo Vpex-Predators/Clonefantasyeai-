@@ -35,7 +35,7 @@ export default function PlayoffRunway({ playoffOdds }) {
             <button
               key={v}
               onClick={() => setView(v)}
-              className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide transition-colors ${
+              className={`no-callout min-h-[44px] rounded-full px-3.5 py-1.5 text-sm font-bold uppercase tracking-wide transition-colors ${
                 view === v ? "bg-emerald-400 text-slate-950" : "text-white/55 hover:text-white"
               }`}
             >

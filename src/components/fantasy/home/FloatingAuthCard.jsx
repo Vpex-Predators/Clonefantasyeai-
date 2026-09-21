@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { Radar, Loader2, LogOut } from "lucide-react";
 import GoogleIcon from "@/components/GoogleIcon";
 import HudPanel from "@/components/hud/HudPanel";
+import DeleteAccountDialog from "@/components/DeleteAccountDialog";
 import { safeReturnTo } from "@/lib/authReturnTo";
 
 export default function FloatingAuthCard() {
@@ -18,7 +19,7 @@ export default function FloatingAuthCard() {
   // Signed in — collapse into a compact command profile chip.
   if (isAuthenticated && user) {
     return (
-      <div className="flex items-center gap-3 border border-white/10 bg-white/[0.04] px-4 py-3">
+      <div className="no-callout flex items-center gap-2 border border-white/10 bg-white/[0.04] px-3 py-2">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center border border-emerald-400/40 bg-emerald-400/10 text-xs font-bold text-emerald-300">
           {(user.full_name || user.email || "?").charAt(0).toUpperCase()}
         </div>
@@ -26,11 +27,12 @@ export default function FloatingAuthCard() {
           <p className="truncate text-xs font-bold uppercase tracking-wider text-white">{user.full_name || "Commander"}</p>
           <p className="truncate font-mono text-[10px] text-white/45">{user.email}</p>
         </div>
+        <DeleteAccountDialog />
         <button
           onClick={() => logout()}
-          className="flex shrink-0 items-center gap-1 text-[10px] font-bold uppercase tracking-[0.15em] text-white/50 hover:text-white"
+          className="flex min-h-[44px] shrink-0 items-center gap-1 text-sm font-bold uppercase tracking-[0.15em] text-white/50 hover:text-white"
         >
-          <LogOut className="h-3.5 w-3.5" /> Sign out
+          <LogOut className="h-4 w-4" /> Sign out
         </button>
       </div>
     );
@@ -67,7 +69,7 @@ export default function FloatingAuthCard() {
 
       <button
         onClick={() => base44.auth.loginWithProvider("google", returnTo)}
-        className="mt-4 flex h-10 w-full items-center justify-center gap-2 border border-white/15 bg-white/5 text-xs font-bold uppercase tracking-wider text-white hover:bg-white/10"
+        className="no-callout mt-4 flex h-11 min-h-[44px] w-full items-center justify-center gap-2 border border-white/15 bg-white/5 text-sm font-bold uppercase tracking-wider text-white hover:bg-white/10"
       >
         <GoogleIcon className="h-4 w-4" /> Continue with Google
       </button>
@@ -89,16 +91,16 @@ export default function FloatingAuthCard() {
         <input
           type="email" required autoComplete="email" placeholder="Email" value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="h-10 w-full border border-white/10 bg-white/[0.04] px-3 font-mono text-sm text-white outline-none placeholder:text-white/30 focus:border-emerald-400/60"
+          className="h-11 w-full border border-white/10 bg-white/[0.04] px-3 font-mono text-base text-white outline-none placeholder:text-white/30 focus:border-emerald-400/60"
         />
         <input
           type="password" required autoComplete="current-password" placeholder="Password" value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="h-10 w-full border border-white/10 bg-white/[0.04] px-3 font-mono text-sm text-white outline-none placeholder:text-white/30 focus:border-emerald-400/60"
+          className="h-11 w-full border border-white/10 bg-white/[0.04] px-3 font-mono text-base text-white outline-none placeholder:text-white/30 focus:border-emerald-400/60"
         />
         <button
           type="submit" disabled={loading}
-          className="flex h-10 w-full items-center justify-center gap-2 bg-emerald-400 text-xs font-bold uppercase tracking-[0.18em] text-slate-950 hover:bg-emerald-300 disabled:opacity-50"
+          className="no-callout flex h-11 min-h-[44px] w-full items-center justify-center gap-2 bg-emerald-400 text-sm font-bold uppercase tracking-[0.18em] text-slate-950 hover:bg-emerald-300 disabled:opacity-50"
         >
           {loading && <Loader2 className="h-4 w-4 animate-spin" />} Enter command center
         </button>
