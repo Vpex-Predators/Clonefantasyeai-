@@ -5,6 +5,7 @@ import {
 } from '../../shared/espnLeague.js';
 import { computePlayoffOdds } from '../../shared/playoffOdds.js';
 import { localDayFromRequest } from '../../shared/simDay.js';
+import { buildLeaguePulse } from '../../shared/leaguePulse.js';
 
 function trimPlayer(p) {
   return {
@@ -30,7 +31,7 @@ export default async function(req) {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const [leagueRes, locks] = await Promise.all([
-      fetchLeagueCurrent(['mNav', 'mTeam', 'mRoster', 'mScoreboard']),
+      fetchLeagueCurrent(['mNav', 'mTeam', 'mRoster', 'mScoreboard', 'mTransactions2']),
       base44.asServiceRole.entities.TeamLock.filter({ user_id: user.id, league_id: DEFAULT_LEAGUE_ID })
     ]);
     const { league, season } = leagueRes;
@@ -192,6 +193,9 @@ export default async function(req) {
       } : null;
     }
 
+    // League pulse: season totals, recent moves, and the collusion radar
+    const leaguePulse = await buildLeaguePulse({ league, teams, season, leagueId: DEFAULT_LEAGUE_ID, currentPeriod });
+
     return Response.json({
       locked: true,
       league: { id: DEFAULT_LEAGUE_ID, name: leagueName, season, week: currentPeriod, leagueAvgPoints },
@@ -216,6 +220,7 @@ export default async function(req) {
       opponentBench,
       freeAgents,
       playoffOdds,
+      leaguePulse,
       lastRefresh: now,
       pending
     });

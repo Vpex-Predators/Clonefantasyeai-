@@ -10,4 +10,7 @@ export const GLOSSARY = {
   ceiling: "The best-case point total if everything breaks right for this player.",
   floor: "The worst-case point total this player is likely to score even in a bad week.",
   weighted_edge: "A single point value combining projections, matchup, injury risk, recent form, and schedule strength.",
+  "waiver wire": "The pool of players not on any team's roster that you can pick up during the week.",
+  tanking: "Losing on purpose — benching your best players or starting injured ones to get a worse record.",
+  "points for": "Total points a team has scored all season — the tiebreaker when records are equal.",
 };
