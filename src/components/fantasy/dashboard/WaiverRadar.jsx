@@ -70,7 +70,7 @@ export default function WaiverRadar({ freeAgents, bench, starters, onScanReady }
       <div className="mb-3 flex items-center justify-between gap-2">
         <h2 className="font-heading text-sm font-bold uppercase tracking-widest text-white/80">Waiver radar</h2>
         <button
-          onClick={scan}
+          onClick={() => scan(true)}
           disabled={scanning}
           className="no-callout flex min-h-[44px] items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 text-sm font-bold uppercase tracking-wider text-emerald-300 transition-colors hover:bg-emerald-400/20 disabled:opacity-50"
         >
@@ -198,7 +198,7 @@ export default function WaiverRadar({ freeAgents, bench, starters, onScanReady }
                 </span>
               )}
             </p>
-            <button onClick={scan} className="no-callout min-h-[44px] px-1 text-sm font-semibold uppercase tracking-wider text-emerald-400/80 hover:text-emerald-300">
+            <button onClick={() => scan(true)} className="no-callout min-h-[44px] px-1 text-sm font-semibold uppercase tracking-wider text-emerald-400/80 hover:text-emerald-300">
               Re-scan
             </button>
           </div>
