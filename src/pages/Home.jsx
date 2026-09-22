@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import { Loader2, Lock, Radar, Swords, LayoutDashboard, Calculator } from "lucide-react";
+import { Loader2, Lock, Radar, Swords, Calculator } from "lucide-react";
 import AppNavBar from "@/components/AppNavBar";
 import GlassBackdrop from "@/components/hud/GlassBackdrop";
 import HudStatusBar from "@/components/hud/HudStatusBar";
 import FloatingAuthCard from "@/components/fantasy/home/FloatingAuthCard";
-import MissionStats from "@/components/fantasy/home/MissionStats";
-import LeaguePulse from "@/components/fantasy/home/LeaguePulse";
+import MatchupHero from "@/components/fantasy/home/MatchupHero";
+import WaiverLineupCard from "@/components/fantasy/home/WaiverLineupCard";
+import LeagueRivalsCard from "@/components/fantasy/home/LeagueRivalsCard";
 import AiAnalystPanel from "@/components/fantasy/home/AiAnalystPanel";
 
 function LockedSkeleton() {
@@ -66,7 +67,7 @@ export default function Home() {
     <div className="min-h-screen bg-slate-950 pb-[calc(env(safe-area-inset-bottom)+7rem)] text-white">
       <GlassBackdrop />
       <HudStatusBar
-        title="This week's matchup"
+        title="Command center"
         sub={d ? `${d.league.name.trim()} · WK ${d.league.week} · ${d.myTeam.wins}-${d.myTeam.losses}` : "Live scores, odds & waiver picks"}
         tag={d ? "LIVE" : "STANDBY"}
       />
@@ -82,7 +83,7 @@ export default function Home() {
           <>
             <p className="flex items-center justify-center gap-2 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">
               <Radar className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
-              Live playoff odds, matchup edge & league pulse load here
+              Matchup, waiver & league previews load here
             </p>
             <LockedSkeleton />
           </>
@@ -104,31 +105,18 @@ export default function Home() {
           </div>
         ) : d ? (
           <>
-            <MissionStats data={d} />
-            <LeaguePulse data={d} />
-
-            <Link
-              to="/warroom"
-              className="no-callout relative block rounded-2xl border border-rose-400/40 bg-rose-400/[0.07] p-4 backdrop-blur-xl transition-colors hover:border-rose-400/70 hover:bg-rose-400/10"
-            >
-              <div className="flex items-center gap-2 text-rose-300">
-                <Swords className="h-4 w-4" />
-                <p className="font-heading text-sm font-bold uppercase tracking-[0.18em]">War room</p>
-              </div>
-              <p className="mt-1.5 text-[11px] text-white/55">
-                Threat board · AI power rankings · trade impact simulator
-              </p>
-              <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.15em] text-rose-300/70">Enter war room →</p>
-            </Link>
+            <MatchupHero data={d} />
+            <WaiverLineupCard data={d} />
+            <LeagueRivalsCard data={d} />
 
             <div className="grid grid-cols-2 gap-2">
               <Link
-                to="/dashboard"
-                className="no-callout rounded-2xl border border-white/10 bg-white/[0.04] p-3 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-400/40"
+                to="/warroom"
+                className="no-callout rounded-2xl border border-rose-400/40 bg-rose-400/[0.07] p-3 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-rose-400/70 hover:bg-rose-400/10"
               >
-                <LayoutDashboard className="h-4 w-4 text-emerald-300" />
-                <p className="mt-1.5 text-xs font-bold text-white">Command deck</p>
-                <p className="font-mono text-[10px] uppercase tracking-wider text-white/40">Full live dashboard</p>
+                <Swords className="h-4 w-4 text-rose-300" />
+                <p className="mt-1.5 text-xs font-bold text-white">War room</p>
+                <p className="font-mono text-[10px] uppercase tracking-wider text-white/40">Threats · rankings · sims</p>
               </Link>
               <Link
                 to="/analyst"
