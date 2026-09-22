@@ -105,11 +105,11 @@ export default function Home() {
           </div>
         ) : d ? (
           <>
-            <MatchupHero data={d} />
-            <WaiverLineupCard data={d} />
-            <LeagueRivalsCard data={d} />
+            <MatchupHero data={d} delay={0} />
+            <WaiverLineupCard data={d} delay={90} />
+            <LeagueRivalsCard data={d} delay={180} />
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid animate-fade-up grid-cols-2 gap-2" style={{ animationDelay: "270ms" }}>
               <Link
                 to="/warroom"
                 className="no-callout rounded-2xl border border-rose-400/40 bg-rose-400/[0.07] p-3 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-rose-400/70 hover:bg-rose-400/10"
@@ -128,7 +128,7 @@ export default function Home() {
               </Link>
             </div>
 
-            <AiAnalystPanel data={d} />
+            <AiAnalystPanel data={d} delay={360} />
           </>
         ) : null}
       </div>

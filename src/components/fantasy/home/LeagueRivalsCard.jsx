@@ -6,7 +6,7 @@ import DrawBar from "@/components/hud/DrawBar";
 
 // League & rivals preview: where you sit, who you're chasing, and the leader —
 // the same standings the My Team League tab shows in full. Bars draw on mount.
-export default function LeagueRivalsCard({ data }) {
+export default function LeagueRivalsCard({ data, delay = 0 }) {
   const { teams, myTeam, league } = data;
   const sorted = [...teams].sort(
     (a, b) => ((b.wins + (b.ties || 0) * 0.5) - (a.wins + (a.ties || 0) * 0.5)) || (b.pointsFor - a.pointsFor)
@@ -30,7 +30,7 @@ export default function LeagueRivalsCard({ data }) {
 
   return (
     <Link to="/dashboard" className="no-callout block rounded-2xl transition-transform duration-200 active:scale-[0.99]">
-      <HudPanel label="League & rivals" right={`${teams.length} TEAMS`}>
+      <HudPanel label="League & rivals" right={`${teams.length} TEAMS`} delay={delay}>
         <div className="space-y-1.5">
           {rows.map(({ t, rank, note, mine }) => (
             <div

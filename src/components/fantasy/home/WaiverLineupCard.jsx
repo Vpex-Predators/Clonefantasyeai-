@@ -26,7 +26,7 @@ function lineupEdge(myTeam) {
 
 // Waiver & lineup preview: the week's saved waiver scan plus the biggest
 // projected start/sit edge. One-time draw animations; a tap opens Waivers.
-export default function WaiverLineupCard({ data }) {
+export default function WaiverLineupCard({ data, delay = 0 }) {
   const [scan, setScan] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -52,7 +52,7 @@ export default function WaiverLineupCard({ data }) {
 
   return (
     <Link to="/waivers" className="no-callout block rounded-2xl transition-transform duration-200 active:scale-[0.99]">
-      <HudPanel label="Waivers & lineup" right={`WK ${data.league.week}`}>
+      <HudPanel label="Waivers & lineup" right={`WK ${data.league.week}`} delay={delay}>
         {loading ? (
           <div className="flex items-center gap-2 text-[11px] text-white/55">
             <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-400" />

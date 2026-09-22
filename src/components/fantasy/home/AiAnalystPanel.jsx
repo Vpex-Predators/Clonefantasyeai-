@@ -5,7 +5,7 @@ import { Loader2, Sparkles } from "lucide-react";
 import HudPanel from "@/components/hud/HudPanel";
 import { AI_MODELS } from "@/lib/aiModels";
 
-export default function AiAnalystPanel({ data }) {
+export default function AiAnalystPanel({ data, delay = 0 }) {
   const [model, setModel] = useState("automatic");
   const [briefing, setBriefing] = useState(null);
   const [running, setRunning] = useState(false);
@@ -25,7 +25,7 @@ export default function AiAnalystPanel({ data }) {
   };
 
   return (
-    <HudPanel label="On-demand AI analyst" right="ANALYTICS">
+    <HudPanel label="On-demand AI analyst" right="ANALYTICS" delay={delay}>
       <p className="text-[10px] text-white/45">
         Live league data plus the latest news, injuries, and QB history — answers come back short and in plain English.
       </p>

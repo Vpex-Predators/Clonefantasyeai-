@@ -2,13 +2,14 @@ import React from "react";
 import { cn } from "@/lib/utils";
 
 // Frosted-glass HUD panel — the base container of the command design system.
-export default function HudPanel({ label, right, children, className }) {
+export default function HudPanel({ label, right, children, className, delay = 0 }) {
   return (
     <section
       className={cn(
         "relative animate-fade-up overflow-hidden rounded-2xl border border-white/10 bg-white/[0.055] shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-xl",
         className
       )}
+      style={delay ? { animationDelay: `${delay}ms` } : undefined}
     >
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/60 to-transparent" />
       {label && (

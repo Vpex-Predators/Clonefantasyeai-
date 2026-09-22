@@ -7,7 +7,7 @@ import DrawBar from "@/components/hud/DrawBar";
 // Command-center hero: this week's score watch with win probability and
 // playoff odds. The one card with ambient live motion (pulsing LIVE dot);
 // a tap opens the full My Team dashboard.
-export default function MatchupHero({ data }) {
+export default function MatchupHero({ data, delay = 0 }) {
   const { myTeam, opponent, opponentStarters = [], playoffOdds } = data;
   const mine = playoffOdds && playoffOdds.mine;
   const winProb = mine && mine.currentWeekWinProb != null ? mine.currentWeekWinProb : null;
@@ -34,7 +34,7 @@ export default function MatchupHero({ data }) {
 
   return (
     <Link to="/dashboard" className="no-callout block rounded-2xl transition-transform duration-200 active:scale-[0.99]">
-      <HudPanel label="This week's matchup" right={liveTag}>
+      <HudPanel label="This week's matchup" right={liveTag} delay={delay}>
         {opponent ? (
           <>
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
