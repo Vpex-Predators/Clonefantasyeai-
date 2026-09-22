@@ -16,16 +16,15 @@ export default function LeaguePulse({ pulse, teams, myTeam }) {
           <PulseTotals totals={pulse.totals} myTeam={myTeam} />
         ) : (
           <p className="rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-2 text-[11px] text-white/60">
-            Season totals and the move log are still syncing from ESPN — the standings below are live.
+            Season totals are still syncing from ESPN — the standings below are live.
           </p>
         )}
         <PulseLeaderboard teams={teams || []} myTeamId={myTeam?.id} />
-        {hasPulse && (
-          <>
-            <PulseMoveFeed moves={pulse.moves || []} available={pulse.movesAvailable !== false} />
-            <CollusionRadar flags={pulse.flags || []} />
-          </>
-        )}
+        <PulseMoveFeed
+          moves={hasPulse ? pulse.moves || [] : []}
+          available={hasPulse ? pulse.movesAvailable !== false : false}
+        />
+        <CollusionRadar flags={hasPulse ? pulse.flags || [] : []} available={hasPulse} />
       </div>
     </HudPanel>
   );

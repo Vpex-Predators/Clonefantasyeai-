@@ -3,14 +3,18 @@ import { ShieldAlert, ShieldCheck } from "lucide-react";
 import GlossaryChip from "@/components/hud/GlossaryChip";
 
 // Pattern detectors over real ESPN numbers — suspicions, never accusations.
-export default function CollusionRadar({ flags }) {
+export default function CollusionRadar({ flags, available = true }) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/[0.04] p-2.5">
       <h3 className="flex items-center gap-1.5 font-heading text-[10px] font-bold uppercase tracking-[0.2em] text-white/70">
         <ShieldAlert className="h-3.5 w-3.5 text-rose-300" />
         Collusion radar
       </h3>
-      {!flags.length ? (
+      {!available ? (
+        <p className="mt-2 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-2 text-[11px] text-white/60">
+          The transaction scan is still syncing from ESPN — no patterns to check yet.
+        </p>
+      ) : !flags.length ? (
         <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-snug text-white/80">
           <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400" />
           <span>
