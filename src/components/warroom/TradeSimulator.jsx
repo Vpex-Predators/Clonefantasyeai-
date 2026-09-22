@@ -5,6 +5,7 @@ import HudPanel from "@/components/hud/HudPanel";
 import TradeRoster from "@/components/warroom/TradeRoster";
 import SimCrushReplay from "@/components/warroom/SimCrushReplay";
 import TradeSuggest from "@/components/warroom/TradeSuggest";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AI_MODELS } from "@/lib/aiModels";
 
 // Tap-to-build trade simulator: pick a partner, tap players on each side,
@@ -116,17 +117,18 @@ export default function TradeSimulator({ data }) {
       <HudPanel label="Trade impact simulator" right={`WK ${league.week}`}>
         <div className="flex items-center gap-2">
           <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.15em] text-white/45">PARTNER</span>
-          <select
-            value={partnerId}
-            onChange={(e) => pickPartner(e.target.value)}
-            className="h-8 min-w-0 flex-1 border border-white/10 bg-slate-900 px-2 font-mono text-[11px] text-white outline-none focus:border-emerald-400/60"
-          >
-            {partnerOptions.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name} ({t.wins}-{t.losses})
-              </option>
-            ))}
-          </select>
+          <Select value={partnerId} onValueChange={(id) => pickPartner(id)}>
+            <SelectTrigger className="h-11 min-h-[44px] min-w-0 flex-1 rounded-none border-white/10 bg-slate-900 font-mono text-sm text-white focus:border-emerald-400/60">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="rounded-none border-white/10 bg-slate-900 text-white">
+              {partnerOptions.map((t) => (
+                <SelectItem key={t.id} value={t.id} className="min-h-[44px] rounded-none py-2.5 text-sm focus:bg-white/10">
+                  {t.name} ({t.wins}-{t.losses})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         {partner && (
           <p className="mt-2 border border-white/10 bg-white/[0.02] px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-white/60">
@@ -156,14 +158,14 @@ export default function TradeSimulator({ data }) {
         <button
           onClick={runSim}
           disabled={simRunning}
-          className="flex h-9 flex-1 items-center justify-center gap-1.5 bg-emerald-400 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-950 hover:bg-emerald-300 disabled:opacity-50"
+          className="no-callout flex h-11 min-h-[44px] flex-1 items-center justify-center gap-1.5 bg-emerald-400 text-sm font-bold uppercase tracking-[0.18em] text-slate-950 hover:bg-emerald-300 disabled:opacity-50"
         >
           {simRunning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Crosshair className="h-3.5 w-3.5" />}
           Run simulation
         </button>
         <button
           onClick={clear}
-          className="flex h-9 shrink-0 items-center gap-1.5 border border-white/15 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-white/60 hover:text-white"
+          className="no-callout flex h-11 min-h-[44px] shrink-0 items-center gap-1.5 border border-white/15 px-3 text-sm font-bold uppercase tracking-[0.18em] text-white/60 hover:text-white"
         >
           <RotateCcw className="h-3.5 w-3.5" /> Clear
         </button>
@@ -178,20 +180,22 @@ export default function TradeSimulator({ data }) {
       {odds && (
         <HudPanel label="AI verdict" right="WEB + LIVE DATA">
           <div className="flex gap-2">
-            <select
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              disabled={verdictRunning}
-              className="h-8 min-w-0 flex-1 border border-white/10 bg-slate-900 px-2 font-mono text-[11px] text-white outline-none focus:border-emerald-400/60 disabled:opacity-50"
-            >
-              {AI_MODELS.map((m) => (
-                <option key={m.id} value={m.id}>{m.label}</option>
-              ))}
-            </select>
+            <Select value={model} onValueChange={setModel} disabled={verdictRunning}>
+              <SelectTrigger className="h-11 min-h-[44px] min-w-0 flex-1 rounded-none border-white/10 bg-slate-900 font-mono text-sm text-white focus:border-emerald-400/60">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="rounded-none border-white/10 bg-slate-900 text-white">
+                {AI_MODELS.map((m) => (
+                  <SelectItem key={m.id} value={m.id} className="min-h-[44px] rounded-none py-2.5 text-sm focus:bg-white/10">
+                    {m.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <button
               onClick={runVerdict}
               disabled={verdictRunning}
-              className="flex h-8 shrink-0 items-center gap-1.5 bg-emerald-400 px-3.5 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-950 hover:bg-emerald-300 disabled:opacity-50"
+              className="no-callout flex h-11 min-h-[44px] shrink-0 items-center gap-1.5 bg-emerald-400 px-4 text-sm font-bold uppercase tracking-[0.15em] text-slate-950 hover:bg-emerald-300 disabled:opacity-50"
             >
               {verdictRunning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
               {verdictRunning ? "Judging…" : "Get verdict"}

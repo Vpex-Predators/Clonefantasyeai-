@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Loader2 } from "lucide-react";
@@ -8,7 +8,13 @@ import HudStatusBar from "@/components/hud/HudStatusBar";
 import HudPanel from "@/components/hud/HudPanel";
 import TeamScoreboard from "@/components/fantasy/dashboard/TeamScoreboard";
 import TeamLockOverlay from "@/components/fantasy/dashboard/TeamLockOverlay";
-import SeasonScoreChart from "@/components/fantasy/dashboard/SeasonScoreChart";
+import usePullToRefresh from "@/hooks/usePullToRefresh";
+import PullIndicator from "@/components/hud/PullIndicator";
+import TabFade from "@/components/hud/TabFade";
+import RouteFallback from "@/components/RouteFallback";
+
+// Heavy chart chunk loads only when the Season tab is opened.
+const SeasonScoreChart = lazy(() => import("@/components/fantasy/dashboard/SeasonScoreChart"));
 import MatchupEngine from "@/components/fantasy/dashboard/MatchupEngine";
 import RosterCompare from "@/components/fantasy/dashboard/RosterCompare";
 import SwapView from "@/components/fantasy/dashboard/SwapView";
@@ -89,7 +95,7 @@ export default function Dashboard() {
   };
 
   // Manual refresh: cheap live-scores update only — no AI re-analysis.
-  const lightRefresh = async () => {
+  const lightRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
       const res = await base44.functions.invoke("getLiveScores", { localDate: new Date().toLocaleDateString("en-CA") });
@@ -121,7 +127,11 @@ export default function Dashboard() {
     } finally {
       setRefreshing(false);
     }
-  };
+  }, []);
+
+  // Native-style pull-to-refresh: drag down from the top to run the same
+  // cheap live-scores refresh as the refresh button.
+  const { pull, refreshing: pulling } = usePullToRefresh(lightRefresh);
 
   // Highlights stay until the user actually opens that card.
   const markSeen = useCallback(keys => {
@@ -181,13 +191,14 @@ export default function Dashboard() {
   const anyLive = [...(data.myTeam.starters || []), ...(data.opponentStarters || [])].some(p => p.livePoints != null);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-950 pb-28 text-white">
+    <div className="relative min-h-screen overflow-hidden bg-slate-950 pb-[calc(env(safe-area-inset-bottom)+7rem)] text-white">
       <GlassBackdrop />
       <HudStatusBar
         title="My team command"
         sub={`${data.league.name.trim()} · WK ${data.league.week} · ${data.myTeam.name.trim()}`}
         tag={anyLive ? "LIVE" : "READY"}
       />
+      <PullIndicator pull={pull} refreshing={pulling} />
       <div className="relative z-10 mx-auto max-w-2xl space-y-3 px-3 pt-3">
         {error && (
           <div className="rounded-xl border border-rose-400/30 bg-rose-400/10 p-3 text-sm text-rose-300">{error}</div>
@@ -213,7 +224,7 @@ export default function Dashboard() {
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`rounded-full py-2 text-[10px] font-bold uppercase tracking-[0.15em] transition-all duration-300 ${
+              className={`no-callout min-h-[44px] rounded-full px-1 text-sm font-bold uppercase tracking-[0.15em] transition-all duration-300 ${
                 tab === t.id
                   ? "bg-gradient-to-r from-emerald-400 to-cyan-400 text-slate-950 shadow-[0_0_16px_rgba(52,211,153,0.45)]"
                   : "text-white/55 hover:text-white"
@@ -224,6 +235,7 @@ export default function Dashboard() {
           ))}
         </div>
 
+        <TabFade tabKey={tab}>
         {tab === "season" ? (
           <>
             <HudPanel label="Season totals">
@@ -233,12 +245,14 @@ export default function Dashboard() {
               </p>
               <p className="mt-0.5 text-[10px] text-white/60">Starters-only scoring across completed weeks.</p>
             </HudPanel>
-            <SeasonScoreChart
-              myTeam={data.myTeam}
-              teams={data.teams}
-              headToHead={data.headToHead}
-              weeklyScores={data.weeklyScores}
-            />
+            <Suspense fallback={<RouteFallback compact />}>
+              <SeasonScoreChart
+                myTeam={data.myTeam}
+                teams={data.teams}
+                headToHead={data.headToHead}
+                weeklyScores={data.weeklyScores}
+              />
+            </Suspense>
           </>
         ) : tab === "swap" ? (
           <SwapView starters={data.myTeam.starters} bench={data.myTeam.bench} />
@@ -273,6 +287,7 @@ export default function Dashboard() {
             <AdminPanel isAdmin={user?.role === "admin"} teams={data.teams} />
           </>
         )}
+        </TabFade>
       </div>
       <AppNavBar />
     </div>

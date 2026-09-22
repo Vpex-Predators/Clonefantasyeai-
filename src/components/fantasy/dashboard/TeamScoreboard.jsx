@@ -23,7 +23,7 @@ export default function TeamScoreboard({ data, myScore, oppScore, anyLive, refre
         />
         <button
           onClick={() => base44.auth.logout()}
-          className="flex items-center gap-1 pt-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/50 transition-colors hover:text-rose-300"
+          className="no-callout -mt-1 flex min-h-[44px] items-center gap-1 px-1 text-sm font-semibold uppercase tracking-wider text-white/50 transition-colors hover:text-rose-300"
         >
           <LogOut className="h-3 w-3" />
           Log out

@@ -14,8 +14,8 @@ export default function GlossaryChip({ term, children, bare = false, className =
     const onClick = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
     };
-    document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
+    document.addEventListener("pointerdown", onClick);
+    return () => document.removeEventListener("pointerdown", onClick);
   }, [open]);
 
   if (!def) return children ?? term;
@@ -28,7 +28,7 @@ export default function GlossaryChip({ term, children, bare = false, className =
           e.stopPropagation();
           setOpen((o) => !o);
         }}
-        className={`${bare ? "" : "border-b border-dotted border-white/40"} font-inherit text-inherit outline-none ${className}`}
+        className={`no-callout ${bare ? "" : "border-b border-dotted border-white/40"} font-inherit text-inherit outline-none ${className}`}
       >
         {children ?? term}
       </button>

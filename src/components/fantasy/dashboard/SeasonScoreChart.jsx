@@ -98,12 +98,12 @@ export default function SeasonScoreChart({ myTeam, teams, headToHead, weeklyScor
                 type="number"
                 domain={[0.5, chartData.length + 0.5]}
                 ticks={chartData.map(r => r.week)}
-                tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }}
+                tick={{ fill: "currentColor", fontSize: 14, className: "text-white/60" }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }}
+                tick={{ fill: "currentColor", fontSize: 14, className: "text-white/60" }}
                 axisLine={false}
                 tickLine={false}
                 domain={["auto", "auto"]}

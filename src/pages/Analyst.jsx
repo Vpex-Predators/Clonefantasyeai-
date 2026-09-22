@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Link } from "react-router-dom";
-import { ArrowLeft, Calculator, Loader2, RotateCcw, Send } from "lucide-react";
+import { Calculator, Loader2, RotateCcw, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MessageBubble from "@/components/analyst/MessageBubble";
 import AppNavBar from "@/components/AppNavBar";
@@ -111,13 +110,10 @@ export default function Analyst() {
     thinking || (messages.length > 0 && messages[messages.length - 1].role === "user");
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50 text-slate-900">
-      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <header className="sticky top-0 z-10 border-b border-border bg-card/95 backdrop-blur-xl">
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3">
-          <Link to="/" className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-500">
             <Calculator className="h-5 w-5 text-slate-900" />
           </div>
           <div>
@@ -127,7 +123,7 @@ export default function Analyst() {
           <button
             onClick={handleNewChat}
             disabled={thinking}
-            className="ml-auto flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 disabled:opacity-50"
+            className="no-callout ml-auto flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
           >
             <RotateCcw className="h-4 w-4" />
             New chat
@@ -139,17 +135,17 @@ export default function Analyst() {
         <div className="flex flex-1 flex-col gap-4">
           {messages.length === 0 && !waitingForReply && (
             <div className="space-y-4">
-              <p className="text-center text-sm text-slate-500">
+              <p className="text-center text-sm text-muted-foreground">
                 Ask about a trade, waiver add, or bench decision — you'll get rest-of-season projections,
                 value gaps, and a clear recommendation.
               </p>
               {loadingSuggestions ? (
-                <p className="text-center text-xs text-slate-400">Tailoring suggestions to your team…</p>
+                <p className="text-center text-sm text-muted-foreground">Tailoring suggestions to your team…</p>
               ) : suggestions.map((s) => (
                 <button
                   key={s}
                   onClick={() => handleSend(s)}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-left text-sm text-slate-700 shadow-sm hover:border-slate-400"
+                  className="no-callout min-h-[44px] w-full rounded-lg border border-border bg-card px-4 py-3 text-left text-sm text-foreground shadow-sm hover:border-ring"
                 >
                   {s}
                 </button>
@@ -159,7 +155,7 @@ export default function Analyst() {
           {messages.map((m, i) => <MessageBubble key={i} message={m} />)}
           {waitingForReply && (
             <div className="flex justify-start">
-              <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-500">
+              <div className="flex items-center gap-2 rounded-2xl border border-border bg-card px-4 py-2.5 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" /> Crunching the numbers…
               </div>
             </div>
@@ -169,15 +165,15 @@ export default function Analyst() {
 
         <form
           onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-          className="sticky bottom-20 mt-6 flex gap-2 bg-slate-50 py-3"
+          className="sticky bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] mt-6 flex gap-2 bg-background py-3"
         >
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="e.g. Trade my Pacheco for their Kupp?"
-            className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm focus:border-slate-500 focus:outline-none"
+            className="min-h-[44px] flex-1 rounded-lg border border-input bg-card px-4 py-3 text-base text-foreground focus:border-ring focus:outline-none"
           />
-          <Button type="submit" disabled={!input.trim() || thinking} className="bg-slate-900 hover:bg-slate-800">
+          <Button type="submit" disabled={!input.trim() || thinking} className="h-11 min-h-[44px] w-11 px-0 bg-primary text-primary-foreground hover:bg-primary/90">
             <Send className="h-4 w-4" />
           </Button>
         </form>

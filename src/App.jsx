@@ -7,20 +7,27 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { ThemeProvider } from '@/lib/ThemeContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
-// Add page imports here
-import Home from './pages/Home';
-import Analyst from './pages/Analyst';
-import Dashboard from './pages/Dashboard';
-import WarRoom from './pages/WarRoom';
-import WaiverWire from './pages/WaiverWire';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import OAuthConsent from './pages/OAuthConsent';
+import { Suspense, lazy } from 'react';
+import { useLocation } from 'react-router-dom';
+import { AnimatePresence, MotionConfig } from 'framer-motion';
+import PageTransition from './components/PageTransition';
+import RouteFallback from './components/RouteFallback';
+
+// Pages are code-split so the first paint doesn't wait on every tab's chunk.
+const Home = lazy(() => import('./pages/Home'));
+const Analyst = lazy(() => import('./pages/Analyst'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const WarRoom = lazy(() => import('./pages/WarRoom'));
+const WaiverWire = lazy(() => import('./pages/WaiverWire'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const OAuthConsent = lazy(() => import('./pages/OAuthConsent'));
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const location = useLocation();
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -42,22 +49,26 @@ const AuthenticatedApp = () => {
     }
   }
 
-  // Render the main app
+  // Render the main app — lazy pages share one Suspense shell and route
+  // changes crossfade via AnimatePresence keyed on the pathname.
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/oauth/consent" element={<OAuthConsent />} />
-      {/* Add your page Route elements here */}
-      <Route path="/" element={<Home />} />
-      <Route path="/analyst" element={<Analyst />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/warroom" element={<WarRoom />} />
-      <Route path="/waivers" element={<WaiverWire />} />
-      <Route path="*" element={<PageNotFound />} />
-    </Routes>
+    <Suspense fallback={<RouteFallback />}>
+      <AnimatePresence mode="wait" initial={false}>
+        <Routes location={location} key={location.pathname}>
+          <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+          <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
+          <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
+          <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
+          <Route path="/oauth/consent" element={<PageTransition><OAuthConsent /></PageTransition>} />
+          <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+          <Route path="/analyst" element={<PageTransition><Analyst /></PageTransition>} />
+          <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
+          <Route path="/warroom" element={<PageTransition><WarRoom /></PageTransition>} />
+          <Route path="/waivers" element={<PageTransition><WaiverWire /></PageTransition>} />
+          <Route path="*" element={<PageNotFound />} />
+        </Routes>
+      </AnimatePresence>
+    </Suspense>
   );
 };
 
@@ -70,7 +81,9 @@ function App() {
         <QueryClientProvider client={queryClientInstance}>
           <Router>
             <ScrollToTop />
-            <AuthenticatedApp />
+            <MotionConfig reducedMotion="user">
+              <AuthenticatedApp />
+            </MotionConfig>
           </Router>
           <Toaster />
         </QueryClientProvider>
