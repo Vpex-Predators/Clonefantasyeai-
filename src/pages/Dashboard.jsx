@@ -30,7 +30,10 @@ export default function Dashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState(null);
-  const [tab, setTab] = useState("matchup");
+  const [tab, setTab] = useState(() => {
+    const t = new URLSearchParams(window.location.search).get("tab");
+    return ["matchup", "swap", "season", "league"].includes(t) ? t : "matchup";
+  });
   const hasTrackedView = useRef(false);
   const loadBoard = useCallback(async () => {
     const res = await base44.functions.invoke("getDashboardData", { localDate: new Date().toLocaleDateString("en-CA") });

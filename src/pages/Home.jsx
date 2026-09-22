@@ -2,14 +2,18 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import { Loader2, Lock, Radar, Swords, Calculator } from "lucide-react";
+import { Loader2, Lock, Radar } from "lucide-react";
 import AppNavBar from "@/components/AppNavBar";
 import GlassBackdrop from "@/components/hud/GlassBackdrop";
 import HudStatusBar from "@/components/hud/HudStatusBar";
 import FloatingAuthCard from "@/components/fantasy/home/FloatingAuthCard";
 import MatchupHero from "@/components/fantasy/home/MatchupHero";
 import WaiverLineupCard from "@/components/fantasy/home/WaiverLineupCard";
+import WarRoomCard from "@/components/fantasy/home/WarRoomCard";
+import TeamStatusCard from "@/components/fantasy/home/TeamStatusCard";
 import LeagueRivalsCard from "@/components/fantasy/home/LeagueRivalsCard";
+import LeaguePulseCard from "@/components/fantasy/home/LeaguePulseCard";
+import AnalystDoorwayCard from "@/components/fantasy/home/AnalystDoorwayCard";
 import AiAnalystPanel from "@/components/fantasy/home/AiAnalystPanel";
 
 function LockedSkeleton() {
@@ -107,28 +111,12 @@ export default function Home() {
           <>
             <MatchupHero data={d} delay={0} />
             <WaiverLineupCard data={d} delay={90} />
-            <LeagueRivalsCard data={d} delay={180} />
-
-            <div className="grid animate-fade-up grid-cols-2 gap-2" style={{ animationDelay: "270ms" }}>
-              <Link
-                to="/warroom"
-                className="no-callout rounded-2xl border border-rose-400/40 bg-rose-400/[0.07] p-3 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-rose-400/70 hover:bg-rose-400/10"
-              >
-                <Swords className="h-4 w-4 text-rose-300" />
-                <p className="mt-1.5 text-xs font-bold text-white">War room</p>
-                <p className="font-mono text-[10px] uppercase tracking-wider text-white/40">Threats · rankings · sims</p>
-              </Link>
-              <Link
-                to="/analyst"
-                className="no-callout rounded-2xl border border-white/10 bg-white/[0.04] p-3 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-400/40"
-              >
-                <Calculator className="h-4 w-4 text-emerald-300" />
-                <p className="mt-1.5 text-xs font-bold text-white">Trade analyst</p>
-                <p className="font-mono text-[10px] uppercase tracking-wider text-white/40">Trade & waiver chat</p>
-              </Link>
-            </div>
-
-            <AiAnalystPanel data={d} delay={360} />
+            <WarRoomCard data={d} delay={180} />
+            <TeamStatusCard data={d} delay={270} />
+            <LeagueRivalsCard data={d} delay={360} />
+            <LeaguePulseCard data={d} delay={450} />
+            <AnalystDoorwayCard delay={540} />
+            <AiAnalystPanel data={d} delay={630} />
           </>
         ) : null}
       </div>

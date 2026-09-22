@@ -29,7 +29,7 @@ export default function LeagueRivalsCard({ data, delay = 0 }) {
   rows.sort((a, b) => a.rank - b.rank);
 
   return (
-    <Link to="/dashboard" className="no-callout block rounded-2xl transition-transform duration-200 active:scale-[0.99]">
+    <Link to="/dashboard?tab=league" className="no-callout block rounded-2xl transition-transform duration-200 active:scale-[0.99]">
       <HudPanel label="League & rivals" right={`${teams.length} TEAMS`} delay={delay}>
         <div className="space-y-1.5">
           {rows.map(({ t, rank, note, mine }) => (
