@@ -4,6 +4,8 @@ import {
   parseTeamSummary, parseTeamRoster, leaguePeriods, round1
 } from '../../shared/espnLeague.js';
 import { computePlayoffOdds } from '../../shared/playoffOdds.js';
+import { localDayFromRequest } from '../../shared/simDay.js';
+import { buildLeaguePulse } from '../../shared/leaguePulse.js';
 
 function trimPlayer(p) {
   return {
@@ -29,7 +31,7 @@ export default async function(req) {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const [leagueRes, locks] = await Promise.all([
-      fetchLeagueCurrent(['mNav', 'mTeam', 'mRoster', 'mScoreboard']),
+      fetchLeagueCurrent(['mNav', 'mTeam', 'mRoster', 'mScoreboard', 'mTransactions2']),
       base44.asServiceRole.entities.TeamLock.filter({ user_id: user.id, league_id: DEFAULT_LEAGUE_ID })
     ]);
     const { league, season } = leagueRes;
@@ -130,9 +132,6 @@ export default async function(req) {
 
     const leagueAvgPoints = teams.length ? round1(teams.reduce((s, t) => s + t.pointsFor, 0) / teams.length / gamesPlayed) : 0;
 
-    // Playoff odds: per-matchup win-probability model + 1,000-run season simulation
-    const playoffOdds = computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPeriods, myTeamId: mySummary.id, gamesPlayed });
-
     // Live-data diff: which items changed since the user's last refresh
     const signatures = {};
     for (const p of roster) signatures['p:' + p.id] = [p.injuryStatus, p.weeklyProj, p.slot].join('|');
@@ -150,11 +149,27 @@ export default async function(req) {
       const changed = Object.keys(signatures).filter(k => state.signatures[k] !== signatures[k]);
       pending = Array.from(new Set(oldPending.filter(k => k in signatures).concat(changed)));
     }
+
+    // Playoff odds: per-matchup win-probability model + 1,000-run season
+    // simulation, run once per calendar day — same-day loads serve the
+    // stored numbers unchanged so repeat visits stay stable. The refresh
+    // button re-simulates and overwrites this cache.
+    const today = await localDayFromRequest(req);
+    const cachedOdds = state && state.playoff_cache && state.playoff_cache.date === today
+      ? state.playoff_cache.odds : null;
+    let playoffOdds = cachedOdds;
+    const freshOdds = cachedOdds ? null : { date: today, odds: null };
+    if (!playoffOdds) {
+      playoffOdds = computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPeriods, myTeamId: mySummary.id, gamesPlayed });
+      freshOdds.odds = playoffOdds;
+    }
+
     // Skip the write when nothing changed since last time (same signatures + pending).
-    const unchanged = state && JSON.stringify(state.signatures) === JSON.stringify(signatures)
+    const unchanged = !freshOdds && state && JSON.stringify(state.signatures) === JSON.stringify(signatures)
       && JSON.stringify(Array.isArray(state.pending) ? state.pending : []) === JSON.stringify(pending);
     if (!unchanged) {
       const stateRecord = { user_id: user.id, league_id: DEFAULT_LEAGUE_ID, last_refresh: now, signatures, pending };
+      if (freshOdds) stateRecord.playoff_cache = freshOdds;
       try {
         // Best effort — a failure here must never block the briefing itself.
         if (state) await base44.asServiceRole.entities.RefreshState.update(state.id, stateRecord);
@@ -177,6 +192,9 @@ export default async function(req) {
         analyzed_at: a.analyzed_at
       } : null;
     }
+
+    // League pulse: season totals, recent moves, and the collusion radar
+    const leaguePulse = await buildLeaguePulse({ league, teams, season, leagueId: DEFAULT_LEAGUE_ID, currentPeriod });
 
     return Response.json({
       locked: true,
@@ -202,6 +220,7 @@ export default async function(req) {
       opponentBench,
       freeAgents,
       playoffOdds,
+      leaguePulse,
       lastRefresh: now,
       pending
     });

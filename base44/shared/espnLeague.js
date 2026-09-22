@@ -118,6 +118,28 @@ export async function fetchFreeAgents(season, leagueId, currentPeriod, limit = 5
   return parsed;
 }
 
+// Display names for a small set of player ids — transaction history often
+// references players no longer on any roster. Best effort; callers catch.
+export async function fetchPlayerNames(season, leagueId, ids) {
+  if (!ids || !ids.length) return {};
+  const bounded = ids.slice(0, 50).map(String);
+  const cacheKey = `names|${season}|${leagueId}|${bounded.join(',')}`;
+  const cached = espnCache.get(cacheKey);
+  if (cached && Date.now() - cached.at < CACHE_TTL_MS) return cached.data;
+  const filter = JSON.stringify({ players: { filterIds: { value: bounded } } });
+  const data = await espnFetch(
+    `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}?view=kona_player_info`,
+    { 'X-Fantasy-Filter': filter }
+  );
+  const names = {};
+  for (const entry of (data.players || [])) {
+    const player = (entry.playerPoolEntry && entry.playerPoolEntry.player) || entry.player || {};
+    if (player.id) names[String(player.id)] = player.fullName || 'Unknown';
+  }
+  espnCache.set(cacheKey, { at: Date.now(), data: names });
+  return names;
+}
+
 // Actual points for the current scoring period — present once the player's game
 // has kicked off (live or final); null before it. Totals "lock in" on these.
 export function livePointsFor(player, period) {

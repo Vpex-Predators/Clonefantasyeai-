@@ -1,0 +1,37 @@
+import React from "react";
+import { ShieldAlert, ShieldCheck } from "lucide-react";
+import GlossaryChip from "@/components/hud/GlossaryChip";
+
+// Pattern detectors over real ESPN numbers — suspicions, never accusations.
+export default function CollusionRadar({ flags }) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/[0.04] p-2.5">
+      <h3 className="flex items-center gap-1.5 font-heading text-[10px] font-bold uppercase tracking-[0.2em] text-white/70">
+        <ShieldAlert className="h-3.5 w-3.5 text-rose-300" />
+        Collusion radar
+      </h3>
+      {!flags.length ? (
+        <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-snug text-white/80">
+          <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400" />
+          <span>
+            All clear — no <GlossaryChip term="tanking">tanking</GlossaryChip>, lopsided trade loops, or
+            wire games in the numbers. For now.
+          </span>
+        </p>
+      ) : (
+        <ul className="mt-2 space-y-1.5">
+          {flags.map((f, i) => (
+            <li key={i} className="flex items-start gap-1.5 rounded-lg border border-rose-400/25 bg-rose-400/10 px-2 py-1.5 text-[11px] leading-snug text-white/85">
+              <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-rose-300" />
+              <span>{f.quip}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="mt-2 border-t border-white/10 pt-1.5 text-[9px] leading-snug text-white/50">
+        Pattern detectors, not accusations — the numbers flag odd shapes; you bring the judgment (and the
+        group chat receipts).
+      </p>
+    </div>
+  );
+}

@@ -19,6 +19,7 @@ import MatchupEngine from "@/components/fantasy/dashboard/MatchupEngine";
 import RosterCompare from "@/components/fantasy/dashboard/RosterCompare";
 import SwapView from "@/components/fantasy/dashboard/SwapView";
 import PlayoffRunway from "@/components/fantasy/dashboard/PlayoffRunway";
+import LeaguePulse from "@/components/fantasy/dashboard/LeaguePulse";
 import AdminPanel from "@/components/fantasy/dashboard/AdminPanel";
 
 export default function Dashboard() {
@@ -32,7 +33,7 @@ export default function Dashboard() {
   const [tab, setTab] = useState("matchup");
   const hasTrackedView = useRef(false);
   const loadBoard = useCallback(async () => {
-    const res = await base44.functions.invoke("getDashboardData", {});
+    const res = await base44.functions.invoke("getDashboardData", { localDate: new Date().toLocaleDateString("en-CA") });
     setData(res.data);
     if (res.data && !hasTrackedView.current) {
       hasTrackedView.current = true;
@@ -97,7 +98,7 @@ export default function Dashboard() {
   const lightRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      const res = await base44.functions.invoke("getLiveScores", {});
+      const res = await base44.functions.invoke("getLiveScores", { localDate: new Date().toLocaleDateString("en-CA") });
       const live = res.data;
       const mine = new Map((live.mine || []).map(p => [p.id, p]));
       const opp = new Map((live.opponent || []).map(p => [p.id, p]));
@@ -110,6 +111,7 @@ export default function Dashboard() {
         return {
           ...prev,
           lastRefresh: live.refreshedAt || new Date().toISOString(),
+          playoffOdds: live.playoffOdds || prev.playoffOdds,
           myTeam: prev.myTeam ? {
             ...prev.myTeam,
             starters: merge(prev.myTeam.starters, mine),
@@ -212,11 +214,12 @@ export default function Dashboard() {
           onRefresh={lightRefresh}
         />
 
-        <div className="grid grid-cols-3 gap-1 rounded-full border border-white/10 bg-white/[0.05] p-1 backdrop-blur-xl">
+        <div className="grid grid-cols-4 gap-1 rounded-full border border-white/10 bg-white/[0.05] p-1 backdrop-blur-xl">
           {[
             { id: "matchup", label: "This week" },
             { id: "swap", label: "Swap" },
             { id: "season", label: "Season" },
+            { id: "league", label: "League" },
           ].map(t => (
             <button
               key={t.id}
@@ -253,6 +256,8 @@ export default function Dashboard() {
           </>
         ) : tab === "swap" ? (
           <SwapView starters={data.myTeam.starters} bench={data.myTeam.bench} />
+        ) : tab === "league" ? (
+          <LeaguePulse pulse={data.leaguePulse} teams={data.teams} myTeam={data.myTeam} />
         ) : (
           <>
             <MatchupEngine

@@ -29,6 +29,10 @@
     "waiver_cache": {
       "type": "object",
       "description": "Cached waiver scan for the current week: { week, weaknesses, targets, scanned_at } \u2014 served instantly until the week changes or the user re-scans"
+    },
+    "playoff_cache": {
+      "type": "object",
+      "description": "Playoff-odds simulation cache: { date: 'YYYY-MM-DD', odds: <simulation result> } \u2014 served on same-day dashboard loads; the refresh button writes a fresh one"
     }
   },
   "required": [
