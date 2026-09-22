@@ -8,14 +8,24 @@ import CollusionRadar from "@/components/fantasy/dashboard/CollusionRadar";
 // League Pulse: the whole league's season totals, other managers' recent
 // moves, and the pattern-detector collusion radar — one HUD panel.
 export default function LeaguePulse({ pulse, teams, myTeam }) {
-  if (!pulse) return null;
+  const hasPulse = !!pulse;
   return (
     <HudPanel label="League pulse" right="SEASON SCAN">
       <div className="space-y-3.5">
-        <PulseTotals totals={pulse.totals} myTeam={myTeam} />
+        {hasPulse ? (
+          <PulseTotals totals={pulse.totals} myTeam={myTeam} />
+        ) : (
+          <p className="rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-2 text-[11px] text-white/60">
+            Season totals and the move log are still syncing from ESPN — the standings below are live.
+          </p>
+        )}
         <PulseLeaderboard teams={teams || []} myTeamId={myTeam?.id} />
-        <PulseMoveFeed moves={pulse.moves || []} available={pulse.movesAvailable !== false} />
-        <CollusionRadar flags={pulse.flags || []} />
+        {hasPulse && (
+          <>
+            <PulseMoveFeed moves={pulse.moves || []} available={pulse.movesAvailable !== false} />
+            <CollusionRadar flags={pulse.flags || []} />
+          </>
+        )}
       </div>
     </HudPanel>
   );
