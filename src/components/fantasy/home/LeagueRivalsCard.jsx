@@ -30,7 +30,7 @@ export default function LeagueRivalsCard({ data, delay = 0 }) {
 
   return (
     <Link to="/dashboard?tab=league" className="no-callout block rounded-2xl transition-transform duration-200 active:scale-[0.99]">
-      <HudPanel label="League & rivals" right={`${teams.length} TEAMS`} delay={delay}>
+      <HudPanel label="League & rivals" right={`${teams.length} TEAMS`} delay={delay} compact>
         <div className="space-y-1.5">
           {rows.map(({ t, rank, note, mine }) => (
             <div
@@ -58,7 +58,7 @@ export default function LeagueRivalsCard({ data, delay = 0 }) {
             </div>
           ))}
         </div>
-        <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/10 pt-2.5 text-[10px] text-white/55">
+        <div className="mt-2 flex items-center justify-between gap-2 border-t border-white/10 pt-2 text-[10px] text-white/55">
           <span className="min-w-0">Week {league.week} standings · full race</span>
           <OpenButton>Open standings</OpenButton>
         </div>

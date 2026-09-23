@@ -53,11 +53,11 @@ export default function WaiverLineupCard({ data, delay = 0 }) {
 
   return (
     <Link to="/waivers" className="no-callout block rounded-2xl transition-transform duration-200 active:scale-[0.99]">
-      <HudPanel label="Waivers & lineup" right={`WK ${data.league.week}`} delay={delay}>
+      <HudPanel label="Waivers & lineup" right={`WK ${data.league.week}`} delay={delay} compact>
         {loading ? (
           <div className="flex items-center gap-2 text-[11px] text-white/55">
             <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-400" />
-            Pulling this week's waiver scan…
+            Pulling the waiver scan…
           </div>
         ) : targets.length ? (
           <ul className="space-y-1.5">
@@ -81,11 +81,11 @@ export default function WaiverLineupCard({ data, delay = 0 }) {
           </ul>
         ) : (
           <p className="text-[11px] text-white/55">
-            No waiver scan saved this week yet — open the wire tab to run one.
+            No waiver scan saved yet — run one on the wire tab.
           </p>
         )}
 
-        <div className="mt-2.5 border-t border-white/10 pt-2">
+        <div className="mt-2 border-t border-white/10 pt-2">
           {edge ? (
             <>
               <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.14em] text-white/60">
@@ -102,12 +102,12 @@ export default function WaiverLineupCard({ data, delay = 0 }) {
             </>
           ) : (
             <p className="text-[10px] text-white/55">
-              No projected bench upgrade over your starters — the lineup looks set.
+              No projected bench upgrade — lineup looks set.
             </p>
           )}
         </div>
 
-        <div className="mt-2.5 flex justify-end">
+        <div className="mt-2 flex justify-end">
           <OpenButton>Open waiver wire</OpenButton>
         </div>
       </HudPanel>

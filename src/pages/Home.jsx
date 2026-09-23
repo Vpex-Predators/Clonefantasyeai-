@@ -77,7 +77,7 @@ export default function Home() {
         tag={d ? "LIVE" : "STANDBY"}
       />
 
-      <div className="relative z-10 mx-auto max-w-2xl space-y-3 px-3 pt-3">
+      <div className="relative z-10 mx-auto max-w-2xl space-y-2.5 px-3 pt-3">
         <FloatingAuthCard />
 
         {loadingBriefing ? (

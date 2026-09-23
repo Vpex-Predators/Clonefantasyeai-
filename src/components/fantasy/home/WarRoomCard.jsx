@@ -16,6 +16,7 @@ export default function WarRoomCard({ data, delay = 0 }) {
         label="War room"
         right={opponent ? `VS ${opponent.wins}-${opponent.losses}` : "THREATS"}
         delay={delay}
+        compact
       >
         {threat ? (
           <>
@@ -32,7 +33,7 @@ export default function WarRoomCard({ data, delay = 0 }) {
               </div>
               {opponent && (
                 <p className="mt-0.5 text-[10px] text-white/55">
-                  Top projected starter on {opponent.name}'s roster.
+                  Top projected starter for {opponent.name}.
                 </p>
               )}
             </div>
@@ -42,7 +43,7 @@ export default function WarRoomCard({ data, delay = 0 }) {
             {opponent ? "No opponent projections posted yet." : "BYE week — scout the wire and the trade market."}
           </p>
         )}
-        <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/10 pt-2.5 text-[10px] text-white/55">
+        <div className="mt-2 flex items-center justify-between gap-2 border-t border-white/10 pt-2 text-[10px] text-white/55">
           <span className="min-w-0">Threat board · power rankings · trade sims</span>
           <OpenButton>Open war room</OpenButton>
         </div>
