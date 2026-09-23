@@ -6,7 +6,7 @@ const ITEMS = [
   { to: "/", label: "Command", icon: Crosshair },
   { to: "/waivers", label: "Waivers", icon: Radar },
   { to: "/warroom", label: "War Room", icon: Swords },
-  { to: "/dashboard", label: "My Team", icon: LayoutDashboard },
+  { to: "/dashboard", label: "Team", icon: LayoutDashboard },
   { to: "/analyst", label: "Analyst", icon: Calculator },
 ];
 
@@ -40,7 +40,7 @@ export default function AppNavBar() {
                 }`}
               >
                 <Icon className="h-[17px] w-[17px]" />
-                <span className="whitespace-nowrap">{label}</span>
+                <span className="nav-label whitespace-nowrap">{label}</span>
               </Link>
             );
           })}

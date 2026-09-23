@@ -117,11 +117,16 @@ html.light [class*="text-white"] {
 }
 
 html.light [class*="bg-white/"] {
-  background-color: hsl(222 20% 18% / 0.05) !important;
+  background-color: hsl(0 0% 100% / 0.9) !important;
 }
 
 html.light [class*="border-white/"] {
-  border-color: hsl(222 20% 18% / 0.12) !important;
+  border-color: hsl(220 14% 60% / 0.35) !important;
+}
+
+/* Light-appropriate drop shadows so the raised cards visibly float. */
+html.light [class*="shadow-[0_8px_32px"] {
+  box-shadow: 0 10px 28px hsl(30 25% 40% / 0.16) !important;
 }
 
 html.light .hud-grid {
@@ -252,6 +257,15 @@ html.light .cloud-tab--active:active {
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* Bottom-nav labels: the only sub-14px text in the app — sized so five tabs
+   fit on a 360px phone. Legibility is preserved because the whole pill is a
+   46px touch target, not a body-text tier. */
+.nav-label {
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.01em;
 }
 
 /* Accessibility floor: no UI text below 14px anywhere in the app. */
