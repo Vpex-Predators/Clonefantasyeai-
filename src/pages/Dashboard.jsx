@@ -21,6 +21,7 @@ import SwapView from "@/components/fantasy/dashboard/SwapView";
 import PlayoffRunway from "@/components/fantasy/dashboard/PlayoffRunway";
 import LeaguePulse from "@/components/fantasy/dashboard/LeaguePulse";
 import AdminPanel from "@/components/fantasy/dashboard/AdminPanel";
+import { PlayerNameProvider } from "@/components/PlayerNameProvider";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -202,6 +203,14 @@ export default function Dashboard() {
         tag={anyLive ? "LIVE" : "READY"}
       />
       <PullIndicator pull={pull} refreshing={pulling} />
+      <PlayerNameProvider
+        names={[
+          ...(data.myTeam?.starters || []),
+          ...(data.myTeam?.bench || []),
+          ...(data.opponentStarters || []),
+          ...(data.opponentBench || [])
+        ].map(p => p.name)}
+      >
       <div className="relative z-10 mx-auto max-w-2xl space-y-3 px-3 pt-3">
         {error && (
           <div className="rounded-xl border border-rose-400/30 bg-rose-400/10 p-3 text-sm text-rose-300">{error}</div>
@@ -292,6 +301,7 @@ export default function Dashboard() {
         )}
         </TabFade>
       </div>
+      </PlayerNameProvider>
       <AppNavBar />
     </div>
   );

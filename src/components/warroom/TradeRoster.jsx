@@ -1,11 +1,13 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import HudPanel from "@/components/hud/HudPanel";
+import { usePlayerNames } from "@/components/PlayerNameProvider";
 
 // One team's roster as a tap-to-select asset list for the trade builder.
 export default function TradeRoster({ title, players, selected, onToggle, selectedLabel, tone }) {
   const selCls = tone === "rose" ? "border-rose-400/60 bg-rose-400/10" : "border-emerald-400/60 bg-emerald-400/10";
   const selTag = tone === "rose" ? "text-rose-300" : "text-emerald-300";
+  const short = usePlayerNames();
 
   return (
     <HudPanel label={title} right={`${players.length} ASSETS`}>
@@ -22,7 +24,7 @@ export default function TradeRoster({ title, players, selected, onToggle, select
               )}
             >
               <span className="w-8 shrink-0 font-mono text-[9px] text-white/45">{p.position}</span>
-              <span className="min-w-0 flex-1 truncate text-[11px] font-semibold text-white/85">{p.name}</span>
+              <span className="min-w-0 flex-1 truncate text-[11px] font-semibold text-white/85">{short(p.name)}</span>
               {p.injuryStatus && p.injuryStatus !== "ACTIVE" && (
                 <span className="shrink-0 font-mono text-[9px] text-rose-300">{p.injuryStatus.slice(0, 3)}</span>
               )}

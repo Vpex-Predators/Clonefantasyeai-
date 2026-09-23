@@ -3,6 +3,7 @@ import { RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ComparePicker from "./ComparePicker";
 import DrawBar from "@/components/hud/DrawBar";
+import { usePlayerNames } from "@/components/PlayerNameProvider";
 
 const positionLabel = pos => (pos === "DST" ? "D/ST" : pos || "—");
 const INJURY_LABELS = { QUESTIONABLE: "Questionable", DOUBTFUL: "Doubtful", OUT: "Out", INJURY_RESERVE: "On IR", SUSPENSION: "Suspended" };
@@ -19,6 +20,7 @@ const leaderOf = (a, b) => {
 
 // Side-by-side comparison of any two league players or free agents.
 export default function PlayerCompare({ data, initialIds }) {
+  const short = usePlayerNames();
   const pool = useMemo(() => {
     const byId = new Map();
     const teamName = {};
@@ -64,7 +66,7 @@ export default function PlayerCompare({ data, initialIds }) {
     const d = (pickA.weeklyProj || 0) - (pickB.weeklyProj || 0);
     if (Math.abs(d) < 0.05) return `Dead even — both project ${(pickA.weeklyProj || 0).toFixed(1)} pts this week.`;
     const [lead, trail] = d > 0 ? [pickA, pickB] : [pickB, pickA];
-    return `${lead.name} projects ${Math.abs(d).toFixed(1)} pts higher than ${trail.name} this week.`;
+    return `${short(lead.name)} projects ${Math.abs(d).toFixed(1)} pts higher than ${short(trail.name)} this week.`;
   }, [pickA, pickB]);
 
   // Each player's share of the two week projections combined.
@@ -97,14 +99,14 @@ export default function PlayerCompare({ data, initialIds }) {
         <>
           <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-1">
             <div className="min-w-0 text-right">
-              <p className="truncate text-xs font-semibold text-white">{pickA.name}</p>
+              <p className="truncate text-xs font-semibold text-white">{short(pickA.name)}</p>
               <p className="truncate text-[9px] uppercase tracking-wider text-white/60">
                 {positionLabel(pickA.position)} · {pickA.teamLabel}
               </p>
             </div>
             <span className="px-1 font-heading text-[10px] font-bold italic tracking-widest text-white/70">VS</span>
             <div className="min-w-0 text-left">
-              <p className="truncate text-xs font-semibold text-white">{pickB.name}</p>
+              <p className="truncate text-xs font-semibold text-white">{short(pickB.name)}</p>
               <p className="truncate text-[9px] uppercase tracking-wider text-white/60">
                 {positionLabel(pickB.position)} · {pickB.teamLabel}
               </p>

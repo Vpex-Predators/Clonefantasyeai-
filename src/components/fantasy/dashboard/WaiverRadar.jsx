@@ -4,6 +4,7 @@ import { AlertTriangle, ChevronDown, ChevronUp, ExternalLink, Loader2, Newspaper
 import GlossaryChip from "@/components/hud/GlossaryChip";
 import WireList from "@/components/waiver/WireList";
 import WaiverPlayerNumbers from "@/components/waiver/WaiverPlayerNumbers";
+import { buildShortNames, shortName } from "@/lib/playerNames";
 
 const CATEGORY_STYLES = {
   fills_weak_spot: { label: "Fills a hole", cls: "border-amber-400/30 bg-amber-400/15 text-amber-300" },
@@ -18,7 +19,6 @@ const PRIORITY_STYLES = {
 };
 const POSITION_TABS = ["All", "QB", "RB", "WR", "TE", "D/ST", "K"];
 const INJURY_LABELS = { QUESTIONABLE: "questionable", OUT: "out", INJURY_RESERVE: "on IR", SUSPENSION: "suspended" };
-const lastName = n => String(n || "").split(" ").slice(-1)[0];
 const positionLabel = pos => (pos === "DST" ? "D/ST" : pos);
 
 export default function WaiverRadar({ freeAgents, bench, starters, onScanReady }) {
@@ -36,7 +36,7 @@ export default function WaiverRadar({ freeAgents, bench, starters, onScanReady }
     const benchPos = new Set((bench || []).map(b => b.position));
     return (starters || [])
       .filter(s => INJURY_LABELS[s.injuryStatus] && !benchPos.has(s.position))
-      .map(s => `${lastName(s.name)} is ${INJURY_LABELS[s.injuryStatus]} and you have no backup ${s.position}`);
+      .map(s => `${shortName(s.name)} is ${INJURY_LABELS[s.injuryStatus]} and you have no backup ${s.position}`);
   }, [starters, bench]);
 
   // force=true runs a fresh scan; force=false serves this week's cached scan instantly.
@@ -64,6 +64,19 @@ export default function WaiverRadar({ freeAgents, bench, starters, onScanReady }
   const matchesPos = p => posTab === "All" || positionLabel(p.position) === posTab;
   const shownTargets = (targets || []).filter(matchesPos);
   const wireCount = (freeAgents || []).filter(matchesPos).length;
+
+  // Compact labels: targets, wire, and roster names share one collision set.
+  const shortNames = useMemo(
+    () =>
+      buildShortNames([
+        ...(targets || []).map(t => t.name),
+        ...(freeAgents || []).map(p => p.name),
+        ...(starters || []).map(p => p.name),
+        ...(bench || []).map(p => p.name)
+      ]),
+    [targets, freeAgents, starters, bench]
+  );
+  const short = n => shortNames[n] || shortName(n);
 
   return (
     <section className="rounded-2xl border border-white/10 bg-white/5 p-4">
@@ -130,7 +143,7 @@ export default function WaiverRadar({ freeAgents, bench, starters, onScanReady }
                 >
                   <div className="min-w-0">
                     <p className="truncate text-xs font-semibold text-white">
-                      {t.name}{" "}
+                      {short(t.name)}{" "}
                       <span className="text-white/40">
                         · {positionLabel(t.position) === "D/ST" ? <GlossaryChip term="dst" bare>D/ST</GlossaryChip> : positionLabel(t.position)}
                       </span>
@@ -142,7 +155,7 @@ export default function WaiverRadar({ freeAgents, bench, starters, onScanReady }
                       </p>
                     )}
                     {t.priority === "high" && t.drop_suggestion && (
-                      <p className="mt-1 text-[10px] font-semibold text-emerald-300">Drop {t.drop_suggestion} to add {t.name}.</p>
+                      <p className="mt-1 text-[10px] font-semibold text-emerald-300">Drop {short(t.drop_suggestion)} to add {short(t.name)}.</p>
                     )}
                     {t.priority === "high" && !t.drop_suggestion && (
                       <p className="mt-1 text-[10px] text-white/45">{t.no_drop_reason || "No roster change needed."}</p>
@@ -171,7 +184,7 @@ export default function WaiverRadar({ freeAgents, bench, starters, onScanReady }
                     {t.priority === "high" && t.drop_suggestion && (
                       <p className="flex items-start gap-1.5 text-amber-200/90">
                         <Trash2 className="mt-0.5 h-3 w-3 shrink-0" />
-                        <span>Drop <span className="font-bold">{t.drop_suggestion}</span> to add {t.name}.</span>
+                        <span>Drop <span className="font-bold">{short(t.drop_suggestion)}</span> to add {short(t.name)}.</span>
                       </p>
                     )}
                     {t.source_url && (

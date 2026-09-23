@@ -30,11 +30,11 @@ export default function AnalystDoorwayCard({ delay = 0 }) {
 
   return (
     <Link to="/analyst" className="no-callout block rounded-2xl transition-transform duration-200 active:scale-[0.99]">
-      <HudPanel label="Trade analyst" right="ASK AI" delay={delay}>
+      <HudPanel label="Trade analyst" right="ASK AI" delay={delay} compact>
         {loading ? (
           <p className="flex items-center gap-2 text-[11px] text-white/55">
             <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-400" />
-            Reading your roster for the right question…
+            Reading your roster…
           </p>
         ) : question ? (
           <>
@@ -45,10 +45,10 @@ export default function AnalystDoorwayCard({ delay = 0 }) {
           </>
         ) : (
           <p className="text-[11px] text-white/55">
-            Ask anything about trades, waivers, or your lineup — the analyst reads your live ESPN data.
+            Ask anything — the analyst reads your live ESPN data.
           </p>
         )}
-        <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/10 pt-2.5 text-[10px] text-white/55">
+        <div className="mt-2 flex items-center justify-between gap-2 border-t border-white/10 pt-2 text-[10px] text-white/55">
           <span className="min-w-0">Plain-English verdicts with real numbers</span>
           <OpenButton>Open analyst</OpenButton>
         </div>

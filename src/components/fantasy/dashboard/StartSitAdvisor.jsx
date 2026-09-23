@@ -1,5 +1,6 @@
 import React from "react";
 import { Zap } from "lucide-react";
+import { usePlayerNames } from "@/components/PlayerNameProvider";
 
 const INJURED = new Set(["Q", "QUESTIONABLE", "D", "DOUBTFUL", "O", "OUT", "IR", "INJURY_RESERVE", "PUP", "SSD"]);
 const FLEX_SLOTS = [23, 7];
@@ -30,6 +31,7 @@ export function benchRecommendations(starters, bench) {
 }
 
 export default function StartSitAdvisor({ starters, bench }) {
+  const short = usePlayerNames();
   const recs = benchRecommendations(starters, bench);
 
   return (
@@ -42,8 +44,8 @@ export default function StartSitAdvisor({ starters, bench }) {
       ) : (
         recs.map(r => (
           <p key={r.bench.id} className="text-[11px] leading-relaxed text-white/70">
-            Start <span className="font-semibold text-white">{r.bench.name}</span> over {r.over.name} — projects{" "}
-            {r.gap.toFixed(1)} more points{r.starterHurt ? ` and ${r.over.name} is hurt` : ""}.
+            Start <span className="font-semibold text-white">{short(r.bench.name)}</span> over {short(r.over.name)} — projects{" "}
+            {r.gap.toFixed(1)} more points{r.starterHurt ? ` and ${short(r.over.name)} is hurt` : ""}.
           </p>
         ))
       )}

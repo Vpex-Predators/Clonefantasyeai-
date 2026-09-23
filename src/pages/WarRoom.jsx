@@ -12,6 +12,7 @@ import PowerRankings from "@/components/warroom/PowerRankings";
 import TradeSimulator from "@/components/warroom/TradeSimulator";
 import PlayerCompare from "@/components/warroom/PlayerCompare";
 import TabFade from "@/components/hud/TabFade";
+import { PlayerNameProvider } from "@/components/PlayerNameProvider";
 
 const TABS = [
   { id: "threats", label: "Threat board" },
@@ -60,6 +61,9 @@ export default function WarRoom() {
 
   const loadingData = isLoadingAuth || (isAuthenticated && loading && !data);
   const d = data && data.locked ? data : null;
+  const playerNames = d
+    ? [...Object.values(d.rosters || {}).flat(), ...(d.freeAgents || [])].map(p => p && p.name)
+    : [];
 
   return (
     <div className="min-h-screen bg-slate-950 pb-[calc(env(safe-area-inset-bottom)+7rem)] text-white">
@@ -70,6 +74,7 @@ export default function WarRoom() {
         tag={d ? "INTEL" : "STANDBY"}
       />
 
+      <PlayerNameProvider names={playerNames}>
       <div className="relative z-10 mx-auto max-w-2xl space-y-3 px-3 pt-3">
         {loadingData ? (
           <div className="flex justify-center py-10">
@@ -128,6 +133,7 @@ export default function WarRoom() {
           </>
         ) : null}
       </div>
+      </PlayerNameProvider>
       <AppNavBar />
     </div>
   );

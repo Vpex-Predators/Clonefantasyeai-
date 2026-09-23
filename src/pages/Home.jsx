@@ -16,6 +16,7 @@ import LeagueRivalsCard from "@/components/fantasy/home/LeagueRivalsCard";
 import LeaguePulseCard from "@/components/fantasy/home/LeaguePulseCard";
 import AnalystDoorwayCard from "@/components/fantasy/home/AnalystDoorwayCard";
 import AiAnalystPanel from "@/components/fantasy/home/AiAnalystPanel";
+import { PlayerNameProvider } from "@/components/PlayerNameProvider";
 
 function LockedSkeleton() {
   return (
@@ -77,7 +78,7 @@ export default function Home() {
         tag={d ? "LIVE" : "STANDBY"}
       />
 
-      <div className="relative z-10 mx-auto max-w-2xl space-y-3 px-3 pt-3">
+      <div className="relative z-10 mx-auto max-w-2xl space-y-2.5 px-3 pt-3">
         <FloatingAuthCard />
 
         {loadingBriefing ? (
@@ -109,7 +110,9 @@ export default function Home() {
             </Link>
           </div>
         ) : d ? (
-          <>
+          <PlayerNameProvider
+            names={[...(d.myTeam.starters || []), ...(d.myTeam.bench || []), ...(d.opponentStarters || [])].map(p => p.name)}
+          >
             <MatchupHero data={d} delay={0} />
             <WaiverLineupCard data={d} delay={90} />
             <WarRoomCard data={d} delay={180} />
@@ -118,8 +121,14 @@ export default function Home() {
             <LeaguePulseCard data={d} delay={450} />
             <AnalystDoorwayCard delay={540} />
             <AiAnalystPanel data={d} delay={630} />
-          </>
+          </PlayerNameProvider>
         ) : null}
+
+        <footer className="flex items-center justify-center gap-3 pt-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">
+          <Link to="/about" className="no-callout transition-colors hover:text-white/70">About</Link>
+          <span aria-hidden="true">·</span>
+          <Link to="/contact" className="no-callout transition-colors hover:text-white/70">Contact</Link>
+        </footer>
       </div>
       <AppNavBar />
     </div>

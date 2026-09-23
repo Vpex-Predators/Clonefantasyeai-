@@ -2,9 +2,14 @@ import React from "react";
 import { ArrowLeft, Radar } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+// Main bottom-tab roots: these screens are top-level destinations, so the
+// status bar never shows a back affordance on them.
+const TAB_ROOTS = ["/", "/waivers", "/warroom", "/dashboard", "/analyst"];
+
 // Sticky HUD status bar shared by the briefing and the war room.
 export default function HudStatusBar({ title, sub, tag = "LIVE" }) {
   const { pathname } = useLocation();
+  const isTabRoot = TAB_ROOTS.includes(pathname);
   const navigate = useNavigate();
   // Android-style back affordance on non-root screens: go back in history
   // when there is one, otherwise fall back to the briefing.
@@ -18,7 +23,7 @@ export default function HudStatusBar({ title, sub, tag = "LIVE" }) {
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-emerald-400/50 to-transparent" />
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-2.5">
         <div className="flex min-w-0 items-center gap-2.5">
-          {pathname !== "/" && (
+          {!isTabRoot && (
             <button
               type="button"
               onClick={goBack}

@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import HudPanel from "@/components/hud/HudPanel";
 import OpenButton from "@/components/hud/OpenButton";
 import DrawBar from "@/components/hud/DrawBar";
+import { buildShortNames, shortName } from "@/lib/playerNames";
 
 const PRIORITY_CHIP = {
   high: "border-emerald-400/40 bg-emerald-400/10 text-emerald-300",
@@ -50,14 +51,20 @@ export default function WaiverLineupCard({ data, delay = 0 }) {
 
   const targets = ((scan && scan.targets) || []).slice(0, 3);
   const edge = lineupEdge(data.myTeam);
+  const shortNames = buildShortNames([
+    ...targets.map(t => t.name),
+    edge ? edge.starter.name : null,
+    edge ? edge.bench.name : null
+  ]);
+  const short = n => shortNames[n] || shortName(n);
 
   return (
     <Link to="/waivers" className="no-callout block rounded-2xl transition-transform duration-200 active:scale-[0.99]">
-      <HudPanel label="Waivers & lineup" right={`WK ${data.league.week}`} delay={delay}>
+      <HudPanel label="Waivers & lineup" right={`WK ${data.league.week}`} delay={delay} compact>
         {loading ? (
           <div className="flex items-center gap-2 text-[11px] text-white/55">
             <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-400" />
-            Pulling this week's waiver scan…
+            Pulling the waiver scan…
           </div>
         ) : targets.length ? (
           <ul className="space-y-1.5">
@@ -65,7 +72,7 @@ export default function WaiverLineupCard({ data, delay = 0 }) {
               <li key={t.name} className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5">
                 <div className="flex items-center justify-between gap-2">
                   <span className="truncate text-[11px] font-bold text-white">
-                    {t.name} <span className="font-normal text-white/45">({t.position})</span>
+                    {short(t.name)} <span className="font-normal text-white/45">({t.position})</span>
                   </span>
                   <span
                     className={`shrink-0 rounded-full border px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] ${
@@ -81,11 +88,11 @@ export default function WaiverLineupCard({ data, delay = 0 }) {
           </ul>
         ) : (
           <p className="text-[11px] text-white/55">
-            No waiver scan saved this week yet — open the wire tab to run one.
+            No waiver scan saved yet — run one on the wire tab.
           </p>
         )}
 
-        <div className="mt-2.5 border-t border-white/10 pt-2">
+        <div className="mt-2 border-t border-white/10 pt-2">
           {edge ? (
             <>
               <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.14em] text-white/60">
@@ -93,7 +100,7 @@ export default function WaiverLineupCard({ data, delay = 0 }) {
                 <span className="font-mono text-sm font-bold text-emerald-300">+{edge.margin} pts</span>
               </div>
               <p className="mt-0.5 text-[10px] text-white/55">
-                {edge.bench.name} projects {edge.bench.weeklyProj} vs {edge.starter.name}'s {edge.starter.weeklyProj} at{" "}
+                {short(edge.bench.name)} projects {edge.bench.weeklyProj} vs {short(edge.starter.name)}'s {edge.starter.weeklyProj} at{" "}
                 {edge.bench.realPosition}.
               </p>
               <div className="mt-1">
@@ -102,12 +109,12 @@ export default function WaiverLineupCard({ data, delay = 0 }) {
             </>
           ) : (
             <p className="text-[10px] text-white/55">
-              No projected bench upgrade over your starters — the lineup looks set.
+              No projected bench upgrade — lineup looks set.
             </p>
           )}
         </div>
 
-        <div className="mt-2.5 flex justify-end">
+        <div className="mt-2 flex justify-end">
           <OpenButton>Open waiver wire</OpenButton>
         </div>
       </HudPanel>

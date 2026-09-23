@@ -30,7 +30,7 @@ export default function MatchupHero({ data, delay = 0 }) {
 
   return (
     <Link to="/dashboard" className="no-callout block rounded-2xl transition-transform duration-200 active:scale-[0.99]">
-      <HudPanel label="This week's matchup" right={liveTag} delay={delay}>
+      <HudPanel label="This week's matchup" right={liveTag} delay={delay} compact>
         {opponent ? (
           <>
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
@@ -51,7 +51,7 @@ export default function MatchupHero({ data, delay = 0 }) {
               </div>
             </div>
 
-            <div className="mt-3 space-y-1">
+            <div className="mt-2 space-y-1">
               <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.14em] text-white/60">
                 <span>Win probability</span>
                 <span className={`font-mono text-sm font-bold ${wpTone}`}>{winProb == null ? "—" : `${winProb}%`}</span>
@@ -59,7 +59,7 @@ export default function MatchupHero({ data, delay = 0 }) {
               <DrawBar pct={winProb ?? 0} />
             </div>
 
-            <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/10 pt-2.5 text-[10px] text-white/60">
+            <div className="mt-2 flex items-center justify-between gap-2 border-t border-white/10 pt-2 text-[10px] text-white/60">
               <span className="min-w-0 truncate">
                 Playoff odds <b className="font-mono text-white">{mine ? `${mine.playoffPct}%` : "—"}</b>
               </span>
@@ -70,9 +70,9 @@ export default function MatchupHero({ data, delay = 0 }) {
           <>
             <p className="text-sm font-bold text-white">BYE week — no matchup</p>
             <p className="mt-1 text-[11px] text-white/55">
-              Use the week to work the wire and set your playoff positioning.
+              Use the week to work the wire and prep your playoff run.
             </p>
-            <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/10 pt-2 text-[10px] text-white/60">
+            <div className="mt-2 flex items-center justify-between gap-2 border-t border-white/10 pt-2 text-[10px] text-white/60">
               <span className="min-w-0 truncate">
                 {myTeam.wins}-{myTeam.losses} record · playoff odds{" "}
                 <b className="font-mono text-white">{mine ? `${mine.playoffPct}%` : "—"}</b>

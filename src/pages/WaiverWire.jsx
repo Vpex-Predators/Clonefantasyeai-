@@ -10,6 +10,7 @@ import HudStatusBar from "@/components/hud/HudStatusBar";
 import WaiverRadar from "@/components/fantasy/dashboard/WaiverRadar";
 import usePullToRefresh from "@/hooks/usePullToRefresh";
 import PullIndicator from "@/components/hud/PullIndicator";
+import { PlayerNameProvider } from "@/components/PlayerNameProvider";
 
 export default function WaiverWire() {
   const { isAuthenticated, isLoadingAuth } = useAuth();
@@ -41,6 +42,7 @@ export default function WaiverWire() {
       <GlassBackdrop />
       <HudStatusBar title="Waiver wire" sub={d ? `${d.league.name.trim()} · WK ${d.league.week} · ${d.myTeam.name.trim()}` : "Available players & smart adds"} tag={d ? "LIVE" : "STANDBY"} />
       <PullIndicator pull={pull} refreshing={pulling} />
+      <PlayerNameProvider names={[...roster, ...(d?.freeAgents || [])].map(p => p && p.name)}>
       <main className="relative z-10 mx-auto max-w-2xl space-y-3 px-3 pt-3">
         {isLoadingAuth || loading ? <div className="flex justify-center py-12"><Loader2 className="h-7 w-7 animate-spin text-emerald-400" /></div>
           : error ? <div className="border border-rose-400/30 bg-rose-400/10 p-3 text-xs text-rose-300">{error}</div>
@@ -48,6 +50,7 @@ export default function WaiverWire() {
           : data && !data.locked ? <HudPanel label="Team lock required"><p className="text-xs text-white/60">Lock your team before scanning the wire.</p><Link to="/dashboard" className="mt-3 inline-block no-callout inline-flex min-h-[44px] items-center bg-emerald-400 px-5 py-2.5 text-sm font-bold uppercase text-slate-950">Lock my team</Link></HudPanel>
           : d ? <><WaiverRadar starters={roster.filter((p) => p.isStarter)} bench={roster.filter((p) => !p.isStarter)} freeAgents={d.freeAgents || []} onScanReady={handleScanReady} /></> : null}
       </main>
+      </PlayerNameProvider>
       <AppNavBar />
     </div>
   );

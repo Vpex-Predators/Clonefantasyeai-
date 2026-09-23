@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Loader2, Wand2 } from "lucide-react";
 import HudPanel from "@/components/hud/HudPanel";
+import { usePlayerNames } from "@/components/PlayerNameProvider";
 
 // AI-guided deals: the analyst proposes fair swaps for the chosen partner,
 // and any proposal loads straight into the tap-to-build trade columns.
 export default function TradeSuggest({ partnerId, partnerName, model, onLoad }) {
+  const short = usePlayerNames();
   const [trades, setTrades] = useState(null);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState(null);
@@ -48,10 +50,10 @@ export default function TradeSuggest({ partnerId, partnerName, model, onLoad }) 
           {list.map((t, i) => (
             <div key={i} className="border border-white/10 bg-white/[0.02] p-2.5">
               <p className="font-mono text-[10px] text-white/60">
-                GIVE <span className="text-rose-300">{(t.give || []).join(", ")}</span>
+                GIVE <span className="text-rose-300">{(t.give || []).map(short).join(", ")}</span>
               </p>
               <p className="mt-0.5 font-mono text-[10px] text-white/60">
-                GET <span className="text-emerald-300">{(t.get || []).join(", ")}</span>
+                GET <span className="text-emerald-300">{(t.get || []).map(short).join(", ")}</span>
               </p>
               <p className="mt-1.5 text-[11px] leading-relaxed text-white/70">{t.rationale}</p>
               <button

@@ -26,7 +26,7 @@ export default function LeaguePulseCard({ data, delay = 0 }) {
 
   return (
     <Link to="/dashboard?tab=league" className="no-callout block rounded-2xl transition-transform duration-200 active:scale-[0.99]">
-      <HudPanel label="League pulse" right={`${data.teams.length} TEAMS`} delay={delay}>
+      <HudPanel label="League pulse" right={`${data.teams.length} TEAMS`} delay={delay} compact>
         <div className="flex flex-wrap gap-1.5">
           {chip(Plus, `${adds} adds`)}
           {chip(ArrowLeftRight, `${trades} trades`)}
@@ -34,7 +34,7 @@ export default function LeaguePulseCard({ data, delay = 0 }) {
           {c && chip(CalendarRange, `wk 1–${c.weeks}`)}
         </div>
 
-        <div className="mt-2.5">
+        <div className="mt-2">
           {flags.length ? (
             <>
               <p className="flex items-center gap-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.15em] text-rose-300">
@@ -55,13 +55,13 @@ export default function LeaguePulseCard({ data, delay = 0 }) {
           ) : (
             <p className="flex items-center gap-1.5 rounded-lg border border-emerald-400/25 bg-emerald-400/10 px-2 py-1.5 text-[11px] text-emerald-300">
               <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
-              All clear — no lopsided trade loops, tanking, or wire games in the numbers.
+              All clear — no lopsided trades, tanking, or wire games.
             </p>
           )}
         </div>
 
-        <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/10 pt-2.5 text-[10px] text-white/55">
-          <span className="min-w-0">Full-season scan · detectors, not accusations</span>
+        <div className="mt-2 flex items-center justify-between gap-2 border-t border-white/10 pt-2 text-[10px] text-white/55">
+          <span className="min-w-0">Full-season scan</span>
           <OpenButton>Open league</OpenButton>
         </div>
       </HudPanel>
