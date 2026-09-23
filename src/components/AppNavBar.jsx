@@ -10,14 +10,13 @@ const ITEMS = [
   { to: "/analyst", label: "Analyst", icon: Calculator },
 ];
 
-// Fixed, non-scrolling bottom bar: five equal tabs (icon over label) plus the
-// theme toggle, all fitting inside a 360px-wide phone.
+// Fixed, non-scrolling bottom bar: five equal cloudy tabs plus the theme toggle.
 export default function AppNavBar() {
   const { pathname } = useLocation();
   return (
-    <nav className="pointer-events-none fixed inset-x-0 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-50 flex justify-center px-2">
-      <div className="no-callout pointer-events-auto flex w-full max-w-md items-center rounded-[1.75rem] border border-white/15 bg-slate-900/70 p-1 shadow-[0_8px_32px_rgba(0,0,0,0.45),0_0_24px_rgba(52,211,153,0.12)] backdrop-blur-2xl">
-        <div className="grid min-w-0 flex-1 grid-cols-5">
+    <nav className="pointer-events-none fixed inset-x-0 bottom-[calc(0.625rem+env(safe-area-inset-bottom))] z-50 flex justify-center px-2">
+      <div className="no-callout pointer-events-auto flex w-full max-w-md items-center gap-1 rounded-[1.5rem] border border-white/10 bg-slate-950/45 p-1 shadow-[0_8px_28px_rgba(0,0,0,0.4)] backdrop-blur-2xl">
+        <div className="grid min-w-0 flex-1 grid-cols-5 gap-1">
           {ITEMS.map(({ to, label, icon: Icon }) => {
             const active = pathname === to;
             return (
@@ -25,19 +24,17 @@ export default function AppNavBar() {
                 key={to}
                 to={to}
                 aria-current={active ? "page" : undefined}
-                className={`no-callout flex min-h-[52px] min-w-0 flex-col items-center justify-center gap-0.5 rounded-[1.4rem] text-sm font-semibold leading-none tracking-tight transition-colors ${
-                  active
-                    ? "bg-gradient-to-r from-emerald-400 to-cyan-400 text-slate-950 shadow-[0_0_16px_rgba(52,211,153,0.45)]"
-                    : "text-white/60 hover:text-white"
+                className={`cloud-tab no-callout flex min-h-[46px] min-w-0 flex-col items-center justify-center gap-0.5 text-sm font-semibold leading-none tracking-tight ${
+                  active ? "cloud-tab--active" : ""
                 }`}
               >
-                <Icon className="h-[18px] w-[18px]" />
+                <Icon className="h-[17px] w-[17px]" />
                 <span className="whitespace-nowrap">{label}</span>
               </Link>
             );
           })}
         </div>
-        <div className="flex w-9 shrink-0 justify-center [&>button]:w-9">
+        <div className="flex w-8 shrink-0 justify-center [&>button]:w-8">
           <ThemeToggle />
         </div>
       </div>

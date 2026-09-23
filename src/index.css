@@ -208,6 +208,44 @@ html.light .cloud-btn {
   box-shadow: 0 6px 18px hsl(30 20% 40% / 0.14), inset 0 1px 0 #ffffff;
 }
 
+/* Bottom-nav tabs — the same cloudy surface on every tab; the active one
+   brightens and picks up a soft glow instead of switching to a solid fill. */
+.cloud-tab {
+  background: linear-gradient(180deg, rgba(250, 248, 243, 0.5), rgba(236, 233, 225, 0.35));
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 1.15rem;
+  color: hsl(222 16% 40%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+.cloud-tab:active {
+  transform: scale(0.96);
+}
+.cloud-tab--active,
+.cloud-tab--active:active {
+  background: linear-gradient(180deg, rgba(250, 248, 243, 0.97), rgba(236, 233, 225, 0.9));
+  border-color: rgba(255, 255, 255, 0.75);
+  color: hsl(222 25% 13%);
+  box-shadow:
+    0 0 16px rgba(52, 211, 153, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+html.light .cloud-tab {
+  background: linear-gradient(180deg, hsl(40 30% 96% / 0.8), hsl(40 30% 92% / 0.6));
+  border-color: hsl(222 20% 18% / 0.08);
+  color: hsl(222 12% 42%);
+}
+html.light .cloud-tab--active,
+html.light .cloud-tab--active:active {
+  background: linear-gradient(180deg, #ffffff, hsl(40 30% 94%));
+  border-color: hsl(222 20% 18% / 0.14);
+  color: hsl(222 25% 13%);
+  box-shadow: 0 4px 12px hsl(30 20% 40% / 0.18), inset 0 1px 0 #ffffff;
+}
+
 /* Scrollable strips that shouldn't show a scrollbar (bottom nav). */
 .no-scrollbar {
   scrollbar-width: none;
