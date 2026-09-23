@@ -120,6 +120,12 @@ export default function Home() {
             <AiAnalystPanel data={d} delay={630} />
           </>
         ) : null}
+
+        <footer className="flex items-center justify-center gap-3 pt-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">
+          <Link to="/about" className="no-callout transition-colors hover:text-white/70">About</Link>
+          <span aria-hidden="true">·</span>
+          <Link to="/contact" className="no-callout transition-colors hover:text-white/70">Contact</Link>
+        </footer>
       </div>
       <AppNavBar />
     </div>
