@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Loader2, Lock, Radar } from "lucide-react";
 import AppNavBar from "@/components/AppNavBar";
+import OpenButton from "@/components/hud/OpenButton";
 import GlassBackdrop from "@/components/hud/GlassBackdrop";
 import HudStatusBar from "@/components/hud/HudStatusBar";
 import FloatingAuthCard from "@/components/fantasy/home/FloatingAuthCard";
@@ -102,9 +103,9 @@ export default function Home() {
             <p className="mt-1 text-xs text-white/50">One-time verification anchors your account to your roster.</p>
             <Link
               to="/dashboard"
-              className="no-callout mt-3 inline-flex min-h-[44px] items-center bg-emerald-400 px-5 py-2 text-sm font-bold uppercase tracking-widest text-slate-950 hover:bg-emerald-300"
+              className="no-callout mt-3 inline-flex"
             >
-              Go to dashboard
+              <OpenButton>Go to my team</OpenButton>
             </Link>
           </div>
         ) : d ? (

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import HudPanel from "@/components/hud/HudPanel";
+import OpenButton from "@/components/hud/OpenButton";
 
 // Trade analyst doorway: the latest suggested question built from your live
 // roster. A tap opens the full analyst chat.
@@ -47,12 +48,10 @@ export default function AnalystDoorwayCard({ delay = 0 }) {
             Ask anything about trades, waivers, or your lineup — the analyst reads your live ESPN data.
           </p>
         )}
-        <p className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/10 pt-2 text-[10px] text-white/55">
-          <span className="min-w-0 truncate">Plain-English verdicts with real numbers</span>
-          <span className="flex shrink-0 items-center gap-1 font-mono font-bold uppercase tracking-[0.15em] text-emerald-300/80">
-            Open analyst <ChevronRight className="h-3 w-3" />
-          </span>
-        </p>
+        <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/10 pt-2.5 text-[10px] text-white/55">
+          <span className="min-w-0">Plain-English verdicts with real numbers</span>
+          <OpenButton>Open analyst</OpenButton>
+        </div>
       </HudPanel>
     </Link>
   );

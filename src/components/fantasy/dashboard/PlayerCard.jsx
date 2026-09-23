@@ -25,7 +25,7 @@ export default function PlayerCard({ player, pending, analyzing, onOpen, onAnaly
       className={`relative rounded-xl border p-3 transition-all ${
         pending
           ? "border-emerald-400/60 bg-emerald-400/5 shadow-[0_0_18px_rgba(52,211,153,0.25)]"
-          : "border-white/10 bg-white/5"
+          : "border-white/10 bg-white/[0.04]"
       }`}
     >
       {pending && (

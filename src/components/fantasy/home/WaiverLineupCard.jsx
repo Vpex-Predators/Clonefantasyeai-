@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import HudPanel from "@/components/hud/HudPanel";
+import OpenButton from "@/components/hud/OpenButton";
 import DrawBar from "@/components/hud/DrawBar";
 
 const PRIORITY_CHIP = {
@@ -106,9 +107,9 @@ export default function WaiverLineupCard({ data, delay = 0 }) {
           )}
         </div>
 
-        <p className="mt-2 flex items-center justify-end gap-1 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-emerald-300/80">
-          Open waiver wire <ChevronRight className="h-3 w-3" />
-        </p>
+        <div className="mt-2.5 flex justify-end">
+          <OpenButton>Open waiver wire</OpenButton>
+        </div>
       </HudPanel>
     </Link>
   );

@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
 import HudPanel from "@/components/hud/HudPanel";
+import OpenButton from "@/components/hud/OpenButton";
 
 // War room doorway: the opponent's highest-projected starter is the week's
 // biggest threat. A tap opens the threat board, rankings, and sims.
@@ -42,12 +42,10 @@ export default function WarRoomCard({ data, delay = 0 }) {
             {opponent ? "No opponent projections posted yet." : "BYE week — scout the wire and the trade market."}
           </p>
         )}
-        <p className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/10 pt-2 text-[10px] text-white/55">
-          <span className="min-w-0 truncate">Threat board · AI power rankings · trade sims</span>
-          <span className="flex shrink-0 items-center gap-1 font-mono font-bold uppercase tracking-[0.15em] text-rose-300/80">
-            Open war room <ChevronRight className="h-3 w-3" />
-          </span>
-        </p>
+        <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/10 pt-2.5 text-[10px] text-white/55">
+          <span className="min-w-0">Threat board · power rankings · trade sims</span>
+          <OpenButton>Open war room</OpenButton>
+        </div>
       </HudPanel>
     </Link>
   );

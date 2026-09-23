@@ -3,6 +3,7 @@ import { sortStarters } from "@/lib/lineupOrder";
 import InjuryBadge from "./InjuryBadge";
 import BenchDepth from "./BenchDepth";
 import StartSitAdvisor from "./StartSitAdvisor";
+import HudPanel from "@/components/hud/HudPanel";
 
 const ROW_ORDER = ["QB", "RB1", "RB2", "WR1", "WR2", "TE", "FLX", "D/ST", "K"];
 
@@ -64,21 +65,12 @@ export default function MatchupEngine({ myTeam, opponent, opponentStarters, oppo
   const oppPending = opponent && (pending || []).includes("opp:" + opponent.id);
 
   return (
-    <section
-      onClick={() => { if (oppPending) onSeen(["opp:" + opponent.id]); }}
-      className={`relative rounded-2xl border p-4 transition-all ${
-        oppPending
-          ? "border-emerald-400/60 bg-emerald-400/5 shadow-[0_0_22px_rgba(52,211,153,0.22)]"
-          : "border-white/10 bg-white/5"
-      }`}
+    <div onClick={() => { if (oppPending) onSeen(["opp:" + opponent.id]); }}>
+    <HudPanel
+      label={`Week ${week} matchup`}
+      right={oppPending ? <span className="animate-pulse rounded-full bg-emerald-400 px-1.5 py-0.5 font-bold text-slate-950">NEW</span> : "HEAD TO HEAD"}
+      className={oppPending ? "border-emerald-400/60 shadow-[0_0_22px_rgba(52,211,153,0.22)]" : ""}
     >
-      {oppPending && (
-        <span className="absolute -top-2 right-4 animate-pulse rounded-full bg-emerald-400 px-1.5 py-0.5 text-[9px] font-bold text-slate-950">
-          NEW
-        </span>
-      )}
-      <h2 className="mb-3 font-heading text-sm font-bold uppercase tracking-widest text-white/80">Week {week} matchup</h2>
-
       {!opponent ? (
         <p className="text-xs text-white/50">No matchup this week (bye).</p>
       ) : (
@@ -139,6 +131,7 @@ export default function MatchupEngine({ myTeam, opponent, opponentStarters, oppo
           </div>
         </>
       )}
-    </section>
+    </HudPanel>
+    </div>
   );
 }

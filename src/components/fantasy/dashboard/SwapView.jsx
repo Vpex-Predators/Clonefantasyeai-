@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { TrendingUp } from "lucide-react";
 import InjuryBadge from "./InjuryBadge";
 import DrawBar from "@/components/hud/DrawBar";
+import HudPanel from "@/components/hud/HudPanel";
 
 // Which real positions can fill each lineup slot (ESPN slot ids).
 const SLOT_ELIGIBLE = {
@@ -40,9 +41,8 @@ export default function SwapView({ starters = [], bench = [] }) {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-        <h2 className="font-heading text-sm font-bold uppercase tracking-widest text-white/80">Swap check</h2>
-        <p className="mt-1 text-[11px] leading-relaxed text-white/70">
+      <HudPanel label="Swap check" right={`${swaps.length} UPGRADE${swaps.length === 1 ? "" : "S"}`}>
+        <p className="text-[11px] leading-relaxed text-white/70">
           ESPN week projections, starters vs bench. Tap a suggestion for the full side-by-side breakdown.
         </p>
         {swaps.length > 0 ? (
@@ -73,8 +73,9 @@ export default function SwapView({ starters = [], bench = [] }) {
             No bench player projects higher than your starters at any compatible slot this week — your lineup is set as-is.
           </p>
         )}
-      </div>
+      </HudPanel>
 
+      <HudPanel label="Starters vs bench" right="WK PROJ">
       <div className="grid grid-cols-2 gap-2">
         {[{ title: "Starters", list: starters }, { title: "Bench", list: bench }].map(col => (
           <div key={col.title} className="space-y-1.5">
@@ -84,7 +85,7 @@ export default function SwapView({ starters = [], bench = [] }) {
               return (
                 <div
                   key={p.id}
-                  className={`rounded-xl border px-2.5 py-2 ${sw ? "border-emerald-400/40 bg-emerald-400/10" : "border-white/10 bg-white/5"}`}
+                  className={`rounded-xl border px-2.5 py-2 ${sw ? "border-emerald-400/40 bg-emerald-400/10" : "border-white/10 bg-white/[0.04]"}`}
                 >
                   <p className="truncate text-[11px] font-semibold text-white">{p.name}</p>
                   <div className="mt-0.5 flex items-center justify-between gap-1">
@@ -105,6 +106,7 @@ export default function SwapView({ starters = [], bench = [] }) {
           </div>
         ))}
       </div>
+      </HudPanel>
     </div>
   );
 }

@@ -1,7 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeftRight, ChevronRight, Plus, ShieldAlert, ShieldCheck } from "lucide-react";
+import { ArrowLeftRight, CalendarRange, Minus, Plus, ShieldAlert, ShieldCheck } from "lucide-react";
 import HudPanel from "@/components/hud/HudPanel";
+import OpenButton from "@/components/hud/OpenButton";
 
 // League pulse doorway: league-wide activity counts plus the collusion
 // pattern detectors in compact form — all-clear badge or the top flags.
@@ -10,8 +11,10 @@ export default function LeaguePulseCard({ data, delay = 0 }) {
   const pulse = data.leaguePulse;
   if (!pulse) return null;
   const moves = pulse.movesAvailable === false ? [] : pulse.moves || [];
-  const trades = moves.filter(m => m.kind === "trade" || m.kind === "trade_pending").length;
-  const adds = moves.filter(m => m.kind === "add").length;
+  const c = pulse.counts;
+  const trades = c ? c.trades : moves.filter(m => m.kind === "trade" || m.kind === "trade_pending").length;
+  const adds = c ? c.adds : moves.filter(m => m.kind === "add").length;
+  const drops = c ? c.drops : moves.filter(m => m.kind === "drop").length;
   const flags = pulse.flags || [];
 
   const chip = (Icon, label) => (
@@ -27,7 +30,8 @@ export default function LeaguePulseCard({ data, delay = 0 }) {
         <div className="flex flex-wrap gap-1.5">
           {chip(Plus, `${adds} adds`)}
           {chip(ArrowLeftRight, `${trades} trades`)}
-          {chip(Plus, `${moves.length} total moves`)}
+          {chip(Minus, `${drops} drops`)}
+          {c && chip(CalendarRange, `wk 1–${c.weeks}`)}
         </div>
 
         <div className="mt-2.5">
@@ -56,12 +60,10 @@ export default function LeaguePulseCard({ data, delay = 0 }) {
           )}
         </div>
 
-        <p className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/10 pt-2 text-[10px] text-white/55">
-          <span className="min-w-0 truncate">Detectors, not accusations — full season scan on the League tab</span>
-          <span className="flex shrink-0 items-center gap-1 font-mono font-bold uppercase tracking-[0.15em] text-emerald-300/80">
-            Open league <ChevronRight className="h-3 w-3" />
-          </span>
-        </p>
+        <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/10 pt-2.5 text-[10px] text-white/55">
+          <span className="min-w-0">Full-season scan · detectors, not accusations</span>
+          <OpenButton>Open league</OpenButton>
+        </div>
       </HudPanel>
     </Link>
   );

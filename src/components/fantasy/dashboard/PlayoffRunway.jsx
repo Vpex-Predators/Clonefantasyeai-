@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import HudPanel from "@/components/hud/HudPanel";
 
 const GRADE_STYLES = {
   Tough: "bg-rose-400/15 text-rose-300 border-rose-400/40",
@@ -13,10 +14,9 @@ export default function PlayoffRunway({ playoffOdds }) {
 
   if (!odds) {
     return (
-      <section className="rounded-2xl border border-white/10 bg-white/5 p-4">
-        <h2 className="font-heading text-sm font-bold uppercase tracking-widest text-white/80">Playoff runway</h2>
-        <p className="mt-2 text-xs text-white/50">Playoff odds aren't available for this week yet.</p>
-      </section>
+      <HudPanel label="Playoff runway">
+        <p className="text-xs text-white/50">Playoff odds aren't available for this week yet.</p>
+      </HudPanel>
     );
   }
 
@@ -24,13 +24,10 @@ export default function PlayoffRunway({ playoffOdds }) {
   const remaining = mine.remaining || [];
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/5 p-4">
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <h2 className="font-heading text-sm font-bold uppercase tracking-widest text-white/80">Playoff runway</h2>
-          <p className="mt-0.5 text-[10px] text-white/40">1,000 simulated finishes + per-week win model</p>
-        </div>
-        <div className="flex shrink-0 rounded-full border border-white/10 bg-slate-900/80 p-0.5">
+    <HudPanel label="Playoff runway" right="1,000 SIMS">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[10px] text-white/40">Simulated finishes + per-week win model</p>
+        <div className="flex shrink-0 rounded-full border border-white/10 bg-white/[0.04] p-0.5">
           {["sim", "model"].map((v) => (
             <button
               key={v}
@@ -133,6 +130,6 @@ export default function PlayoffRunway({ playoffOdds }) {
           </p>
         </div>
       )}
-    </section>
+    </HudPanel>
   );
 }

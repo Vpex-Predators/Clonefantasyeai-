@@ -1,5 +1,6 @@
 import PlayerCard from "./PlayerCard";
 import { sortStarters } from "@/lib/lineupOrder";
+import HudPanel from "@/components/hud/HudPanel";
 
 export default function RosterCompare({ starters, bench, pending, onSeen, onAnalyze, analyzing }) {
   const pendingSet = new Set(pending || []);
@@ -19,12 +20,7 @@ export default function RosterCompare({ starters, bench, pending, onSeen, onAnal
   );
 
   return (
-    <section>
-      <div className="mb-2 flex items-baseline justify-between">
-        <h2 className="font-heading text-sm font-bold uppercase tracking-widest text-white/80">My lineup</h2>
-        <span className="text-[10px] text-white/40">Starters {starterProj} · Bench {benchProj} proj</span>
-      </div>
-
+    <HudPanel label="My lineup" right={`${starterProj} START · ${benchProj} BENCH`}>
       <div className="space-y-2">
         <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-400/80">Starters</p>
         {orderedStarters.map(renderCard)}
@@ -40,6 +36,6 @@ export default function RosterCompare({ starters, bench, pending, onSeen, onAnal
         {bench.map(renderCard)}
         {bench.length === 0 && <p className="text-[11px] text-white/40">No bench players.</p>}
       </div>
-    </section>
+    </HudPanel>
   );
 }

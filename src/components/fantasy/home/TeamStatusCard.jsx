@@ -1,7 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import HudPanel from "@/components/hud/HudPanel";
+import OpenButton from "@/components/hud/OpenButton";
 import { injuryBadge } from "@/lib/lineupOrder";
 
 // My team doorway: projected lineup total plus injury risk inside the
@@ -65,12 +66,10 @@ export default function TeamStatusCard({ data, delay = 0 }) {
           )}
         </div>
 
-        <p className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/10 pt-2 text-[10px] text-white/55">
-          <span className="min-w-0 truncate">Live scoreboard · start/sit swaps · season charts</span>
-          <span className="flex shrink-0 items-center gap-1 font-mono font-bold uppercase tracking-[0.15em] text-emerald-300/80">
-            Open my team <ChevronRight className="h-3 w-3" />
-          </span>
-        </p>
+        <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/10 pt-2.5 text-[10px] text-white/55">
+          <span className="min-w-0">Live scoreboard · swaps · season charts</span>
+          <OpenButton>Open my team</OpenButton>
+        </div>
       </HudPanel>
     </Link>
   );

@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
 import HudPanel from "@/components/hud/HudPanel";
+import OpenButton from "@/components/hud/OpenButton";
 import DrawBar from "@/components/hud/DrawBar";
 
 // Command-center hero: this week's score watch with win probability and
@@ -26,11 +26,7 @@ export default function MatchupHero({ data, delay = 0 }) {
     </span>
   );
 
-  const openCue = (
-    <span className="flex shrink-0 items-center gap-1 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-emerald-300/80">
-      Open my team <ChevronRight className="h-3 w-3" />
-    </span>
-  );
+  const openCue = <OpenButton>Open my team</OpenButton>;
 
   return (
     <Link to="/dashboard" className="no-callout block rounded-2xl transition-transform duration-200 active:scale-[0.99]">
@@ -63,7 +59,7 @@ export default function MatchupHero({ data, delay = 0 }) {
               <DrawBar pct={winProb ?? 0} />
             </div>
 
-            <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/10 pt-2 text-[10px] text-white/60">
+            <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/10 pt-2.5 text-[10px] text-white/60">
               <span className="min-w-0 truncate">
                 Playoff odds <b className="font-mono text-white">{mine ? `${mine.playoffPct}%` : "—"}</b>
               </span>

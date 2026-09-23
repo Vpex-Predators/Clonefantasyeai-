@@ -1,4 +1,6 @@
-import { parseTeamRoster, round1, fetchPlayerNames } from './espnLeague.js';
+import { parseTeamRoster, round1, fetchPlayerNames, fetchSeasonTransactions } from './espnLeague.js';
+
+const FAST_CLAIM_HOURS = 8;
 
 // Statuses that mean the player is officially not playing this week.
 const OUT_STATUSES = ['O', 'IR', 'INJURY_RESERVE', 'SUSPENSION', 'NFI', 'PUP', 'SSPD'];
@@ -22,10 +24,21 @@ export async function buildLeaguePulse({ league, teams, season, leagueId, curren
     weeksPlayed: Math.max(0, currentPeriod - 1)
   };
 
-  const txs = (league.transactions || [])
-    .filter(t => (t.items || []).length)
+  // Full season, not just the current week's feed.
+  const seasonTxs = await fetchSeasonTransactions(season, leagueId, currentPeriod, league.transactions || []);
+  const txs = seasonTxs
+    .filter(t => (t.items || []).length && t.status !== 'CANCELED' && t.status !== 'FAILED_INVALIDPLAYERSOURCE')
     .sort((a, b) => (b.proposedDate || 0) - (a.proposedDate || 0));
   if (!txs.length) return { totals, moves: [], movesAvailable: false, flags: [] };
+
+  // Season-wide counts (the move log itself is capped for display).
+  const counts = { adds: 0, drops: 0, trades: 0, total: txs.length, weeks: currentPeriod };
+  for (const t of txs) {
+    const items = t.items || [];
+    if (items.some(i => i.type === 'TRADE')) counts.trades += 1;
+    counts.adds += items.filter(i => i.type === 'ADD').length;
+    counts.drops += items.filter(i => i.type === 'DROP').length;
+  }
 
   // Player index across every current roster: names, values, injury flags.
   const playerInfo = {};
@@ -168,6 +181,7 @@ export async function buildLeaguePulse({ league, teams, season, leagueId, curren
   }
   wireEvents.sort((a, b) => a.date - b.date);
   const pairEdges = {};
+  const fastClaims = {};
   const addTeamsByPlayer = {};
   for (const pid of new Set(wireEvents.map(e => e.playerId))) {
     const evs = wireEvents.filter(e => e.playerId === pid);
@@ -181,6 +195,11 @@ export async function buildLeaguePulse({ league, teams, season, leagueId, curren
         if (lastDrop && lastDrop.team !== e.team) {
           const key = [lastDrop.team, e.team].sort().join('|');
           (pairEdges[key] = pairEdges[key] || []).push(pid);
+          const hrs = (e.date - lastDrop.date) / 3600000;
+          if (lastDrop.date && hrs >= 0 && hrs < FAST_CLAIM_HOURS) {
+            const fk = `${lastDrop.team}>${e.team}`;
+            (fastClaims[fk] = fastClaims[fk] || []).push({ pid, hrs: round1(hrs) });
+          }
           lastDrop = null;
         }
       }
@@ -200,5 +219,15 @@ export async function buildLeaguePulse({ league, teams, season, leagueId, curren
     flags.push({ kind: 'churn', quip: `${nm} has been picked up by ${teamSet.size} different teams already. The whole league keeps grabbing him and putting him right back down.` });
   }
 
-  return { totals, moves, movesAvailable: true, flags };
+  // 4) Fast claims: same team grabbing another team's drops within hours, repeatedly.
+  for (const [fk, list] of Object.entries(fastClaims)) {
+    if (list.length < 2) continue;
+    const [from, to] = fk.split('>');
+    const named = list.map(x => nameOf(x.pid)).filter(Boolean);
+    const who = named.length ? ` (${named.slice(0, 2).join(', ')})` : '';
+    const fastest = Math.min(...list.map(x => x.hrs));
+    flags.push({ kind: 'fast_claim', quip: `${teamName[to] || `Team ${to}`} claimed ${list.length} of ${teamName[from] || `Team ${from}`}'s drops within ${FAST_CLAIM_HOURS} hours${who} — fastest ${fastest}h. Could be a sharp wire watcher, could be a heads-up.` });
+  }
+
+  return { totals, moves, movesAvailable: true, flags, counts };
 }

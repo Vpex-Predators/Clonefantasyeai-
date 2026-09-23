@@ -118,6 +118,33 @@ export async function fetchFreeAgents(season, leagueId, currentPeriod, limit = 5
   return parsed;
 }
 
+// Every transaction of the season: ESPN's mTransactions2 view only returns the
+// requested scoring period, so query weeks 1..currentPeriod and dedupe by id.
+export async function fetchSeasonTransactions(season, leagueId, currentPeriod, seed = []) {
+  const periods = Array.from({ length: Math.max(1, currentPeriod) }, (_, i) => i + 1);
+  const perWeek = await Promise.all(periods.map(async period => {
+    const cacheKey = `tx|${season}|${leagueId}|${period}`;
+    const cached = espnCache.get(cacheKey);
+    if (cached && Date.now() - cached.at < CACHE_TTL_MS) return cached.data;
+    try {
+      const data = await espnFetch(
+        `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}?view=mTransactions2&scoringPeriodId=${period}`
+      );
+      const list = data.transactions || (data.leagues && data.leagues[0] && data.leagues[0].transactions) || [];
+      espnCache.set(cacheKey, { at: Date.now(), data: list });
+      return list;
+    } catch (e) {
+      return []; // one missing week must not sink the whole scan
+    }
+  }));
+  const byId = new Map();
+  for (const t of [...seed, ...perWeek.flat()]) {
+    const key = t.id || `${t.teamId}|${t.proposedDate}|${t.type}`;
+    if (!byId.has(key)) byId.set(key, t);
+  }
+  return [...byId.values()];
+}
+
 // Display names for a small set of player ids — transaction history often
 // references players no longer on any roster. Best effort; callers catch.
 export async function fetchPlayerNames(season, leagueId, ids) {

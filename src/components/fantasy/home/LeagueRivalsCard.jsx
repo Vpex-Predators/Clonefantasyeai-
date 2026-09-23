@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
 import HudPanel from "@/components/hud/HudPanel";
+import OpenButton from "@/components/hud/OpenButton";
 import DrawBar from "@/components/hud/DrawBar";
 
 // League & rivals preview: where you sit, who you're chasing, and the leader —
@@ -58,12 +58,10 @@ export default function LeagueRivalsCard({ data, delay = 0 }) {
             </div>
           ))}
         </div>
-        <p className="mt-2 flex items-center justify-between gap-2 text-[10px] text-white/55">
-          <span className="min-w-0 truncate">Week {league.week} standings · full race on the League tab</span>
-          <span className="flex shrink-0 items-center gap-1 font-mono font-bold uppercase tracking-[0.15em] text-emerald-300/80">
-            Open <ChevronRight className="h-3 w-3" />
-          </span>
-        </p>
+        <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/10 pt-2.5 text-[10px] text-white/55">
+          <span className="min-w-0">Week {league.week} standings · full race</span>
+          <OpenButton>Open standings</OpenButton>
+        </div>
       </HudPanel>
     </Link>
   );

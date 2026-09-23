@@ -188,6 +188,26 @@ select {
   -webkit-touch-callout: none;
 }
 
+/* Off-white cloudy glass — the "this goes somewhere" button surface. */
+.cloud-btn {
+  background: linear-gradient(180deg, rgba(250, 248, 243, 0.96), rgba(236, 233, 225, 0.9));
+  color: hsl(222 25% 14%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+a:active .cloud-btn,
+.cloud-btn:active {
+  transform: scale(0.97);
+}
+html.light .cloud-btn {
+  background: linear-gradient(180deg, #ffffff, hsl(40 30% 95%));
+  border-color: hsl(222 20% 18% / 0.1);
+  box-shadow: 0 6px 18px hsl(30 20% 40% / 0.14), inset 0 1px 0 #ffffff;
+}
+
 /* Scrollable strips that shouldn't show a scrollbar (bottom nav). */
 .no-scrollbar {
   scrollbar-width: none;
