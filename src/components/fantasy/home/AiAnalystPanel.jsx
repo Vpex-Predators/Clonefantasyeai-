@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import ReactMarkdown from "react-markdown";
 import { Loader2, Sparkles } from "lucide-react";
 import HudPanel from "@/components/hud/HudPanel";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AI_MODELS } from "@/lib/aiModels";
 
 export default function AiAnalystPanel({ data, delay = 0 }) {
@@ -31,16 +32,21 @@ export default function AiAnalystPanel({ data, delay = 0 }) {
       </p>
 
       <div className="mt-2.5 flex gap-2">
-        <select
-          value={model}
-          onChange={(e) => setModel(e.target.value)}
-          disabled={running}
-          className="h-8 min-w-0 flex-1 rounded-lg border border-white/10 bg-slate-900/70 px-2 font-mono text-[11px] text-white outline-none focus:border-emerald-400/60 disabled:opacity-50"
-        >
-          {AI_MODELS.map((m) => (
-            <option key={m.id} value={m.id}>{m.label}</option>
-          ))}
-        </select>
+        <Select value={model} onValueChange={setModel} disabled={running}>
+          <SelectTrigger
+            aria-label="AI engine"
+            className="h-8 min-w-0 flex-1 rounded-lg border-white/10 bg-slate-900/70 px-2 font-mono text-[11px] text-white shadow-none focus:ring-emerald-400/60 disabled:opacity-50"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="border-white/10 bg-slate-900 text-white">
+            {AI_MODELS.map((m) => (
+              <SelectItem key={m.id} value={m.id} className="text-xs text-white/85 focus:bg-white/10 focus:text-white">
+                {m.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <button
           onClick={run}
           disabled={running || !data?.locked}

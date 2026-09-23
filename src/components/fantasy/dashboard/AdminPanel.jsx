@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Loader2, ShieldCheck, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select as UiSelect, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function AdminPanel({ isAdmin, teams }) {
   const [open, setOpen] = useState(false);
@@ -89,15 +90,21 @@ export default function AdminPanel({ isAdmin, teams }) {
                 </button>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <select
-                  value={l.team_id}
-                  onChange={e => update(l.id, "team_id", e.target.value)}
-                  className="rounded-md border border-white/15 bg-slate-900 px-2 py-1.5 text-[11px] text-white"
-                >
-                  {(teams || []).map(t => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
-                  ))}
-                </select>
+                <UiSelect value={String(l.team_id || "")} onValueChange={v => update(l.id, "team_id", v)}>
+                  <SelectTrigger
+                    aria-label={`Team pick for ${l.email}`}
+                    className="h-8 rounded-md border-white/15 bg-slate-900 px-2 text-[11px] text-white shadow-none"
+                  >
+                    <SelectValue placeholder="Team" />
+                  </SelectTrigger>
+                  <SelectContent className="border-white/10 bg-slate-900 text-white">
+                    {(teams || []).map(t => (
+                      <SelectItem key={t.id} value={String(t.id)} className="text-[11px] text-white/85 focus:bg-white/10 focus:text-white">
+                        {t.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </UiSelect>
                 <Input
                   type="date"
                   value={(l.birthday || "").slice(0, 10)}
