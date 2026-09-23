@@ -1,10 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
+import { usePlayerNames } from "@/components/PlayerNameProvider";
 
 const positionLabel = pos => (pos === "DST" ? "D/ST" : pos || "—");
 
 // Searchable player picker for the compare tool — any roster or free agent.
 export default function ComparePicker({ player, placeholder, pool, onPick }) {
+  const short = usePlayerNames();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
 
@@ -30,7 +32,7 @@ export default function ComparePicker({ player, placeholder, pool, onPick }) {
       >
         {player ? (
           <span className="min-w-0 truncate text-[11px] font-semibold text-white">
-            {player.name} <span className="font-normal text-white/60">· {positionLabel(player.position)}</span>
+            {short(player.name)} <span className="font-normal text-white/60">· {positionLabel(player.position)}</span>
           </span>
         ) : (
           <span className="flex items-center gap-1.5 text-[11px] font-semibold text-white/60">
@@ -56,7 +58,7 @@ export default function ComparePicker({ player, placeholder, pool, onPick }) {
                 className="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-white/10"
               >
                 <span className="min-w-0 truncate text-[11px] font-semibold text-white">
-                  {p.name} <span className="font-normal text-white/60">{positionLabel(p.position)}</span>
+                  {short(p.name)} <span className="font-normal text-white/60">{positionLabel(p.position)}</span>
                 </span>
                 <span className="shrink-0 font-mono text-[9px] text-white/70">
                   {p.teamLabel} · {p.weeklyProj != null ? p.weeklyProj.toFixed(1) : "—"} wk

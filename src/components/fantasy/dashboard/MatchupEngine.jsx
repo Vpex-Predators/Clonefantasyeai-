@@ -4,6 +4,7 @@ import InjuryBadge from "./InjuryBadge";
 import BenchDepth from "./BenchDepth";
 import StartSitAdvisor from "./StartSitAdvisor";
 import HudPanel from "@/components/hud/HudPanel";
+import { usePlayerNames } from "@/components/PlayerNameProvider";
 
 const ROW_ORDER = ["QB", "RB1", "RB2", "WR1", "WR2", "TE", "FLX", "D/ST", "K"];
 
@@ -35,19 +36,20 @@ function PointsCell({ p, className }) {
 
 // One grid row: my player | position | opponent player, with points on the edges.
 function PlayerRow({ mine, theirs, label }) {
+  const short = usePlayerNames();
   const both = mine && theirs;
   const mineWins = both && effectivePoints(mine) >= effectivePoints(theirs);
   return (
     <div className="flex items-center gap-1 text-[11px]">
       <PointsCell p={mine} className={`w-8 shrink-0 font-mono text-left ${both && mineWins ? "font-semibold text-emerald-300" : "text-white/60"}`} />
       <span className="flex min-w-0 flex-1 items-center gap-1">
-        <span className="truncate text-white/75">{mine ? mine.name : "—"}</span>
+        <span className="truncate text-white/75">{mine ? short(mine.name) : "—"}</span>
         {mine && <InjuryBadge status={mine.injuryStatus} />}
       </span>
       <span className="w-10 shrink-0 text-center font-semibold text-white/45">{label}</span>
       <span className="flex min-w-0 flex-1 items-center justify-end gap-1">
         {theirs && <InjuryBadge status={theirs.injuryStatus} />}
-        <span className="truncate text-white/45">{theirs ? theirs.name : "—"}</span>
+        <span className="truncate text-white/45">{theirs ? short(theirs.name) : "—"}</span>
       </span>
       <PointsCell p={theirs} className={`w-8 shrink-0 font-mono text-right ${both && !mineWins ? "font-semibold text-rose-300" : "text-white/60"}`} />
     </div>

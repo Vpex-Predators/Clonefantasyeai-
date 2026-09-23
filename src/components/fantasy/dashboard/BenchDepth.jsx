@@ -1,10 +1,12 @@
 import React from "react";
 import InjuryBadge from "./InjuryBadge";
+import { usePlayerNames } from "@/components/PlayerNameProvider";
 
 // Depth points: actuals if the player's game is live/over, projection otherwise.
 const eff = p => (p && p.livePoints != null ? p.livePoints : (p && p.weeklyProj) || 0);
 
 function BenchColumn({ title, tone, players }) {
+  const short = usePlayerNames();
   const sorted = [...(players || [])].sort((a, b) => eff(b) - eff(a));
   return (
     <div className="min-w-0 flex-1">
@@ -13,7 +15,7 @@ function BenchColumn({ title, tone, players }) {
         {sorted.length === 0 && <p className="text-[11px] text-white/35">Empty bench</p>}
         {sorted.slice(0, 6).map(p => (
           <div key={p.id} className="flex min-w-0 items-center gap-1 text-[11px]">
-            <span className="truncate text-white/70">{p.name}</span>
+            <span className="truncate text-white/70">{short(p.name)}</span>
             <InjuryBadge status={p.injuryStatus} />
             <span className="ml-auto shrink-0 font-mono text-white/50">{eff(p).toFixed(1)}</span>
           </div>

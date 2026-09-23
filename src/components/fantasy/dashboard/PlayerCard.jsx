@@ -3,6 +3,7 @@ import { Loader2, Sparkles } from "lucide-react";
 import InjuryBadge from "./InjuryBadge";
 import GlossaryChip from "@/components/hud/GlossaryChip";
 import DrawSparkline from "@/components/hud/DrawSparkline";
+import { usePlayerNames } from "@/components/PlayerNameProvider";
 
 const VERDICT_STYLES = {
   Start: "bg-emerald-400/15 text-emerald-300 border-emerald-400/40",
@@ -13,6 +14,7 @@ const VERDICT_STYLES = {
 
 export default function PlayerCard({ player, pending, analyzing, onOpen, onAnalyze }) {
   const [open, setOpen] = useState(false);
+  const short = usePlayerNames();
   const a = player.analysis;
 
   const toggle = () => {
@@ -46,7 +48,7 @@ export default function PlayerCard({ player, pending, analyzing, onOpen, onAnaly
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="truncate text-sm font-semibold leading-tight text-white">{player.name}</span>
+              <span className="truncate text-sm font-semibold leading-tight text-white">{short(player.name)}</span>
               <InjuryBadge status={player.injuryStatus} />
             </div>
             <div className="mt-1 flex items-center gap-2 text-[11px] text-white/45">

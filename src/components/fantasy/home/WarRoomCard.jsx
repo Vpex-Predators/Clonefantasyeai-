@@ -2,11 +2,13 @@ import React from "react";
 import { Link } from "react-router-dom";
 import HudPanel from "@/components/hud/HudPanel";
 import OpenButton from "@/components/hud/OpenButton";
+import { usePlayerNames } from "@/components/PlayerNameProvider";
 
 // War room doorway: the opponent's highest-projected starter is the week's
 // biggest threat. A tap opens the threat board, rankings, and sims.
 export default function WarRoomCard({ data, delay = 0 }) {
   const { opponent, opponentStarters = [] } = data;
+  const short = usePlayerNames();
   const threat = [...opponentStarters]
     .sort((a, b) => (b.weeklyProj || 0) - (a.weeklyProj || 0))[0] || null;
 
@@ -24,7 +26,7 @@ export default function WarRoomCard({ data, delay = 0 }) {
             <div className="mt-1.5 rounded-lg border border-rose-400/25 bg-rose-400/10 px-2 py-1.5">
               <div className="flex items-center justify-between gap-2">
                 <span className="min-w-0 truncate text-[11px] font-bold text-white">
-                  {threat.name}{" "}
+                  {short(threat.name)}{" "}
                   <span className="font-normal text-white/45">({threat.realPosition || threat.position})</span>
                 </span>
                 <span className="shrink-0 font-mono text-[11px] font-bold text-rose-300">

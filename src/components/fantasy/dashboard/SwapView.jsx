@@ -4,6 +4,7 @@ import { TrendingUp } from "lucide-react";
 import InjuryBadge from "./InjuryBadge";
 import DrawBar from "@/components/hud/DrawBar";
 import HudPanel from "@/components/hud/HudPanel";
+import { usePlayerNames } from "@/components/PlayerNameProvider";
 
 // Which real positions can fill each lineup slot (ESPN slot ids).
 const SLOT_ELIGIBLE = {
@@ -15,6 +16,7 @@ const label = pos => (pos === "DST" ? "D/ST" : pos || "—");
 // Starters vs bench, side by side, with swap suggestions where a bench player
 // projects higher at a compatible slot.
 export default function SwapView({ starters = [], bench = [] }) {
+  const short = usePlayerNames();
   const { swaps, swapByBench, swapByStarter } = useMemo(() => {
     const taken = new Set();
     const found = [];
@@ -55,7 +57,7 @@ export default function SwapView({ starters = [], bench = [] }) {
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="min-w-0 truncate text-[11px] font-semibold text-emerald-200">
-                    Start {sw.bench.name} over {sw.starter.name}
+                    Start {short(sw.bench.name)} over {short(sw.starter.name)}
                   </span>
                   <span className="flex shrink-0 items-center gap-1 font-mono text-[10px] font-bold text-emerald-300">
                     <TrendingUp className="h-3 w-3" /> +{sw.margin} pts
@@ -87,7 +89,7 @@ export default function SwapView({ starters = [], bench = [] }) {
                   key={p.id}
                   className={`rounded-xl border px-2.5 py-2 ${sw ? "border-emerald-400/40 bg-emerald-400/10" : "border-white/10 bg-white/[0.04]"}`}
                 >
-                  <p className="truncate text-[11px] font-semibold text-white">{p.name}</p>
+                  <p className="truncate text-[11px] font-semibold text-white">{short(p.name)}</p>
                   <div className="mt-0.5 flex items-center justify-between gap-1">
                     <span className="text-[9px] uppercase tracking-wider text-white/70">{label(p.realPosition || p.position)}</span>
                     <span className="font-mono text-[10px] text-white/80">{p.weeklyProj != null ? p.weeklyProj.toFixed(1) : "—"} wk</span>
@@ -96,7 +98,7 @@ export default function SwapView({ starters = [], bench = [] }) {
                     <InjuryBadge status={p.injuryStatus} />
                     {sw && (
                       <span className="font-mono text-[9px] font-bold text-emerald-300">
-                        {col.title === "Starters" ? `bench upgrade +${sw.margin}` : `over ${sw.starter.name.split(" ").slice(-1)[0]} +${sw.margin}`}
+                        {col.title === "Starters" ? `bench upgrade +${sw.margin}` : `over ${short(sw.starter.name)} +${sw.margin}`}
                       </span>
                     )}
                   </div>
