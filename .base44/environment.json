@@ -1,0 +1,25 @@
+{
+  "previewPort": 3000,
+  "healthPath": "/",
+  "startCommand": "docker compose -f docker-compose.base44.yml up -d",
+  "secrets": [
+    {
+      "name": "VITE_BASE44_APP_ID",
+      "description": "Base44 application ID, found in the Base44 Builder URL (app.base44.com/apps/<id>/...).",
+      "requiredAtBoot": false,
+      "generatedForDevelopment": true
+    },
+    {
+      "name": "VITE_BASE44_APP_BASE_URL",
+      "description": "Base44 app base URL for the hosted backend.",
+      "requiredAtBoot": false,
+      "generatedForDevelopment": true
+    },
+    {
+      "name": "VITE_BASE44_FUNCTIONS_VERSION",
+      "description": "Base44 functions version identifier.",
+      "requiredAtBoot": false,
+      "generatedForDevelopment": true
+    }
+  ]
+}
