@@ -1,0 +1,14 @@
+{
+  "appId": "com.fantasyeai.app",
+  "appName": "FantasyEAi",
+  "webDir": "dist",
+  "backgroundColor": "#020617",
+  "loggingBehavior": "debug",
+  "server": { "androidScheme": "https", "cleartext": false },
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false,
+    "minWebViewVersion": 107,
+    "zoomEnabled": true
+  }
+}

@@ -11,7 +11,7 @@ export default function AuthLayout({ icon: Icon, title, subtitle = null, footer 
   const navigate = useNavigate();
   const goBack = () => window.history.state?.idx > 0 ? navigate(-1) : navigate("/");
   return (
-    <div className="min-h-screen supports-[height:100dvh]:min-h-dvh w-full bg-background px-4 pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:px-6">
+    <div className="min-h-screen supports-[height:100dvh]:min-h-dvh w-full bg-background px-4 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:px-6">
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-md flex-col justify-center supports-[height:100dvh]:min-h-[calc(100dvh-3rem)]">
         {showBack && (
           <button type="button" onClick={goBack} aria-label="Go back"

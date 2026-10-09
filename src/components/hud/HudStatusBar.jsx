@@ -19,7 +19,7 @@ export default function HudStatusBar({ title, sub, tag = "LIVE" }) {
   };
 
   return (
-    <div className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/55 backdrop-blur-2xl">
+    <div className="sticky top-0 z-40 pt-[env(safe-area-inset-top)] border-b border-white/10 bg-slate-950/55 backdrop-blur-2xl">
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-emerald-400/50 to-transparent" />
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-2.5">
         <div className="flex min-w-0 items-center gap-2.5">
