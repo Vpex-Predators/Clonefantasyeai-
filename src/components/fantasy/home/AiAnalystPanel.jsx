@@ -1,3 +1,4 @@
+import { useTabState } from "@/lib/TabStateContext";
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import ReactMarkdown from "react-markdown";
@@ -7,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AI_MODELS } from "@/lib/aiModels";
 
 export default function AiAnalystPanel({ data, delay = 0 }) {
-  const [model, setModel] = useState("automatic");
+  const [model, setModel] = useTabState("briefing.model", "automatic");
   const [briefing, setBriefing] = useState(null);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState(null);

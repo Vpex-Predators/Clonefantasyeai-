@@ -1,0 +1,61 @@
+name: Android package
+on:
+  workflow_dispatch:
+    inputs:
+      variant:
+        description: Package type
+        type: choice
+        options: [debug, release]
+        default: debug
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.variant == 'release' && 'Android Release' || 'Android Development' }}
+    env:
+      VITE_BASE44_APP_ID: ${{ vars.VITE_BASE44_APP_ID }}
+      VITE_BASE44_APP_BASE_URL: ${{ vars.VITE_BASE44_APP_BASE_URL }}
+      VITE_BASE44_API_URL: ${{ vars.VITE_BASE44_API_URL }}
+      ANDROID_VERSION_CODE: ${{ github.run_number }}
+      ANDROID_VERSION_NAME: '1.0.0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+      - run: npm ci
+      - run: npm run lint && npm test
+      - if: inputs.variant == 'release'
+        run: npm run release:check
+      - run: npm run android:sync
+      - if: inputs.variant == 'debug'
+        run: cd android && bash gradlew assembleDebug
+      - if: inputs.variant == 'release'
+        name: Sign release bundle
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          test -n "$ANDROID_KEYSTORE_BASE64"
+          export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/fantasyeai-upload.jks"
+          trap 'rm -f "$ANDROID_KEYSTORE_PATH"' EXIT
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$ANDROID_KEYSTORE_PATH"
+          cd android
+          bash gradlew bundleRelease
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FantasyEAi-android-${{ inputs.variant }}
+          path: |
+            android/app/build/outputs/apk/debug/*.apk
+            android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+          retention-days: 7

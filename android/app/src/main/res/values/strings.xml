@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">FantasyEAi</string>
+    <string name="title_activity_main">FantasyEAi</string>
+    <string name="package_name">com.fantasyeai.app</string>
+    <string name="custom_url_scheme">com.fantasyeai.app</string>
+</resources>

@@ -1,3 +1,4 @@
+import { useTabState } from "@/lib/TabStateContext";
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Loader2, Sparkles } from "lucide-react";
@@ -8,7 +9,7 @@ import { AI_MODELS } from "@/lib/aiModels";
 const sameName = (a, b) => (a || "").trim().toLowerCase() === (b || "").trim().toLowerCase();
 
 export default function PowerRankings({ data }) {
-  const [model, setModel] = useState("automatic");
+  const [model, setModel] = useTabState("rankings.model", "automatic");
   const [result, setResult] = useState(null);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState(null);

@@ -29,12 +29,15 @@ export default function DeleteAccountDialog() {
     setDeleting(true);
     setError(null);
     try {
-      await base44.functions.invoke("deleteMyAccount", {});
+      const result = await base44.functions.invoke("deleteMyAccount", {});
+      if (!result.data?.userRecordDeleted) {
+        throw new Error("Some saved app data was removed, but account deletion could not be confirmed. Contact support before trying again.");
+      }
       setOpen(false);
       logout(false); // clears the token locally without a redirect loop
       window.location.href = "/";
     } catch (err) {
-      setError(err.response?.data?.error || err.message || "Deletion failed — nothing was removed. Try again.");
+      setError(err.response?.data?.error || err.message || "Deletion could not be completed. Some data may already have been removed. Contact support.");
       setDeleting(false);
     }
   };
@@ -63,9 +66,9 @@ export default function DeleteAccountDialog() {
         <AlertDialogHeader>
           <AlertDialogTitle className="font-heading text-lg">Delete your account?</AlertDialogTitle>
           <AlertDialogDescription className="text-sm leading-relaxed text-white/70">
-            This permanently erases everything FantasyEdge AI stores for you — your team
-            lock, saved player analyses, waiver scan history, and refresh data. You'll be
-            signed out immediately. This can't be undone.
+            This removes your team lock, saved player analyses and refresh records, and
+            attempts to delete your app account. Deletion cannot be undone. If account
+            deletion cannot be confirmed, we'll show an error so you can contact support.
           </AlertDialogDescription>
         </AlertDialogHeader>
         {error && (
@@ -81,7 +84,7 @@ export default function DeleteAccountDialog() {
             className="h-11 min-h-[44px] px-4 text-sm bg-rose-600 text-white hover:bg-rose-500"
           >
             {deleting && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
-            Delete everything
+            Delete account
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
