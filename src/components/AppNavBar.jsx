@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Crosshair, LayoutDashboard, Calculator, Radar, Swords } from "lucide-react";
+import { useTabNavigation } from '@/lib/TabStateContext';
 import ThemeToggle from "@/components/ThemeToggle";
 
 const ITEMS = [
@@ -14,10 +15,9 @@ const ITEMS = [
 export default function AppNavBar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-
-  // Tapping the tab you're already on acts like a native app: drop any query
-  // string (e.g. comparison picks) and settle back on the clean root path.
+  const savedRoute = useTabNavigation();
   const handleTabTap = (e, to) => {
+    // Preserve the existing active-tab reset; switching tabs restores its saved route.
     if (pathname !== to) return;
     e.preventDefault();
     navigate(to, { replace: true });
@@ -32,7 +32,8 @@ export default function AppNavBar() {
             return (
               <Link
                 key={to}
-                to={to}
+                to={savedRoute(to)}
+                state={savedRoute(to).state}
                 onClick={(e) => handleTabTap(e, to)}
                 aria-current={active ? "page" : undefined}
                 className={`cloud-tab no-callout flex min-h-[46px] min-w-0 flex-col items-center justify-center gap-0.5 text-sm font-semibold leading-none tracking-tight ${
