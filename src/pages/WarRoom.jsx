@@ -15,9 +15,9 @@ import TabFade from "@/components/hud/TabFade";
 import { PlayerNameProvider } from "@/components/PlayerNameProvider";
 
 const TABS = [
-  { id: "threats", label: "Threat board" },
-  { id: "rankings", label: "Power rankings" },
-  { id: "trade", label: "Trade sim" },
+  { id: "trade", label: "Compare" },
+  { id: "threats", label: "Threats" },
+  { id: "rankings", label: "Rankings" },
 ];
 
 export default function WarRoom() {
@@ -25,10 +25,14 @@ export default function WarRoom() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  // A ?compare=id1,id2 link (from the My Team swap view) opens straight into the compare tool.
-  const [tab, setTab] = useState(() =>
-    new URLSearchParams(window.location.search).get("compare") ? "trade" : "threats"
-  );
+  // Comparison is the primary War Room workflow. Deep links can still open
+  // another tab, while ?compare=id1,id2 always opens the comparison tool.
+  const [tab, setTab] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("compare")) return "trade";
+    const requested = params.get("tab");
+    return ["trade", "threats", "rankings"].includes(requested) ? requested : "trade";
+  });
   const [compareIds] = useState(() => {
     const raw = new URLSearchParams(window.location.search).get("compare");
     return raw ? raw.split(",").map(id => id.trim()).filter(Boolean) : null;
@@ -69,13 +73,13 @@ export default function WarRoom() {
     <div className="min-h-screen bg-slate-950 pb-[calc(env(safe-area-inset-bottom)+7rem)] text-white">
       <GlassBackdrop />
       <HudStatusBar
-        title="War room"
-        sub={d ? `${d.league.name.trim()} · WK ${d.league.week} · ${d.myTeam.name.trim()}` : "Trades, rankings & threats"}
+        title="Compare & War Room"
+        sub={d ? `${d.league.name.trim()} · WK ${d.league.week} · ${d.myTeam.name.trim()}` : "Player comparisons, trades & threats"}
         tag={d ? "INTEL" : "STANDBY"}
       />
 
       <PlayerNameProvider names={playerNames}>
-      <div className="relative z-10 mx-auto max-w-2xl space-y-3 px-3 pt-3">
+      <div className="relative z-10 mx-auto max-w-4xl space-y-4 px-4 pt-4 sm:px-6">
         {loadingData ? (
           <div className="flex justify-center py-10">
             <Loader2 className="h-7 w-7 animate-spin text-emerald-400" />
@@ -104,16 +108,17 @@ export default function WarRoom() {
           </HudPanel>
         ) : d ? (
           <>
-            <div className="grid grid-cols-3 gap-1 rounded-full border border-white/10 bg-white/[0.05] p-1 backdrop-blur-xl">
+            <div className="app-segmented grid grid-cols-3 gap-1 rounded-2xl p-1.5">
               {TABS.map((t) => (
                 <button
                   key={t.id}
                   onClick={() => setTab(t.id)}
-                  className={`no-callout min-h-[44px] rounded-full px-1 text-sm font-bold uppercase tracking-[0.15em] transition-all duration-300 ${
-                    tab === t.id
-                      ? "bg-gradient-to-r from-emerald-400 to-cyan-400 text-slate-950 shadow-[0_0_16px_rgba(52,211,153,0.45)]"
-                      : "text-white/55 hover:text-white"
-                  }`}
+                  className={
+                    "no-callout min-h-[46px] rounded-xl px-3 text-sm font-semibold transition-all duration-200 " +
+                    (tab === t.id
+                      ? "bg-white/[0.11] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                      : "text-white/50 hover:bg-white/[0.04] hover:text-white/80")
+                  }
                 >
                   {t.label}
                 </button>
