@@ -1,22 +1,11 @@
 import React from "react";
-import { Image } from "@/components/ui/image";
 
-const HERO_IMAGE_URL = "https://media.base44.com/images/public/6aa483eab525018797301877/e625f56d3_generated_image.png";
-
-// Ambient futuristic backdrop — holographic field art, drifting aurora glows, faint HUD grid.
 export default function GlassBackdrop() {
   return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-slate-950">
-      <Image
-        src={HERO_IMAGE_URL}
-        fittingType="fill"
-        className="absolute inset-0 h-full w-full object-cover opacity-30"
-      />
-      <div className="absolute -left-28 -top-32 h-80 w-80 animate-float-slow rounded-full bg-emerald-500/20 blur-3xl" />
-      <div className="absolute -right-28 top-1/3 h-72 w-72 animate-float-slow rounded-full bg-cyan-500/15 blur-3xl [animation-delay:-6s]" />
-      <div className="absolute -bottom-28 left-1/4 h-72 w-72 animate-float-slow rounded-full bg-rose-500/10 blur-3xl [animation-delay:-11s]" />
-      <div className="hud-grid absolute inset-0" />
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-950/30 via-slate-950/55 to-slate-950/85" />
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#07110f]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_0%,rgba(52,211,153,0.15),transparent_30%),radial-gradient(circle_at_90%_12%,rgba(34,211,238,0.10),transparent_26%),linear-gradient(180deg,#07110f_0%,#08100f_46%,#050908_100%)]" />
+      <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-white/[0.025] to-transparent" />
+      <div className="hud-grid absolute inset-0 opacity-30" />
     </div>
   );
 }

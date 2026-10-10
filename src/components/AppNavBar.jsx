@@ -1,51 +1,68 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Crosshair, LayoutDashboard, Calculator, Radar, Swords } from "lucide-react";
+import { Home, LayoutDashboard, Calculator, Radar, GitCompareArrows } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const ITEMS = [
-  { to: "/", label: "Command", icon: Crosshair },
+  { to: "/", label: "Home", icon: Home },
   { to: "/waivers", label: "Waivers", icon: Radar },
-  { to: "/warroom", label: "War Room", icon: Swords },
+  { to: "/warroom?tab=trade", root: "/warroom", label: "Compare", icon: GitCompareArrows, primary: true },
   { to: "/dashboard", label: "Team", icon: LayoutDashboard },
-  { to: "/analyst", label: "Analyst", icon: Calculator },
+  { to: "/analyst", label: "AI", icon: Calculator },
 ];
 
-// Fixed, non-scrolling bottom bar: five equal cloudy tabs plus the theme toggle.
 export default function AppNavBar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  // Tapping the tab you're already on acts like a native app: drop any query
-  // string (e.g. comparison picks) and settle back on the clean root path.
-  const handleTabTap = (e, to) => {
-    if (pathname !== to) return;
+  const handleTabTap = (e, item) => {
+    const root = item.root || item.to;
+    if (pathname !== root) return;
     e.preventDefault();
-    navigate(to, { replace: true });
+    navigate(item.to, { replace: true });
   };
 
   return (
-    <nav className="pointer-events-none fixed inset-x-0 bottom-[calc(0.625rem+env(safe-area-inset-bottom))] z-50 flex justify-center px-2">
-      <div className="no-callout pointer-events-auto flex w-full max-w-md items-center gap-1 rounded-[1.5rem] border border-white/10 bg-slate-950/45 p-1 shadow-[0_8px_28px_rgba(0,0,0,0.4)] backdrop-blur-2xl">
+    <nav
+      className="pointer-events-none fixed inset-x-0 bottom-[calc(0.625rem+env(safe-area-inset-bottom))] z-50 flex justify-center px-3"
+      aria-label="Primary"
+    >
+      <div className="app-dock pointer-events-auto flex w-full max-w-lg items-center gap-1 rounded-[1.4rem] p-1.5">
         <div className="grid min-w-0 flex-1 grid-cols-5 gap-1">
-          {ITEMS.map(({ to, label, icon: Icon }) => {
-            const active = pathname === to;
+          {ITEMS.map((item) => {
+            const Icon = item.icon;
+            const root = item.root || item.to;
+            const active = pathname === root;
             return (
               <Link
-                key={to}
-                to={to}
-                onClick={(e) => handleTabTap(e, to)}
+                key={item.to}
+                to={item.to}
+                onClick={(e) => handleTabTap(e, item)}
                 aria-current={active ? "page" : undefined}
-                className={`cloud-tab no-callout flex min-h-[46px] min-w-0 flex-col items-center justify-center gap-0.5 text-sm font-semibold leading-none tracking-tight ${
-                  active ? "cloud-tab--active" : ""
-                }`}
+                className={
+                  "no-callout group relative flex min-h-[52px] min-w-0 flex-col items-center justify-center gap-1 rounded-[1rem] px-1 transition-all duration-200 " +
+                  (active
+                    ? "bg-white/[0.10] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                    : "text-white/55 hover:bg-white/[0.05] hover:text-white/85")
+                }
               >
-                <Icon className="h-[17px] w-[17px]" />
-                <span className="nav-label whitespace-nowrap">{label}</span>
+                <span
+                  className={
+                    "flex h-7 w-7 items-center justify-center rounded-xl transition-all duration-200 " +
+                    (active
+                      ? "bg-emerald-400 text-slate-950 shadow-[0_0_18px_rgba(52,211,153,0.24)]"
+                      : item.primary
+                        ? "bg-emerald-400/10 text-emerald-300"
+                        : "text-current")
+                  }
+                >
+                  <Icon className="h-[17px] w-[17px]" />
+                </span>
+                <span className="nav-label truncate font-semibold">{item.label}</span>
               </Link>
             );
           })}
         </div>
-        <div className="flex w-8 shrink-0 justify-center [&>button]:w-8">
+        <div className="flex w-9 shrink-0 justify-center border-l border-white/10 pl-1 [&>button]:h-9 [&>button]:w-9">
           <ThemeToggle />
         </div>
       </div>

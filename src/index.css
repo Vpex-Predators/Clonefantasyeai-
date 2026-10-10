@@ -301,3 +301,75 @@ html.light [class*="text-slate-300"] { color: hsl(222 20% 30%) !important; }
     scroll-behavior: auto !important;
   }
 }
+
+/* ---- FantasyEAi layout revamp ----------------------------------------- */
+.app-topbar {
+  border-bottom: 1px solid rgb(255 255 255 / 0.07);
+  background: rgb(5 12 11 / 0.82);
+  -webkit-backdrop-filter: blur(22px) saturate(135%);
+  backdrop-filter: blur(22px) saturate(135%);
+  box-shadow: 0 8px 28px rgb(0 0 0 / 0.12);
+}
+
+.app-dock {
+  border: 1px solid rgb(255 255 255 / 0.09);
+  background: rgb(6 14 13 / 0.88);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(140%);
+  box-shadow: 0 18px 50px rgb(0 0 0 / 0.42), inset 0 1px 0 rgb(255 255 255 / 0.04);
+}
+
+.app-card {
+  border: 1px solid rgb(255 255 255 / 0.075);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.055), rgb(255 255 255 / 0.032));
+  box-shadow: 0 16px 38px rgb(0 0 0 / 0.22), inset 0 1px 0 rgb(255 255 255 / 0.035);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+.app-feature-card {
+  border: 1px solid rgb(52 211 153 / 0.2);
+  background:
+    radial-gradient(circle at 0% 0%, rgb(52 211 153 / 0.12), transparent 38%),
+    linear-gradient(135deg, rgb(255 255 255 / 0.065), rgb(255 255 255 / 0.025));
+  box-shadow: 0 20px 50px rgb(0 0 0 / 0.24), inset 0 1px 0 rgb(255 255 255 / 0.04);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+
+.app-segmented {
+  border: 1px solid rgb(255 255 255 / 0.075);
+  background: rgb(255 255 255 / 0.035);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+html.light .app-topbar {
+  border-color: hsl(222 20% 18% / 0.08);
+  background: hsl(40 35% 97% / 0.9);
+}
+
+html.light .app-dock {
+  border-color: hsl(222 20% 18% / 0.09);
+  background: hsl(40 25% 98% / 0.92);
+  box-shadow: 0 16px 40px hsl(30 20% 30% / 0.16), inset 0 1px 0 #fff;
+}
+
+html.light .app-card {
+  border-color: hsl(222 20% 18% / 0.08);
+  background: hsl(0 0% 100% / 0.82);
+  box-shadow: 0 14px 34px hsl(30 20% 35% / 0.11), inset 0 1px 0 #fff;
+}
+
+html.light .app-feature-card {
+  border-color: hsl(161 65% 35% / 0.18);
+  background:
+    radial-gradient(circle at 0% 0%, hsl(161 70% 42% / 0.1), transparent 38%),
+    hsl(0 0% 100% / 0.88);
+  box-shadow: 0 18px 42px hsl(30 20% 35% / 0.12);
+}
+
+html.light .app-segmented {
+  border-color: hsl(222 20% 18% / 0.08);
+  background: hsl(222 15% 20% / 0.045);
+}
