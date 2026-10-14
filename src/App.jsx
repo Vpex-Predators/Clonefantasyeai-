@@ -11,6 +11,8 @@ import { Suspense, lazy } from 'react';
 import { useLocation } from 'react-router-dom';
 import { AnimatePresence, MotionConfig } from 'framer-motion';
 import PageTransition from './components/PageTransition';
+import { TabStateProvider } from '@/lib/TabStateContext';
+import NativeAppBridge from '@/components/NativeAppBridge';
 import RouteFallback from './components/RouteFallback';
 
 // Pages are code-split so the first paint doesn't wait on every tab's chunk.
@@ -84,10 +86,13 @@ function App() {
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
           <Router>
+            <TabStateProvider>
+            <NativeAppBridge />
             <ScrollToTop />
             <MotionConfig reducedMotion="user">
               <AuthenticatedApp />
             </MotionConfig>
+            </TabStateProvider>
           </Router>
           <Toaster />
         </QueryClientProvider>

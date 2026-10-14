@@ -1,3 +1,4 @@
+import { useTabState } from "@/lib/TabStateContext";
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Loader2, Crosshair, Sparkles, RotateCcw } from "lucide-react";
@@ -12,16 +13,17 @@ import { AI_MODELS } from "@/lib/aiModels";
 // re-run the playoff engine with swapped lineups, then get the AI verdict.
 export default function TradeSimulator({ data }) {
   const { myTeam, teams, rosters, league } = data;
+  const draftScope = `${league.id}:${myTeam.id}`;
   const partnerOptions = teams.filter((t) => t.id !== myTeam.id);
 
-  const [partnerId, setPartnerId] = useState(partnerOptions[0]?.id || "");
-  const [give, setGive] = useState([]);
-  const [get, setGet] = useState([]);
+  const [partnerId, setPartnerId] = useTabState(`trade.partner:${draftScope}`, partnerOptions[0]?.id || "");
+  const [give, setGive] = useTabState(`trade.give:${draftScope}`, []);
+  const [get, setGet] = useTabState(`trade.get:${draftScope}`, []);
   const [odds, setOdds] = useState(null);
   const [simRunning, setSimRunning] = useState(false);
   const [verdict, setVerdict] = useState(null);
   const [verdictRunning, setVerdictRunning] = useState(false);
-  const [model, setModel] = useState("automatic");
+  const [model, setModel] = useTabState(`trade.model:${draftScope}`, "automatic");
   const [error, setError] = useState(null);
 
   const partner = partnerOptions.find((t) => t.id === partnerId);

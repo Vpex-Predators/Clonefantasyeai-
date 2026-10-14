@@ -1,3 +1,4 @@
+import { useTabState } from "@/lib/TabStateContext";
 import React, { useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
 import { usePlayerNames } from "@/components/PlayerNameProvider";
@@ -8,7 +9,7 @@ const positionLabel = pos => (pos === "DST" ? "D/ST" : pos || "—");
 export default function ComparePicker({ player, placeholder, pool, onPick }) {
   const short = usePlayerNames();
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useTabState(`compare.query:${placeholder}`, "");
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();

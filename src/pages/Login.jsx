@@ -42,7 +42,7 @@ export default function Login() {
   };
 
   return (
-    <AuthLayout
+    <AuthLayout showBack
       icon={LogIn}
       title="Welcome back"
       subtitle="Log in to your account"

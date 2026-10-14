@@ -1,3 +1,4 @@
+import { useTabState } from "@/lib/TabStateContext";
 import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
@@ -31,7 +32,7 @@ export default function Dashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState(null);
-  const [tab, setTab] = useState(() => {
+  const [tab, setTab] = useTabState(`dashboard.tab:${new URLSearchParams(window.location.search).get("tab") || "root"}`, () => {
     const t = new URLSearchParams(window.location.search).get("tab");
     return ["matchup", "swap", "season", "league"].includes(t) ? t : "matchup";
   });

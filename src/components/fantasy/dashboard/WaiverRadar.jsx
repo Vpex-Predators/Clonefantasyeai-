@@ -1,3 +1,4 @@
+import { useTabState } from "@/lib/TabStateContext";
 import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { AlertTriangle, ChevronDown, ChevronUp, ExternalLink, Loader2, Newspaper, Radar, Trash2 } from "lucide-react";
@@ -27,9 +28,9 @@ export default function WaiverRadar({ freeAgents, bench, starters, onScanReady }
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState(null);
   const [openName, setOpenName] = useState(null);
-  const [posTab, setPosTab] = useState("All");
+  const [posTab, setPosTab] = useTabState("waivers.position", "All");
   const [scannedAt, setScannedAt] = useState(null);
-  const [showAll, setShowAll] = useState(false);
+  const [showAll, setShowAll] = useTabState("waivers.showAll", false);
 
   // Quick live flags from the lineup: injured starters without a backup.
   const lineFlags = useMemo(() => {

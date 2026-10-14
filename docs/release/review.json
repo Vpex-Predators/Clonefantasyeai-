@@ -1,0 +1,11 @@
+{
+  "privacyPolicyUrl": "",
+  "accountDeletionUrl": "",
+  "checks": {
+    "backendIsolationAndCors": { "passed": false, "evidence": "" },
+    "nativeAuthenticationAndRecovery": { "passed": false, "evidence": "" },
+    "completeAccountDeletion": { "passed": false, "evidence": "" },
+    "androidDeviceAndPrelaunchTests": { "passed": false, "evidence": "" },
+    "dataSafetyAndContentRating": { "passed": false, "evidence": "" }
+  }
+}

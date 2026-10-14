@@ -1,3 +1,4 @@
+import { useTabState } from "@/lib/TabStateContext";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Calculator, Loader2, RotateCcw, Send } from "lucide-react";
@@ -14,7 +15,7 @@ const FALLBACK_SUGGESTIONS = [
 export default function Analyst() {
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useTabState("analyst.draft", "");
   const [thinking, setThinking] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(true);

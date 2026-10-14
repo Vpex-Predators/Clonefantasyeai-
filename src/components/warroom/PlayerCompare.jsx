@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useTabState } from "@/lib/TabStateContext";
+import React, { useEffect, useMemo } from "react";
 import { RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ComparePicker from "./ComparePicker";
@@ -36,17 +37,25 @@ export default function PlayerCompare({ data, initialIds }) {
     return [...byId.values()];
   }, [data]);
 
-  const [pickA, setPickA] = useState(null);
-  const [pickB, setPickB] = useState(null);
+  const scope = `${data.league.id}:${data.myTeam.id}`;
+  const [pickAId, setPickAId] = useTabState(`compare.a:${scope}`, null);
+  const [pickBId, setPickBId] = useTabState(`compare.b:${scope}`, null);
+  const [appliedPreset, setAppliedPreset] = useTabState(`compare.preset:${scope}`, null);
+  const pickA = pool.find(p => p.id === pickAId) || null;
+  const pickB = pool.find(p => p.id === pickBId) || null;
+  const setPickA = p => setPickAId(p?.id || null);
+  const setPickB = p => setPickBId(p?.id || null);
 
   // Preset pair (tapped from the My Team swap view) fills both pickers once the pool loads.
   useEffect(() => {
-    if (!initialIds || !pool.length) return;
+    const preset = initialIds?.join(",");
+    if (!preset || preset === appliedPreset || !pool.length) return;
     const a = pool.find(p => p.id === String(initialIds[0]));
     const b = pool.find(p => p.id === String(initialIds[1]));
-    if (a) setPickA(a);
-    if (b) setPickB(b);
-  }, [initialIds, pool]);
+    if (a) setPickAId(a.id);
+    if (b) setPickBId(b.id);
+    setAppliedPreset(preset);
+  }, [initialIds, pool, appliedPreset, setPickAId, setPickBId, setAppliedPreset]);
 
   const rows = useMemo(() => {
     if (!pickA || !pickB) return null;
