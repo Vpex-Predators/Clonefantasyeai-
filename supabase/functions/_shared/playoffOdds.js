@@ -226,9 +226,12 @@ export function computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPe
       const liveWeek = m.matchupPeriodId === currentPeriod;
       const observedA = liveWeek ? Math.max(0, Number((m.home || {}).totalPoints) || 0) : 0;
       const observedB = liveWeek ? Math.max(0, Number((m.away || {}).totalPoints) || 0) : 0;
-      // Conditional live-week simulation respects points already scored.
-      const sa = sampleMatchupPoints(profiles[a], observedA, random);
-      const sb = sampleMatchupPoints(profiles[b], observedB, random);
+      // ESPN's explicit settled winner indicates the current matchup is final.
+      // A final score is known evidence, not a random variable to simulate.
+      const finalResult = liveWeek && ["HOME", "AWAY", "TIE"].includes(String(m.winner || "").toUpperCase());
+      // For a still-open matchup, condition the projected final score on live points.
+      const sa = finalResult ? observedA : sampleMatchupPoints(profiles[a], observedA, random);
+      const sb = finalResult ? observedB : sampleMatchupPoints(profiles[b], observedB, random);
       // pointsFor already includes in-progress current-week scoring. Replace
       // that week's actuals with the simulated full-week score so tiebreaks
       // don't double-count; future weeks still accumulate as simulated.
