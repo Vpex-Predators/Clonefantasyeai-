@@ -1,0 +1,22 @@
+name: FantasyEAi Migration Algorithm Regression
+on:
+  push:
+    branches:
+      - feature/secure-backend-migration-20261024
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout isolated branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Check runtime
+        run: node --version
+      - name: Run model correctness regressions
+        run: node --test tests/playoffOdds.regression.test.js
