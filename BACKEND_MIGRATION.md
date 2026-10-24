@@ -11,7 +11,7 @@
 Original Base44 server functions are already present under `base44/functions/*/entry.ts` (17 directories).
 Shared deterministic modules synchronized from the latest original GitHub repository into `supabase/functions/_shared`:
 - `espnLeague.js`: ESPN connector and 60s cache. Only `base44:runtime` secret access was replaced with `Deno.env.get`.
-- `playoffOdds.js`: unchanged Monte Carlo and threat-board algorithms.
+- `playoffOdds.js`: preserves the original scoring-profile assumptions and threat-board structure, but now uses 10,000 draws (previously 1,000), conditions in-progress outcomes on observed scores, preserves ESPN-confirmed final results, and matches random seeds across what-if scenarios. See `SIMULATION_VALIDATION.md`.
 - `leaguePulse.js`: unchanged transaction/pattern aggregation.
 - `simDay.js`: unchanged local-day logic.
 
@@ -51,6 +51,7 @@ Staging database SQL: `supabase/staging_schema.sql`
 
 ## Current state
 - Source files inventoried from both original and clone; newer fixes from the original source preserved, including avoiding duplicate counting of current-week points in the playoff simulator.
+- Algorithm-focused changes restricted to the isolated migration branch. All 9 GitHub Actions regressions passed (run 40093688310). Model predictive accuracy on actual historical NFL outcomes is NOT yet validated.
 - One actual read-only function port staged.
 - RLS DDL authored but NOT applied to any hosted database.
 - No data records transferred; no secrets transferred; no users migrated.
