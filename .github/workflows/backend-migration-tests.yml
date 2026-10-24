@@ -19,4 +19,4 @@ jobs:
       - name: Check runtime
         run: node --version
       - name: Run model correctness regressions
-        run: node --test tests/playoffOdds.regression.test.js
+        run: node --test tests/*.test.js
