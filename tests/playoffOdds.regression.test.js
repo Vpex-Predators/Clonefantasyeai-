@@ -102,3 +102,41 @@ test('matched-seed what-if simulation never lowers playoff odds for extra forced
   }
   assert.equal(board.sims, 10000);
 });
+
+test('ESPN-confirmed final result is never resimulated', () => {
+  const settled = fixture(125);
+  const match = settled.schedule.find(m => m.matchupPeriodId === 2 && m.home?.teamId === 'A');
+  match.away.totalPoints = 70;
+  match.winner = 'HOME';
+  const result = computePlayoffOdds(settled);
+  assert.equal(result.mine.currentWeekWinProb, 100);
+  assert.equal(result.mine.remaining[0].winProb, 100);
+});
+
+test('large-league War Room simulation finishes within a staging CPU budget', () => {
+  const teams = Array.from({ length: 12 }, (_, i) => ({
+    id: String(i + 1), name: 'Team ' + (i + 1),
+    wins: 3, losses: 3, ties: 0, pointsFor: 730 + (i % 7) * 12
+  }));
+  const schedule = [];
+  for (let week = 1; week <= 14; week++) {
+    for (let k = 0; k < 6; k++) {
+      const home = String(k + 1);
+      const away = String(12 - k);
+      schedule.push({
+        matchupPeriodId: week,
+        home: { teamId: home, totalPoints: week < 7 ? 98 + k : 0 },
+        away: { teamId: away, totalPoints: week < 7 ? 99 + k : 0 }
+      });
+    }
+  }
+  const begin = performance.now();
+  const result = computeThreatBoard({
+    teams, schedule, currentPeriod: 7, regSeasonPeriods: 14,
+    playoffTeamCount: 6, myTeamId: '1', gamesPlayed: 6
+  });
+  const runtimeMs = performance.now() - begin;
+  assert.ok(result?.mine?.playoffPct >= 0);
+  // Not a production latency guarantee; prevents accidental 10-100x algorithm regressions.
+  assert.ok(runtimeMs < 15000, `simulation budget exceeded: ${runtimeMs.toFixed(1)}ms`);
+});
