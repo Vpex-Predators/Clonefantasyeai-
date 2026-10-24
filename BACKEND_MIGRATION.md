@@ -9,7 +9,7 @@
 
 ## Migration inventory
 Original Base44 server functions are already present under `base44/functions/*/entry.ts` (17 directories).
-Shared deterministic modules copied into `supabase/functions/_shared`:
+Shared deterministic modules synchronized from the latest original GitHub repository into `supabase/functions/_shared`:
 - `espnLeague.js`: ESPN connector and 60s cache. Only `base44:runtime` secret access was replaced with `Deno.env.get`.
 - `playoffOdds.js`: unchanged Monte Carlo and threat-board algorithms.
 - `leaguePulse.js`: unchanged transaction/pattern aggregation.
@@ -50,7 +50,7 @@ Staging database SQL: `supabase/staging_schema.sql`
 10. Keep live production on Base44 until an explicit release approval and a tested rollback path. There is no automatic merge or DNS switch.
 
 ## Current state
-- Source files inventoried; safe deterministic computation modules preserved in Git.
+- Source files inventoried from both original and clone; newer fixes from the original source preserved, including avoiding duplicate counting of current-week points in the playoff simulator.
 - One actual read-only function port staged.
 - RLS DDL authored but NOT applied to any hosted database.
 - No data records transferred; no secrets transferred; no users migrated.
