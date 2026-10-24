@@ -12,7 +12,9 @@ function archive(weeks=20,gamesPerWeek=12,quality="overconfident"){
       const win=favorite?(k%6<4?1:0):(k%6<2?1:0);
       const at=new Date(Date.UTC(2025,8,1+7*week));
       rows.push({season:2025,week,matchupId:"match-"+week+"-"+k,
+        leagueId:"synthetic-test-league",scoring:"PPR",phase:"pregame",
         probability:p,outcome:win,predictedAt:new Date(at.getTime()-86400000).toISOString(),
+        kickoffAt:new Date(at.getTime()-43200000).toISOString(),
         resolvedAt:at.toISOString()});
     }
   }
@@ -61,4 +63,21 @@ test('Brier and log loss are zero-ish for accurate decisive forecasts',()=>{
   const records=[{probability:.99,outcome:1},{probability:.01,outcome:0}];
   assert.ok(brierScore(records)<.001);
   assert.ok(logLoss(records)<.02);
+});
+
+test('in-game and pregame snapshots cannot share one calibration model',()=>{
+  const rows=archive(4,4);
+  rows[0].phase="live";
+  rows[0].predictedAt=new Date(Date.parse(rows[0].kickoffAt)+3600000).toISOString();
+  assert.throws(()=>compareCalibration(rows),/Mixing leagues or pregame and live/);
+});
+test('pregame forecast issued after kickoff is rejected',()=>{
+  const rows=archive(4,4);
+  rows[0].predictedAt=rows[0].kickoffAt;
+  assert.throws(()=>compareCalibration(rows),/Invalid archive row/);
+});
+test('mixing league IDs invalidates calibration comparison',()=>{
+  const rows=archive(4,4);
+  rows[0].leagueId="another-league";
+  assert.throws(()=>compareCalibration(rows),/Mixing leagues or pregame and live/);
 });
