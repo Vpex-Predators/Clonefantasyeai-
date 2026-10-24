@@ -11,28 +11,55 @@ function normalCdf(x) {
   return x >= 0 ? 1 - p : p;
 }
 
-function gauss(mean, std) {
-  const u = Math.max(Math.random(), 1e-12);
-  const v = Math.random();
+// Optional seeded PRNG is used only for matched-scenario Monte Carlo comparisons.
+function seededRng(seed) {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6D2B79F5) >>> 0;
+    let x = state;
+    x = Math.imul(x ^ (x >>> 15), x | 1);
+    x ^= x + Math.imul(x ^ (x >>> 7), x | 61);
+    return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function scenarioSeed({ teams, schedule, currentPeriod, regSeasonPeriods, myTeamId }) {
+  // This hash is for repeatable simulations, NEVER for cryptography.
+  const snapshot = JSON.stringify([
+    currentPeriod, regSeasonPeriods, myTeamId,
+    teams.map(t => [t.id, t.wins, t.losses, t.ties || 0, t.pointsFor]),
+    (schedule || []).map(m => [m.matchupPeriodId,
+      m.home?.teamId, m.home?.totalPoints, m.away?.teamId, m.away?.totalPoints])
+  ]);
+  let hash = 2166136261;
+  for (let i = 0; i < snapshot.length; i++) {
+    hash ^= snapshot.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function gauss(mean, std, random = Math.random) {
+  const u = Math.max(random(), 1e-12);
+  const v = random();
   return mean + std * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
 }
 
-function playOne(a, b, profiles) {
-  return gauss(profiles[a].mean, profiles[a].std) >= gauss(profiles[b].mean, profiles[b].std) ? a : b;
+function playOne(a, b, profiles, random = Math.random) {
+  return gauss(profiles[a].mean, profiles[a].std, random) >= gauss(profiles[b].mean, profiles[b].std, random) ? a : b;
 }
 
-function playBracket(field, profiles) {
+function playBracket(field, profiles, random = Math.random) {
   let round = field.slice();
   if (field.length === 6) {
     // Standard 6-team bracket: top two seeds bye, 3v6 and 4v5 in round one.
-    const w45 = playOne(field[3], field[4], profiles);
-    const w36 = playOne(field[2], field[5], profiles);
+    const w45 = playOne(field[3], field[4], profiles, random);
+    const w36 = playOne(field[2], field[5], profiles, random);
     round = [field[0], field[1], w45, w36];
   }
   while (round.length > 1) {
     const next = [];
     for (let i = 0; i < Math.floor(round.length / 2); i++) {
-      next.push(playOne(round[i], round[round.length - 1 - i], profiles));
+      next.push(playOne(round[i], round[round.length - 1 - i], profiles, random));
     }
     if (round.length % 2 === 1) next.push(round[Math.floor(round.length / 2)]);
     round = next;
@@ -78,13 +105,14 @@ export function pairwiseWinProb(profiles, a, b) {
   return normalCdf((profiles[a].mean - profiles[b].mean) / Math.sqrt(profiles[a].std ** 2 + profiles[b].std ** 2));
 }
 
-export function computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPeriods, playoffTeamCount = 6, myTeamId, gamesPlayed, meanAdjust, forceMyWins = 0 }) {
+export function computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPeriods, playoffTeamCount = 6, myTeamId, gamesPlayed, meanAdjust, forceMyWins = 0, randomSeed }) {
   if (!teams || !teams.length) return null;
 
   const teamById = {};
   for (const t of teams) teamById[t.id] = t;
 
   const { profiles } = buildProfiles({ teams, schedule, currentPeriod, gamesPlayed });
+  const random = Number.isInteger(randomSeed) ? seededRng(randomSeed) : Math.random;
   // Trade simulator hook: shift a team's scoring mean by a lineup-level delta.
   if (meanAdjust) {
     for (const id of Object.keys(meanAdjust)) {
@@ -148,8 +176,8 @@ export function computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPe
       const a = String((m.home || {}).teamId ?? '');
       const b = String((m.away || {}).teamId ?? '');
       if (!(a in teamById) || !(b in teamById)) continue;
-      const sa = gauss(profiles[a].mean, profiles[a].std);
-      const sb = gauss(profiles[b].mean, profiles[b].std);
+      const sa = gauss(profiles[a].mean, profiles[a].std, random);
+      const sb = gauss(profiles[b].mean, profiles[b].std, random);
       // pointsFor already includes in-progress current-week scoring. Replace
       // that week's actuals with the simulated full-week score so tiebreaks
       // don't double-count; future weeks still accumulate as simulated.
@@ -174,7 +202,7 @@ export function computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPe
     });
     const field = order.slice(0, count);
     for (const id of field) playoffCount[id] += 1;
-    titleCount[playBracket(field, profiles)] += 1;
+    titleCount[playBracket(field, profiles, random)] += 1;
   }
 
   let mine = null;
@@ -210,7 +238,10 @@ export function computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPe
 // War Room threat board: ranks every opponent by how dangerous they are to my
 // season, and computes what it takes on the win column to stay ahead of the top threat.
 export function computeThreatBoard({ teams, schedule, currentPeriod, regSeasonPeriods, playoffTeamCount = 6, myTeamId, gamesPlayed }) {
-  const base = computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPeriods, playoffTeamCount, myTeamId, gamesPlayed });
+  // Common random numbers reduce noise in differences between "what if" scenarios.
+  // Force-winning more games cannot make the same simulated season less favorable.
+  const seed = scenarioSeed({ teams, schedule, currentPeriod, regSeasonPeriods, myTeamId });
+  const base = computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPeriods, playoffTeamCount, myTeamId, gamesPlayed, randomSeed: seed });
   if (!base || !base.mine) return null;
 
   const myId = String(myTeamId);
@@ -252,13 +283,13 @@ export function computeThreatBoard({ teams, schedule, currentPeriod, regSeasonPe
   let winsNeeded = 0;
   if (top) winsNeeded = Math.min(myGamesLeft, Math.max(0, Math.ceil(top.avgWins - myRace.avgWins + 0.001)));
 
-  const target = computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPeriods, playoffTeamCount, myTeamId, gamesPlayed, forceMyWins: winsNeeded });
+  const target = computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPeriods, playoffTeamCount, myTeamId, gamesPlayed, forceMyWins: winsNeeded, randomSeed: seed });
 
   // My playoff odds as I stack up to four extra wins — the keep-ahead runway.
   const progression = [];
   const steps = Math.min(4, myGamesLeft);
   for (let n = 0; n <= steps; n++) {
-    const o = computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPeriods, playoffTeamCount, myTeamId, gamesPlayed, forceMyWins: n });
+    const o = computePlayoffOdds({ teams, schedule, currentPeriod, regSeasonPeriods, playoffTeamCount, myTeamId, gamesPlayed, forceMyWins: n, randomSeed: seed });
     progression.push({ wins: n, playoffPct: o.mine ? o.mine.playoffPct : null });
   }
 
