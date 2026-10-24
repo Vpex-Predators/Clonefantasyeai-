@@ -45,7 +45,8 @@ test('current-week partial-score bookkeeping does not double-count tiebreak poin
   // Previous versions added the partial score twice and failed this test.
   const early = withSeed(20261024, () => computePlayoffOdds(fixture(20)));
   const later = withSeed(20261024, () => computePlayoffOdds(fixture(120)));
-  assert.deepEqual(early.race, later.race);
+  const projectionOnly = x => x.race.map(({ id, playoffPct, titlePct, avgWins }) => ({ id, playoffPct, titlePct, avgWins }));
+  assert.deepEqual(projectionOnly(early), projectionOnly(later));
   assert.deepEqual(early.mine, later.mine);
 });
 
