@@ -30,10 +30,17 @@ function validatedRows(rows){
       typeof r.matchupId!=="string"||!r.matchupId.trim()||
       !Number.isFinite(r.probability)||r.probability<0||r.probability>1||
       !(r.outcome===0||r.outcome===1)||
+      !["pregame","live"].includes(r.phase)||
+      r.scoring!=="PPR"||
+      typeof r.leagueId!=="string"||!r.leagueId||
       !Number.isFinite(Date.parse(r.predictedAt))||
+      !Number.isFinite(Date.parse(r.kickoffAt))||
       !Number.isFinite(Date.parse(r.resolvedAt))||
-      Date.parse(r.predictedAt)>=Date.parse(r.resolvedAt)){
-      throw new Error("Invalid archive row: season, week, matchupId, probability, binary outcome, and pre-outcome timestamp required");
+      Date.parse(r.kickoffAt)>=Date.parse(r.resolvedAt)||
+      Date.parse(r.predictedAt)>=Date.parse(r.resolvedAt)||
+      (r.phase==="pregame"&&Date.parse(r.predictedAt)>=Date.parse(r.kickoffAt))||
+      (r.phase==="live"&&Date.parse(r.predictedAt)<Date.parse(r.kickoffAt))){
+      throw new Error("Invalid archive row: require PPR, leagueId, phase, kickoffAt, predictedAt, resolvedAt and pre-outcome binary outcome");
     }
     const key=matchKey(r);
     if(used.has(key))throw new Error("Duplicate matchup "+key+"; choose one forecast issued before outcome");
@@ -71,6 +78,9 @@ export function compareCalibration(rows,{
   requiredBrierGain=.005
 }={}){
   const ordered=validatedRows(rows);
+  const leagueIds=new Set(ordered.map(r=>r.leagueId));
+  const phases=new Set(ordered.map(r=>r.phase));
+  if(leagueIds.size>1||phases.size>1)throw new Error("Mixing leagues or pregame and live forecasts is prohibited");
   const weeks=[...new Set(ordered.map(weekKey))];
   const split=Math.max(minTrainWeeks,Math.floor(weeks.length*.65));
   const trainKeys=new Set(weeks.slice(0,split));
