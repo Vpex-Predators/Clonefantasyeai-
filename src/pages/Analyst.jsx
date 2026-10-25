@@ -4,6 +4,7 @@ import { Calculator, Loader2, RotateCcw, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MessageBubble from "@/components/analyst/MessageBubble";
 import AppNavBar from "@/components/AppNavBar";
+import { useAuth } from "@/lib/AuthContext";
 
 const FALLBACK_SUGGESTIONS = [
   "Which of my starters should I shop for a trade right now?",
@@ -18,7 +19,25 @@ export default function Analyst() {
   const [thinking, setThinking] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(true);
+  const [chatLoaded, setChatLoaded] = useState(false);
   const bottomRef = useRef(null);
+  const { user } = useAuth();
+  const draftKey = user?.id ? `fantasyeai:analyst-draft:${user.id}` : null;
+
+  // Keep unsent thoughts when switching tabs without sending them to analytics.
+  useEffect(() => {
+    if (!draftKey) return;
+    try { setInput(window.sessionStorage.getItem(draftKey) || ""); } catch { /* storage unavailable */ }
+  }, [draftKey]);
+
+  const editDraft = (value) => {
+    setInput(value);
+    if (!draftKey) return;
+    try {
+      if (value) window.sessionStorage.setItem(draftKey, value);
+      else window.sessionStorage.removeItem(draftKey);
+    } catch { /* no persistent storage available */ }
+  };
 
   // Fresh, team-tailored questions (re-fetched whenever the chat is reset).
   const loadSuggestions = useCallback(async () => {
@@ -33,9 +52,10 @@ export default function Analyst() {
     }
   }, []);
 
+  // Do not launch a separate LLM call if an existing conversation already has messages.
   useEffect(() => {
-    loadSuggestions();
-  }, [loadSuggestions]);
+    if (chatLoaded && messages.length === 0) loadSuggestions();
+  }, [chatLoaded, messages.length, loadSuggestions]);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,26 +67,57 @@ export default function Analyst() {
           setMessages(conversations[0].messages || []);
         }
       } catch { /* start a fresh conversation on first message */ }
+      finally { if (!cancelled) setChatLoaded(true); }
     })();
     return () => { cancelled = true; };
   }, []);
 
+  // Disconnect the live subscription while backgrounded to save mobile radio/CPU.
+  // On returning, re-read server history first so no replies are lost.
   useEffect(() => {
-    if (!conversation) return;
-    const unsubscribe = base44.agents.subscribeToConversation(conversation.id, (data) => {
-      setMessages(data.messages);
-    });
-    return unsubscribe;
+    if (!conversation?.id) return;
+    let cancelled = false;
+    let generation = 0;
+    let unsubscribe = null;
+    const syncAndSubscribe = () => {
+      generation += 1;
+      const requestId = generation;
+      if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+      if (document.hidden) return;
+      base44.agents.listConversations({ agent_name: "trade_analyst" })
+        .then(list => {
+          if (cancelled || document.hidden || requestId !== generation) return;
+          const latest = Array.isArray(list) ? list.find(c => c.id === conversation.id) : null;
+          if (latest?.messages) setMessages(latest.messages);
+          unsubscribe = base44.agents.subscribeToConversation(conversation.id, data => {
+            if (!document.hidden && Array.isArray(data?.messages)) setMessages(data.messages);
+          });
+        })
+        .catch(() => {
+          if (cancelled || document.hidden || requestId !== generation) return;
+          unsubscribe = base44.agents.subscribeToConversation(conversation.id, data => {
+            if (!document.hidden && Array.isArray(data?.messages)) setMessages(data.messages);
+          });
+        });
+    };
+    document.addEventListener("visibilitychange", syncAndSubscribe);
+    syncAndSubscribe();
+    return () => {
+      cancelled = true;
+      generation += 1;
+      document.removeEventListener("visibilitychange", syncAndSubscribe);
+      if (unsubscribe) unsubscribe();
+    };
   }, [conversation?.id]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (!document.hidden) bottomRef.current?.scrollIntoView({ behavior: "auto" });
   }, [messages]);
 
   const handleSend = async (text) => {
     const content = (text ?? input).trim();
     if (!content || thinking) return;
-    setInput("");
+    editDraft("");
     setThinking(true);
     try {
       let convo = conversation;
@@ -83,6 +134,7 @@ export default function Analyst() {
         properties: { length: content.length, content_length: content.length },
       });
     } catch (err) {
+      editDraft(content); // Restore the unsent thought when the network fails.
       setMessages((prev) => [...prev, {
         role: "assistant",
         content: `Something went wrong sending that message: ${err.message || "unknown error"}`,
@@ -103,7 +155,6 @@ export default function Analyst() {
       setConversation(convo);
     } catch { /* next message will create a fresh conversation */ }
     setMessages([]);
-    loadSuggestions();
   };
 
   const waitingForReply =
@@ -169,7 +220,7 @@ export default function Analyst() {
         >
           <input
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => editDraft(e.target.value)}
             placeholder="e.g. Trade my Pacheco for their Kupp?"
             className="min-h-[44px] flex-1 rounded-lg border border-input bg-card px-4 py-3 text-base text-foreground focus:border-ring focus:outline-none"
           />
