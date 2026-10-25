@@ -14,14 +14,8 @@ function ToolCallDisplay({ toolCall }) {
   const success = ["success", "completed"].includes(rawStatus);
   const label = statusLabels[rawStatus] || rawStatus || "Working";
 
-  let parsedResults = toolCall.results;
-  if (typeof parsedResults === "string") {
-    try { parsedResults = JSON.parse(parsedResults); } catch { /* keep raw string */ }
-  }
-  if (parsedResults && typeof parsedResults === "object" && parsedResults.success === false) failed = true;
-
-  let args = toolCall.arguments_string;
-  try { args = JSON.parse(args); } catch { /* keep raw string */ }
+  // Never render raw tool arguments/results: they may include tokens, URLs, or PII.
+  if (toolCall.results && typeof toolCall.results === "object" && toolCall.results.success === false) failed = true;
 
   const projection = toolCall.display_projection;
   const hideDetails = projection && projection.hide_details && projection.details_redacted;
@@ -54,14 +48,7 @@ function ToolCallDisplay({ toolCall }) {
       </button>
       {expanded && (
         <div className="space-y-2 border-t border-border px-3 py-2 font-mono text-sm text-muted-foreground">
-          <div>
-            <span className="font-semibold">Args:</span>{" "}
-            <span className="break-all">{typeof args === "string" ? args : JSON.stringify(args, null, 2)}</span>
-          </div>
-          <div>
-            <span className="font-semibold">Result:</span>{" "}
-            <span className="break-all">{typeof parsedResults === "string" ? parsedResults : JSON.stringify(parsedResults, null, 2)}</span>
-          </div>
+          <p>Raw tool arguments and results are hidden to protect account credentials and private data.</p>
         </div>
       )}
     </div>
@@ -114,7 +101,7 @@ function AssistantContent({ content }) {
   );
 }
 
-export default function MessageBubble({ message }) {
+function MessageBubble({ message }) {
   const isUser = message.role === "user";
   return (
     <div className={isUser ? "flex justify-end" : "flex justify-start"}>
@@ -131,3 +118,4 @@ export default function MessageBubble({ message }) {
     </div>
   );
 }
+export default React.memo(MessageBubble);

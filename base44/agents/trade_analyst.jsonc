@@ -9,8 +9,7 @@
     {
       "entity_name": "EspnLeague",
       "allowed_operations": [
-        "read",
-        "update"
+        "read"
       ]
     }
   ],

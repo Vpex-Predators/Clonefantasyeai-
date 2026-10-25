@@ -12,9 +12,9 @@ export default function GlassBackdrop() {
         fittingType="fill"
         className="absolute inset-0 h-full w-full object-cover opacity-30"
       />
-      <div className="absolute -left-28 -top-32 h-80 w-80 animate-float-slow rounded-full bg-emerald-500/20 blur-3xl" />
-      <div className="absolute -right-28 top-1/3 h-72 w-72 animate-float-slow rounded-full bg-cyan-500/15 blur-3xl [animation-delay:-6s]" />
-      <div className="absolute -bottom-28 left-1/4 h-72 w-72 animate-float-slow rounded-full bg-rose-500/10 blur-3xl [animation-delay:-11s]" />
+      <div className="absolute -left-28 -top-32 h-80 w-80 rounded-full bg-emerald-500/20 blur-3xl" />
+      <div className="absolute -right-28 top-1/3 h-72 w-72 rounded-full bg-cyan-500/15 blur-3xl" />
+      <div className="absolute -bottom-28 left-1/4 h-72 w-72 rounded-full bg-rose-500/10 blur-3xl" />
       <div className="hud-grid absolute inset-0" />
       <div className="absolute inset-0 bg-gradient-to-b from-slate-950/30 via-slate-950/55 to-slate-950/85" />
     </div>
